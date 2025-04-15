@@ -1,7 +1,6 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
-// Aquí puedes exponer APIs seguras al renderer
 contextBridge.exposeInMainWorld('electronAPI', {
-	// Ejemplo: API de prueba
-	ping: () => 'pong',
+	selectFolder: () => ipcRenderer.invoke('select-folder'),
+	getAudioFiles: (folderPath: string) => ipcRenderer.invoke('get-audio-files', folderPath),
 })
