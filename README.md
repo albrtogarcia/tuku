@@ -30,7 +30,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - **Desktop App:** Electron
 - **Audio:** Web Audio API / Howler.js
 - **Base de datos:** SQLite + Better-SQLite3
-- **Librerías útiles:** 
+- **Librerías útiles:**
   - [`music-metadata`](https://www.npmjs.com/package/music-metadata) para leer metadatos
   - [`electron-builder`](https://www.electron.build/) para empaquetado
   - [`node-id3`](https://www.npmjs.com/package/node-id3) para editar etiquetas
@@ -40,6 +40,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 ## 🔄 Roadmap
 
 ### ✅ Fase 1: MVP
+
 - [x] Selección de carpeta local
 - [x] Lectura de archivos y metadatos
 - [x] Reproductor básico (play/pausa/siguiente/anterior)
@@ -47,6 +48,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [ ] Interfaz inicial
 
 ### 🚧 Fase 2: Alpha
+
 - [ ] Base de datos persistente con SQLite
 - [ ] Playlists personalizadas
 - [ ] Historial de reproducción
@@ -54,6 +56,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [ ] Backup manual
 
 ### 🧪 Fase 3: Beta
+
 - [ ] Integración con MusicBrainz/Last.fm
 - [ ] Editor de metadatos
 - [ ] Soporte para múltiples formatos de audio
@@ -61,6 +64,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [ ] Backup automático + restauración
 
 ### 🌟 Fase 4: Estable
+
 - [ ] Exportar/importar playlists
 - [ ] Atajos de teclado globales
 - [ ] Notificaciones del sistema
