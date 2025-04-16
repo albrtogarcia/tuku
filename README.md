@@ -42,9 +42,10 @@ Crear una aplicación sencilla, rápida y personalizable para:
 ### ✅ Fase 1: MVP
 
 - [x] Selección de carpeta local
-- [ ] Lectura de archivos y metadatos
-- [ ] Reproductor básico (play/pausa/siguiente/anterior)
+- [x] Lectura de archivos y metadatos
+- [x] Buscador
 - [ ] Cola de reproducción simple
+- [-] Reproductor básico (play/pausa/siguiente/anterior)
 - [ ] Interfaz inicial
 
 ### 🚧 Fase 2: Alpha

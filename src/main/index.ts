@@ -80,6 +80,7 @@ ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 					cover: metadata.common.picture?.[0]
 						? `data:${metadata.common.picture[0].format};base64,${Buffer.from(metadata.common.picture[0].data).toString('base64')}`
 						: null,
+					genre: Array.isArray(metadata.common.genre) ? metadata.common.genre.join(', ') : metadata.common.genre || '',
 				})
 			} catch (err) {
 				console.error('[get-audio-files] Error reading metadata for', filePath, err)
@@ -90,6 +91,7 @@ ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 					album: '',
 					duration: 0,
 					cover: null,
+					genre: '',
 				})
 			}
 		}

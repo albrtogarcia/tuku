@@ -7,6 +7,7 @@ function App() {
 	const [playingPath, setPlayingPath] = useState<string | null>(null)
 	const [audioUrl, setAudioUrl] = useState<string | null>(null)
 	const [pendingPlay, setPendingPlay] = useState(false)
+	const [search, setSearch] = useState('')
 	const audioRef = useRef<HTMLAudioElement>(null)
 
 	useEffect(() => {
@@ -57,6 +58,16 @@ function App() {
 		}
 	}
 
+	const filteredSongs = songs.filter((song) => {
+		const q = search.toLowerCase()
+		return (
+			song.title.toLowerCase().includes(q) ||
+			song.artist.toLowerCase().includes(q) ||
+			song.album.toLowerCase().includes(q) ||
+			song.genre.toLowerCase().includes(q)
+		)
+	})
+
 	return (
 		<div style={{ padding: 32 }}>
 			<h1>🎵 Tuku </h1>
@@ -66,14 +77,20 @@ function App() {
 					Carpeta seleccionada: <span>{folderPath}</span>
 				</p>
 			)}
-			{songs.length > 0 && (
+			{/* Buscador */}
+			<input
+				type="text"
+				placeholder="Buscar por título, artista, álbum o género..."
+				value={search}
+				onChange={(e) => setSearch(e.target.value)}
+				style={{ margin: '16px 0', padding: 8, width: 400, maxWidth: '100%' }}
+			/>
+			{filteredSongs.length > 0 && (
 				<div>
-					<h2>Canciones encontradas: {songs.length} canciones</h2>
+					<h2>Canciones encontradas: {filteredSongs.length} canciones</h2>
 					<ul className="songs-list" style={{ listStyleType: 'none', padding: 0 }}>
-						{songs.map((song) => (
-							<li className="song" key={song.path} style={{ display: 'flex', alignItems: 'center', marginBlock: 16 }}>
-								{/* <pre>{JSON.stringify(song, null, 2)}</pre> */}
-
+						{filteredSongs.map((song) => (
+							<li className="song" key={song.path} style={{ display: 'flex', alignItems: 'flex-start', marginBlock: 16 }}>
 								<div className="cover">
 									{!song.cover && (
 										<div style={{ width: 32, height: 32, backgroundColor: '#ccc', display: 'inline-block', marginRight: 8, flexShrink: 1, aspectRatio: 1 }} />
@@ -88,7 +105,15 @@ function App() {
 									<br />
 									<small>
 										{song.artist} ({song.album})
+										{song.genre && (
+											<span>
+												{' '}
+												— <em>{song.genre}</em>
+											</span>
+										)}
 									</small>
+
+									{/* <pre>{JSON.stringify(song, null, 2)}</pre> */}
 								</div>
 
 								<div className="song-actions" style={{ marginLeft: 'auto' }}>
