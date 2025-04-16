@@ -3,8 +3,9 @@ console.log('Electron main process started')
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import fsPromises from 'fs/promises'
 import { promisify } from 'util'
-import * as mm from 'music-metadata'
+import { parseFile } from 'music-metadata'
 
 const isDev = !app.isPackaged
 const readdir = promisify(fs.readdir)
@@ -60,6 +61,7 @@ async function getAllAudioFiles(dir: string): Promise<string[]> {
 
 ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 	console.log('[get-audio-files] Handler called with:', folderPath)
+	console.log('typeof parseFile:', typeof parseFile, parseFile)
 	try {
 		const audioFilePaths = await getAllAudioFiles(folderPath)
 		console.log('[get-audio-files] Found audio files:', audioFilePaths)
@@ -67,7 +69,7 @@ ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 		for (const filePath of audioFilePaths) {
 			console.log('[get-audio-files] Processing file:', filePath)
 			try {
-				const metadata = await mm.parseFile(filePath)
+				const metadata = await parseFile(filePath)
 				console.log('[get-audio-files] Metadata for', filePath, metadata)
 				songs.push({
 					path: filePath,
@@ -95,6 +97,16 @@ ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 	} catch (err) {
 		console.error('[get-audio-files] Error reading audio files:', err)
 		return []
+	}
+})
+
+ipcMain.handle('get-audio-buffer', async (_event, filePath: string) => {
+	try {
+		const buffer = await fsPromises.readFile(filePath)
+		return buffer
+	} catch (err) {
+		console.error('[get-audio-buffer] Error reading file:', filePath, err)
+		return null
 	}
 })
 
