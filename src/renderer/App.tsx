@@ -12,6 +12,9 @@ function App() {
 
 	const [queue, setQueue] = useState<Song[]>([])
 	const [currentIndex, setCurrentIndex] = useState<number>(-1)
+	const [isPlaying, setIsPlaying] = useState(false)
+	const [currentTime, setCurrentTime] = useState(0)
+	const [duration, setDuration] = useState(0)
 
 	enum PlayerState {
 		STOPPED,
@@ -47,7 +50,18 @@ function App() {
 			setAudioUrl(url)
 			setPlayingPath(songPath)
 			setPendingPlay(true)
+			setIsPlaying(true)
 		}
+	}
+
+	const handlePause = () => {
+		audioRef.current?.pause()
+		setIsPlaying(false)
+	}
+
+	const handleResume = () => {
+		audioRef.current?.play()
+		setIsPlaying(true)
 	}
 
 	const handleCanPlay = () => {
@@ -65,6 +79,7 @@ function App() {
 			URL.revokeObjectURL(audioUrl)
 			setAudioUrl(null)
 		}
+		setIsPlaying(false)
 	}
 
 	const addToQueue = (song: Song) => {
@@ -89,8 +104,65 @@ function App() {
 		}
 	}
 
+	// Eliminar una canción de la cola
+	const removeFromQueue = (index: number) => {
+		setQueue((prev) => prev.filter((_, i) => i !== index))
+		if (index === currentIndex) {
+			// Si eliminamos la actual, reproducir la siguiente
+			if (index < queue.length - 1) {
+				setCurrentIndex(index)
+				handlePlay(queue[index + 1].path)
+			} else {
+				setCurrentIndex(-1)
+				handleStop()
+			}
+		} else if (index < currentIndex) {
+			setCurrentIndex((prev) => prev - 1)
+		}
+	}
+
+	// Vaciar la cola
+	const clearQueue = () => {
+		setQueue([])
+		setCurrentIndex(-1)
+		handleStop()
+	}
+
+	// Cuando termina la canción actual, eliminarla de la cola y reproducir la siguiente
 	const handleEnded = () => {
-		playNext()
+		setQueue((prev) => {
+			const newQueue = prev.filter((_, i) => i !== currentIndex)
+			if (currentIndex < prev.length - 1) {
+				setCurrentIndex(currentIndex)
+				if (newQueue[currentIndex]) {
+					handlePlay(newQueue[currentIndex].path)
+				}
+			} else {
+				setCurrentIndex(-1)
+				handleStop()
+			}
+			return newQueue
+		})
+	}
+
+	function formatTime(sec: number) {
+		const m = Math.floor(sec / 60)
+		const s = Math.floor(sec % 60)
+		return `${m}:${s.toString().padStart(2, '0')}`
+	}
+
+	const playAndInsertToQueue = (song: Song, idx: number) => {
+		if (idx === currentIndex) {
+			handlePlay(song.path)
+		} else {
+			setQueue(prev => {
+				const newQueue = [...prev]
+				newQueue.splice(currentIndex + 1, 0, song)
+				return newQueue
+			})
+			setCurrentIndex(currentIndex + 1)
+			handlePlay(song.path)
+		}
 	}
 
 	const filteredSongs = songs.filter((song) => {
@@ -117,19 +189,85 @@ function App() {
 			{queue.length > 0 && (
 				<div style={{ margin: '24px 0' }}>
 					<h3>Cola de reproducción</h3>
-					<ol>
+					<ol style={{ listStyleType: 'none', padding: 0 }}>
 						{queue.map((song, idx) => (
-							<li key={song.path} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal' }}>
-								{song.title} {idx === currentIndex && '▶️'}
+							<li key={song.path} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
+								{song.title} {idx === currentIndex && '🎶'}
+								<button style={{ marginLeft: 'auto' }} onClick={() => removeFromQueue(idx)} title="Eliminar de la cola">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+										<path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"></path>
+									</svg>
+								</button>
 							</li>
 						))}
 					</ol>
-					<button onClick={playPrev} disabled={currentIndex <= 0}>
-						Anterior
-					</button>
-					<button onClick={playNext} disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-						Siguiente
-					</button>
+					<div style={{ margin: '16px 0', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+						<button onClick={playPrev} disabled={currentIndex <= 0}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+								<path d="M232,71.84V184.16a15.92,15.92,0,0,1-24.48,13.34L128,146.86v37.3a15.92,15.92,0,0,1-24.48,13.34L15.33,141.34a15.8,15.8,0,0,1,0-26.68L103.52,58.5A15.91,15.91,0,0,1,128,71.84v37.3L207.52,58.5A15.91,15.91,0,0,1,232,71.84Z"></path>
+							</svg>
+						</button>
+						{isPlaying ? (
+							<button onClick={handlePause}>
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+									<path d="M216,48V208a16,16,0,0,1-16,16H160a16,16,0,0,1-16-16V48a16,16,0,0,1,16-16h40A16,16,0,0,1,216,48ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Z"></path>
+								</svg>
+							</button>
+						) : (
+							<button onClick={handleResume} disabled={currentIndex === -1}>
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+									<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path>
+								</svg>
+							</button>
+						)}
+						<button onClick={playNext} disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+								<path d="M256,128a15.76,15.76,0,0,1-7.33,13.34L160.48,197.5A15.91,15.91,0,0,1,136,184.16v-37.3L56.48,197.5A15.91,15.91,0,0,1,32,184.16V71.84A15.91,15.91,0,0,1,56.48,58.5L136,109.14V71.84A15.91,15.91,0,0,1,160.48,58.5l88.19,56.16A15.76,15.76,0,0,1,256,128Z"></path>
+							</svg>
+						</button>
+						<button onClick={clearQueue} style={{ marginLeft: 'auto' }}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+								<path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
+			)}
+
+			{/* Barra de progreso y tiempos de reproducción */}
+			{isPlaying && (
+				<div style={{ margin: '16px 0', width: 400, maxWidth: '100%', display: 'flex', alignItems: 'center', gap: 16 }}>
+					{/* Carátula grande */}
+					{queue[currentIndex]?.cover ? (
+						<img src={queue[currentIndex]?.cover} alt="cover" width={96} height={96} style={{ borderRadius: 8, boxShadow: '0 2px 8px #0002', objectFit: 'cover' }} />
+					) : (
+						<div style={{ width: 96, height: 96, background: '#ccc', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 32 }}>
+							 🎵
+						</div>
+					)}
+					<div style={{ flex: 1 }}>
+						<div>
+							<strong>Reproduciendo:</strong> {queue[currentIndex]?.title || ''}
+							<br />
+							<small>{queue[currentIndex]?.artist} {queue[currentIndex]?.album && <>— {queue[currentIndex]?.album}</>}</small>
+						</div>
+						<input
+							type="range"
+							min={0}
+							max={duration}
+							value={currentTime}
+							onChange={e => {
+								const time = Number(e.target.value)
+								audioRef.current!.currentTime = time
+								setCurrentTime(time)
+							}}
+							style={{ width: '100%' }}
+						/>
+						<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+							<span>{formatTime(currentTime)}</span>
+							<span>{formatTime(duration)}</span>
+						</div>
+					</div>
 				</div>
 			)}
 
@@ -147,7 +285,7 @@ function App() {
 				<div>
 					<h2>Canciones encontradas: {filteredSongs.length} canciones</h2>
 					<ul className="songs-list" style={{ listStyleType: 'none', padding: 0 }}>
-						{filteredSongs.map((song) => (
+						{filteredSongs.map((song, idx) => (
 							<li className="song" key={song.path} style={{ display: 'flex', alignItems: 'flex-start', marginBlock: 16 }}>
 								<div className="cover">
 									{!song.cover && (
@@ -174,8 +312,12 @@ function App() {
 									{/* <pre>{JSON.stringify(song, null, 2)}</pre> */}
 								</div>
 
-								<div className="song-actions" style={{ marginLeft: 'auto' }}>
-									<button style={{ marginLeft: 8 }} onClick={() => handlePlay(song.path)} disabled={playingPath === song.path}>
+								<div className="song-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+									<button
+										style={{ marginLeft: 8 }}
+										onClick={() => playAndInsertToQueue(song, idx)}
+										disabled={playingPath === song.path}
+									>
 										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
 											<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path>
 										</svg>
@@ -198,7 +340,15 @@ function App() {
 			)}
 
 			{/* Audio player (hidden) */}
-			<audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} onEnded={handleEnded} onCanPlay={handleCanPlay} />
+			<audio
+				ref={audioRef}
+				src={audioUrl || undefined}
+				style={{ display: 'none' }}
+				onEnded={handleEnded}
+				onCanPlay={handleCanPlay}
+				onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+				onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+			/>
 		</div>
 	)
 }
