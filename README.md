@@ -45,7 +45,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Lectura de archivos y metadatos
 - [x] Buscador
 - [ ] Cola de reproducción simple
-- [-] Reproductor básico (play/pausa/siguiente/anterior)
+- [ ] Reproductor básico (play/pausa/siguiente/anterior)
 - [ ] Interfaz inicial
 
 ### 🚧 Fase 2: Alpha
