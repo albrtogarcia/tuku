@@ -191,7 +191,7 @@ function App() {
 					<h3>Cola de reproducción</h3>
 					<ol style={{ listStyleType: 'none', padding: 0 }}>
 						{queue.map((song, idx) => (
-							<li key={song.path} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
+							<li key={song.path + '-' + idx} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
 								{song.title} {idx === currentIndex && '🎶'}
 								<button style={{ marginLeft: 'auto' }} onClick={() => removeFromQueue(idx)} title="Eliminar de la cola">
 									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
@@ -286,7 +286,7 @@ function App() {
 					<h2>Canciones encontradas: {filteredSongs.length} canciones</h2>
 					<ul className="songs-list" style={{ listStyleType: 'none', padding: 0 }}>
 						{filteredSongs.map((song, idx) => (
-							<li className="song" key={song.path} style={{ display: 'flex', alignItems: 'flex-start', marginBlock: 16 }}>
+							<li className="song" key={song.path + '-' + idx} style={{ display: 'flex', alignItems: 'flex-start', marginBlock: 16 }}>
 								<div className="cover">
 									{!song.cover && (
 										<div style={{ width: 32, height: 32, backgroundColor: '#ccc', display: 'inline-block', marginRight: 8, flexShrink: 1, aspectRatio: 1 }} />
