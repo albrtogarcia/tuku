@@ -10,6 +10,15 @@ function App() {
 	const [search, setSearch] = useState('')
 	const audioRef = useRef<HTMLAudioElement>(null)
 
+	const [queue, setQueue] = useState<Song[]>([])
+	const [currentIndex, setCurrentIndex] = useState<number>(-1)
+
+	enum PlayerState {
+		STOPPED,
+		PLAYING,
+	}
+	const [playerState, setPlayerState] = useState<PlayerState>(PlayerState.STOPPED)
+
 	useEffect(() => {
 		const fetchFiles = async () => {
 			if (folderPath) {
@@ -58,6 +67,32 @@ function App() {
 		}
 	}
 
+	const addToQueue = (song: Song) => {
+		setQueue((prev) => [...prev, song])
+		if (currentIndex === -1) {
+			setCurrentIndex(0)
+			handlePlay(song.path)
+		}
+	}
+
+	const playNext = () => {
+		if (currentIndex + 1 < queue.length) {
+			setCurrentIndex(currentIndex + 1)
+			handlePlay(queue[currentIndex + 1].path)
+		}
+	}
+
+	const playPrev = () => {
+		if (currentIndex > 0) {
+			setCurrentIndex(currentIndex - 1)
+			handlePlay(queue[currentIndex - 1].path)
+		}
+	}
+
+	const handleEnded = () => {
+		playNext()
+	}
+
 	const filteredSongs = songs.filter((song) => {
 		const q = search.toLowerCase()
 		return (
@@ -77,6 +112,27 @@ function App() {
 					Carpeta seleccionada: <span>{folderPath}</span>
 				</p>
 			)}
+
+			{/* Cola de reproducción */}
+			{queue.length > 0 && (
+				<div style={{ margin: '24px 0' }}>
+					<h3>Cola de reproducción</h3>
+					<ol>
+						{queue.map((song, idx) => (
+							<li key={song.path} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal' }}>
+								{song.title} {idx === currentIndex && '▶️'}
+							</li>
+						))}
+					</ol>
+					<button onClick={playPrev} disabled={currentIndex <= 0}>
+						Anterior
+					</button>
+					<button onClick={playNext} disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
+						Siguiente
+					</button>
+				</div>
+			)}
+
 			{/* Buscador */}
 			<input
 				type="text"
@@ -85,6 +141,8 @@ function App() {
 				onChange={(e) => setSearch(e.target.value)}
 				style={{ margin: '16px 0', padding: 8, width: 400, maxWidth: '100%' }}
 			/>
+
+			{/* Lista de canciones */}
 			{filteredSongs.length > 0 && (
 				<div>
 					<h2>Canciones encontradas: {filteredSongs.length} canciones</h2>
@@ -118,10 +176,19 @@ function App() {
 
 								<div className="song-actions" style={{ marginLeft: 'auto' }}>
 									<button style={{ marginLeft: 8 }} onClick={() => handlePlay(song.path)} disabled={playingPath === song.path}>
-										Play
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+											<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path>
+										</svg>
 									</button>
 									<button style={{ marginLeft: 4 }} onClick={handleStop} disabled={playingPath !== song.path}>
-										Stop
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+											<path d="M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z"></path>
+										</svg>
+									</button>
+									<button style={{ marginLeft: 4 }} onClick={() => addToQueue(song)}>
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
+											<path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
+										</svg>
 									</button>
 								</div>
 							</li>
@@ -129,8 +196,9 @@ function App() {
 					</ul>
 				</div>
 			)}
+
 			{/* Audio player (hidden) */}
-			<audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} onEnded={handleStop} onCanPlay={handleCanPlay} />
+			<audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} onEnded={handleEnded} onCanPlay={handleCanPlay} />
 		</div>
 	)
 }
