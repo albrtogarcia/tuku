@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Song } from '../types/song'
+import { Play, Pause, Stop, Rewind, Trash, X, FastForward, Plus } from '@phosphor-icons/react'
+import './styles/app.scss'
 
 function App() {
 	const [folderPath, setFolderPath] = useState<string | null>(null)
@@ -155,7 +157,7 @@ function App() {
 		if (idx === currentIndex) {
 			handlePlay(song.path)
 		} else {
-			setQueue(prev => {
+			setQueue((prev) => {
 				const newQueue = [...prev]
 				newQueue.splice(currentIndex + 1, 0, song)
 				return newQueue
@@ -187,48 +189,36 @@ function App() {
 
 			{/* Cola de reproducción */}
 			{queue.length > 0 && (
-				<div style={{ margin: '24px 0' }}>
+				<div className="queue">
 					<h3>Cola de reproducción</h3>
-					<ol style={{ listStyleType: 'none', padding: 0 }}>
+					<ol className="queue__list">
 						{queue.map((song, idx) => (
-							<li key={song.path + '-' + idx} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal', display: 'flex', alignItems: 'center' }}>
+							<li key={song.path + '-' + idx} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal' }}>
 								{song.title} {idx === currentIndex && '🎶'}
-								<button style={{ marginLeft: 'auto' }} onClick={() => removeFromQueue(idx)} title="Eliminar de la cola">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-										<path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"></path>
-									</svg>
+								<button className="btn" onClick={() => removeFromQueue(idx)} title="Eliminar de la cola">
+									<X size={16} weight="bold" />
 								</button>
 							</li>
 						))}
 					</ol>
-					<div style={{ margin: '16px 0', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+					<div className="queue__actions">
 						<button onClick={playPrev} disabled={currentIndex <= 0}>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-								<path d="M232,71.84V184.16a15.92,15.92,0,0,1-24.48,13.34L128,146.86v37.3a15.92,15.92,0,0,1-24.48,13.34L15.33,141.34a15.8,15.8,0,0,1,0-26.68L103.52,58.5A15.91,15.91,0,0,1,128,71.84v37.3L207.52,58.5A15.91,15.91,0,0,1,232,71.84Z"></path>
-							</svg>
+							<Rewind size={16} weight="fill" />
 						</button>
 						{isPlaying ? (
 							<button onClick={handlePause}>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-									<path d="M216,48V208a16,16,0,0,1-16,16H160a16,16,0,0,1-16-16V48a16,16,0,0,1,16-16h40A16,16,0,0,1,216,48ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Z"></path>
-								</svg>
+								<Pause size={16} weight="fill" />
 							</button>
 						) : (
 							<button onClick={handleResume} disabled={currentIndex === -1}>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-									<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path>
-								</svg>
+								<Play size={16} weight="fill" />
 							</button>
 						)}
 						<button onClick={playNext} disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-								<path d="M256,128a15.76,15.76,0,0,1-7.33,13.34L160.48,197.5A15.91,15.91,0,0,1,136,184.16v-37.3L56.48,197.5A15.91,15.91,0,0,1,32,184.16V71.84A15.91,15.91,0,0,1,56.48,58.5L136,109.14V71.84A15.91,15.91,0,0,1,160.48,58.5l88.19,56.16A15.76,15.76,0,0,1,256,128Z"></path>
-							</svg>
+							<FastForward size={16} weight="fill" />
 						</button>
-						<button onClick={clearQueue} style={{ marginLeft: 'auto' }}>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-								<path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"></path>
-							</svg>
+						<button onClick={clearQueue}>
+							<Trash size={16} weight="fill" />
 						</button>
 					</div>
 				</div>
@@ -236,27 +226,33 @@ function App() {
 
 			{/* Barra de progreso y tiempos de reproducción */}
 			{isPlaying && (
-				<div style={{ margin: '16px 0', width: 400, maxWidth: '100%', display: 'flex', alignItems: 'center', gap: 16 }}>
+				<div className="player" style={{ margin: '16px 0', width: 400, maxWidth: '100%', display: 'flex', alignItems: 'center', gap: 16 }}>
 					{/* Carátula grande */}
 					{queue[currentIndex]?.cover ? (
-						<img src={queue[currentIndex]?.cover} alt="cover" width={96} height={96} style={{ borderRadius: 8, boxShadow: '0 2px 8px #0002', objectFit: 'cover' }} />
+						<img
+							src={queue[currentIndex]?.cover}
+							alt="cover"
+							width={96}
+							height={96}
+							style={{ borderRadius: 8, boxShadow: '0 2px 8px #0002', objectFit: 'cover' }}
+						/>
 					) : (
-						<div style={{ width: 96, height: 96, background: '#ccc', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 32 }}>
-							 🎵
-						</div>
+						<div className="player__cover">🎵</div>
 					)}
 					<div style={{ flex: 1 }}>
 						<div>
 							<strong>Reproduciendo:</strong> {queue[currentIndex]?.title || ''}
 							<br />
-							<small>{queue[currentIndex]?.artist} {queue[currentIndex]?.album && <>— {queue[currentIndex]?.album}</>}</small>
+							<small>
+								{queue[currentIndex]?.artist} {queue[currentIndex]?.album && <>— {queue[currentIndex]?.album}</>}
+							</small>
 						</div>
 						<input
 							type="range"
 							min={0}
 							max={duration}
 							value={currentTime}
-							onChange={e => {
+							onChange={(e) => {
 								const time = Number(e.target.value)
 								audioRef.current!.currentTime = time
 								setCurrentTime(time)
@@ -313,24 +309,14 @@ function App() {
 								</div>
 
 								<div className="song-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-									<button
-										style={{ marginLeft: 8 }}
-										onClick={() => playAndInsertToQueue(song, idx)}
-										disabled={playingPath === song.path}
-									>
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-											<path d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"></path>
-										</svg>
+									<button style={{ marginLeft: 8 }} onClick={() => playAndInsertToQueue(song, idx)} disabled={playingPath === song.path}>
+										<Play size={16} weight="fill" />
 									</button>
 									<button style={{ marginLeft: 4 }} onClick={handleStop} disabled={playingPath !== song.path}>
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-											<path d="M216,56V200a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40H200A16,16,0,0,1,216,56Z"></path>
-										</svg>
+										<Stop size={16} weight="fill" />
 									</button>
 									<button style={{ marginLeft: 4 }} onClick={() => addToQueue(song)}>
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#000000" viewBox="0 0 256 256">
-											<path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
-										</svg>
+										<Plus size={16} weight="bold" />
 									</button>
 								</div>
 							</li>
