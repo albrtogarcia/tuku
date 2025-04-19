@@ -167,14 +167,6 @@ input[type="search"] {
 	}
 }
 
-
-.queue {
-	background: var(--bgPrimary);
-	border-radius: 8px;
-	padding: 1rem;
-	margin-bottom: 1rem;
-}
-
 // Progress
 .progress {
 	width: 100%;
@@ -186,6 +178,16 @@ input[type="search"] {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+
+	background: var(--bgPrimary);
+	border-radius: 8px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+
+	&__item small {
+		opacity: 0.7;
+		padding-inline: 0.5rem;
+	}
 
 	&__title {
 		margin: 0;
@@ -202,7 +204,6 @@ input[type="search"] {
 		li {
 			display: flex;
 			align-items: center;
-			cursor: pointer;
 
 			&.active {
 				color: var(--primary);

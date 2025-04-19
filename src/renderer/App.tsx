@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Song } from '../types/song'
 import { Play, Pause, Stop, Rewind, Trash, X, FastForward, Plus } from '@phosphor-icons/react'
 import './styles/app.scss'
+import Queue from './components/Queue'
+import Player from './components/Player'
+import SongsList from './components/SongsList'
 
 function App() {
 	const [folderPath, setFolderPath] = useState<string | null>(null)
@@ -183,74 +186,31 @@ function App() {
 
 			{/* Cola de reproducción */}
 			{queue.length > 0 && (
-				<div className="queue">
-					<h3 className="queue__title">Queue</h3>
-					<ol className="queue__list">
-						{queue.map((song, idx) => (
-							<li key={song.path + '-' + idx} className={`queue__item ${idx === currentIndex ? 'active' : ''}`}>
-								{song.title} {idx === currentIndex && '🎶'}
-								<button className="btn" onClick={() => removeFromQueue(idx)} title="Remove from queue">
-									<X size={16} weight="bold" />
-								</button>
-							</li>
-						))}
-					</ol>
-					<div className="queue__actions">
-						<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
-							<Rewind size={16} weight="fill" />
-						</button>
-						{isPlaying ? (
-							<button className="btn" onClick={handlePause} title="Pause" disabled={currentIndex === -1}>
-								<Pause size={16} weight="fill" />
-							</button>
-						) : (
-							<button className="btn" onClick={handleResume} title="Play" disabled={currentIndex === -1}>
-								<Play size={16} weight="fill" />
-							</button>
-						)}
-						<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-							<FastForward size={16} weight="fill" />
-						</button>
-						<button className="btn" onClick={clearQueue} title="Clear queue" disabled={queue.length === 0}>
-							<Trash size={16} weight="fill" />
-						</button>
-					</div>
-				</div>
+				<Queue
+					queue={queue}
+					currentIndex={currentIndex}
+					isPlaying={isPlaying}
+					playPrev={playPrev}
+					playNext={playNext}
+					handlePause={handlePause}
+					handleResume={handleResume}
+					clearQueue={clearQueue}
+					removeFromQueue={removeFromQueue}
+				/>
 			)}
 
 			{/* PLAYER */}
 			{isPlaying && (
-				<div className="player">
-					{queue[currentIndex]?.cover ? (
-						<img className="player__cover" src={queue[currentIndex]?.cover} alt="cover" />
-					) : (
-						<div className="player__cover--default">🎵</div>
-					)}
-					<div className="player__info">
-						<h4 className="song__title">{queue[currentIndex]?.title || ''}</h4>
-						<p className="song__metadata">
-							{queue[currentIndex]?.artist} {queue[currentIndex]?.album && <>— {queue[currentIndex]?.album}</>}
-						</p>
-						<div className="player__controls">
-							<input
-								className="player__progress"
-								type="range"
-								min={0}
-								max={duration}
-								value={currentTime}
-								onChange={(e) => {
-									const time = Number(e.target.value)
-									audioRef.current!.currentTime = time
-									setCurrentTime(time)
-								}}
-							/>
-							<div className="player__time">
-								<span>{formatTime(currentTime)}</span>
-								<span>{formatTime(duration)}</span>
-							</div>
-						</div>
-					</div>
-				</div>
+				<Player
+					song={queue[currentIndex]}
+					duration={duration}
+					currentTime={currentTime}
+					onSeek={(time) => {
+						audioRef.current!.currentTime = time
+						setCurrentTime(time)
+					}}
+					formatTime={formatTime}
+				/>
 			)}
 
 			{/* SEARCH */}
@@ -260,52 +220,15 @@ function App() {
 
 			{/* SONGS LIST */}
 			{filteredSongs.length > 0 && (
-				<section className="songs">
-					<header className="songs__header">
-						<h2>Library: {filteredSongs.length} songs</h2>
-						<button className="btn btn-secondary" onClick={handleSelectFolder}>
-							{folderPath ? folderPath : 'Select music folder'}
-						</button>
-					</header>
-
-					<ul className="songs__list">
-						{filteredSongs.map((song, idx) => (
-							<li className="song" key={song.path + '-' + idx}>
-								{!song.cover && <div className="song__cover--default" />}
-								{song.cover && <img className="song__cover" src={song.cover} alt={song.album} width={32} />}
-
-								<div className="song__info">
-									<p className="song__title">{song.title}</p>
-									<small className="song__metadata">
-										{song.artist} ({song.album})
-										{song.genre && (
-											<span>
-												{' '}
-												— <em>{song.genre}</em>
-											</span>
-										)}
-									</small>
-								</div>
-
-								<div className="song__actions">
-									{playingPath === song.path ? (
-										<button className="btn btn-icon" onClick={handlePause}>
-											<Pause size={16} weight="fill" />
-										</button>
-									) : (
-										<button className="btn btn-icon" onClick={handleResume}>
-											<Play size={16} weight="fill" />
-										</button>
-									)}
-
-									<button className="btn btn-icon" onClick={() => addToQueue(song)}>
-										<Plus size={16} weight="bold" />
-									</button>
-								</div>
-							</li>
-						))}
-					</ul>
-				</section>
+				<SongsList
+					songs={filteredSongs}
+					playingPath={playingPath}
+					handlePause={handlePause}
+					handleResume={handleResume}
+					addToQueue={addToQueue}
+					handleSelectFolder={handleSelectFolder}
+					folderPath={folderPath}
+				/>
 			)}
 
 			{/* Audio player (hidden) */}
