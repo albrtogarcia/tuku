@@ -178,124 +178,105 @@ function App() {
 	})
 
 	return (
-		<div style={{ padding: 32 }}>
+		<div className="app">
 			<h1>🎵 Tuku </h1>
-			<button onClick={handleSelectFolder}>Seleccionar carpeta de música</button>
-			{folderPath && (
-				<p>
-					Carpeta seleccionada: <span>{folderPath}</span>
-				</p>
-			)}
 
 			{/* Cola de reproducción */}
 			{queue.length > 0 && (
 				<div className="queue">
-					<h3>Cola de reproducción</h3>
+					<h3 className="queue__title">Queue</h3>
 					<ol className="queue__list">
 						{queue.map((song, idx) => (
-							<li key={song.path + '-' + idx} style={{ fontWeight: idx === currentIndex ? 'bold' : 'normal' }}>
+							<li key={song.path + '-' + idx} className={`queue__item ${idx === currentIndex ? 'active' : ''}`}>
 								{song.title} {idx === currentIndex && '🎶'}
-								<button className="btn" onClick={() => removeFromQueue(idx)} title="Eliminar de la cola">
+								<button className="btn" onClick={() => removeFromQueue(idx)} title="Remove from queue">
 									<X size={16} weight="bold" />
 								</button>
 							</li>
 						))}
 					</ol>
 					<div className="queue__actions">
-						<button onClick={playPrev} disabled={currentIndex <= 0}>
+						<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
 							<Rewind size={16} weight="fill" />
 						</button>
 						{isPlaying ? (
-							<button onClick={handlePause}>
+							<button className="btn" onClick={handlePause} title="Pause" disabled={currentIndex === -1}>
 								<Pause size={16} weight="fill" />
 							</button>
 						) : (
-							<button onClick={handleResume} disabled={currentIndex === -1}>
+							<button className="btn" onClick={handleResume} title="Play" disabled={currentIndex === -1}>
 								<Play size={16} weight="fill" />
 							</button>
 						)}
-						<button onClick={playNext} disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
+						<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
 							<FastForward size={16} weight="fill" />
 						</button>
-						<button onClick={clearQueue}>
+						<button className="btn" onClick={clearQueue} title="Clear queue" disabled={queue.length === 0}>
 							<Trash size={16} weight="fill" />
 						</button>
 					</div>
 				</div>
 			)}
 
-			{/* Barra de progreso y tiempos de reproducción */}
+			{/* PLAYER */}
 			{isPlaying && (
-				<div className="player" style={{ margin: '16px 0', width: 400, maxWidth: '100%', display: 'flex', alignItems: 'center', gap: 16 }}>
-					{/* Carátula grande */}
+				<div className="player">
 					{queue[currentIndex]?.cover ? (
-						<img
-							src={queue[currentIndex]?.cover}
-							alt="cover"
-							width={96}
-							height={96}
-							style={{ borderRadius: 8, boxShadow: '0 2px 8px #0002', objectFit: 'cover' }}
-						/>
+						<img className="player__cover" src={queue[currentIndex]?.cover} alt="cover" />
 					) : (
-						<div className="player__cover">🎵</div>
+						<div className="player__cover--default">🎵</div>
 					)}
-					<div style={{ flex: 1 }}>
-						<div>
-							<strong>Reproduciendo:</strong> {queue[currentIndex]?.title || ''}
-							<br />
-							<small>
-								{queue[currentIndex]?.artist} {queue[currentIndex]?.album && <>— {queue[currentIndex]?.album}</>}
-							</small>
-						</div>
-						<input
-							type="range"
-							min={0}
-							max={duration}
-							value={currentTime}
-							onChange={(e) => {
-								const time = Number(e.target.value)
-								audioRef.current!.currentTime = time
-								setCurrentTime(time)
-							}}
-							style={{ width: '100%' }}
-						/>
-						<div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-							<span>{formatTime(currentTime)}</span>
-							<span>{formatTime(duration)}</span>
+					<div className="player__info">
+						<h4 className="song__title">{queue[currentIndex]?.title || ''}</h4>
+						<p className="song__metadata">
+							{queue[currentIndex]?.artist} {queue[currentIndex]?.album && <>— {queue[currentIndex]?.album}</>}
+						</p>
+						<div className="player__controls">
+							<input
+								className="player__progress"
+								type="range"
+								min={0}
+								max={duration}
+								value={currentTime}
+								onChange={(e) => {
+									const time = Number(e.target.value)
+									audioRef.current!.currentTime = time
+									setCurrentTime(time)
+								}}
+							/>
+							<div className="player__time">
+								<span>{formatTime(currentTime)}</span>
+								<span>{formatTime(duration)}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 			)}
 
-			{/* Buscador */}
-			<input
-				type="text"
-				placeholder="Buscar por título, artista, álbum o género..."
-				value={search}
-				onChange={(e) => setSearch(e.target.value)}
-				style={{ margin: '16px 0', padding: 8, width: 400, maxWidth: '100%' }}
-			/>
+			{/* SEARCH */}
+			<div className="search">
+				<input type="search" placeholder="Search songs..." value={search} onChange={(e) => setSearch(e.target.value)} className="search__input" />
+			</div>
 
-			{/* Lista de canciones */}
+			{/* SONGS LIST */}
 			{filteredSongs.length > 0 && (
-				<div>
-					<h2>Canciones encontradas: {filteredSongs.length} canciones</h2>
-					<ul className="songs-list" style={{ listStyleType: 'none', padding: 0 }}>
-						{filteredSongs.map((song, idx) => (
-							<li className="song" key={song.path + '-' + idx} style={{ display: 'flex', alignItems: 'flex-start', marginBlock: 16 }}>
-								<div className="cover">
-									{!song.cover && (
-										<div style={{ width: 32, height: 32, backgroundColor: '#ccc', display: 'inline-block', marginRight: 8, flexShrink: 1, aspectRatio: 1 }} />
-									)}
-									{song.cover && (
-										<img src={song.cover} alt="cover" width={32} style={{ verticalAlign: 'middle', marginRight: 8, flexShrink: 1, aspectRatio: 1 }} />
-									)}
-								</div>
+				<section className="songs">
+					<header className="songs__header">
+						<h2>Library: {filteredSongs.length} songs</h2>
+						<button className="btn btn-secondary" onClick={handleSelectFolder}>
+							{folderPath ? folderPath : 'Select music folder'}
+						</button>
+					</header>
 
-								<div className="song-info" style={{ flexGrow: 1 }}>
-									<strong>{song.title}</strong>
-									<br />
-									<small>
+					<ul className="songs__list">
+						{filteredSongs.map((song, idx) => (
+							<li className="song" key={song.path + '-' + idx}>
+								{!song.cover && <div className="song__cover--default" />}
+								{song.cover && <img className="song__cover" src={song.cover} alt={song.album} width={32} />}
+
+								<div className="song__info">
+									<p className="song__title">{song.title}</p>
+									<small className="song__metadata">
 										{song.artist} ({song.album})
 										{song.genre && (
 											<span>
@@ -304,25 +285,27 @@ function App() {
 											</span>
 										)}
 									</small>
-
-									{/* <pre>{JSON.stringify(song, null, 2)}</pre> */}
 								</div>
 
-								<div className="song-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-									<button style={{ marginLeft: 8 }} onClick={() => playAndInsertToQueue(song, idx)} disabled={playingPath === song.path}>
-										<Play size={16} weight="fill" />
-									</button>
-									<button style={{ marginLeft: 4 }} onClick={handleStop} disabled={playingPath !== song.path}>
-										<Stop size={16} weight="fill" />
-									</button>
-									<button style={{ marginLeft: 4 }} onClick={() => addToQueue(song)}>
+								<div className="song__actions">
+									{playingPath === song.path ? (
+										<button className="btn btn-icon" onClick={handlePause}>
+											<Pause size={16} weight="fill" />
+										</button>
+									) : (
+										<button className="btn btn-icon" onClick={handleResume}>
+											<Play size={16} weight="fill" />
+										</button>
+									)}
+
+									<button className="btn btn-icon" onClick={() => addToQueue(song)}>
 										<Plus size={16} weight="bold" />
 									</button>
 								</div>
 							</li>
 						))}
 					</ul>
-				</div>
+				</section>
 			)}
 
 			{/* Audio player (hidden) */}
