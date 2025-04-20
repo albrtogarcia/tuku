@@ -1,15 +1,16 @@
-import { Song } from '../../types/song'
+import { usePlayerStore } from '../store/player'
+import { formatTime } from '../utils'
 
 interface PlayerProps {
-	song: Song | undefined
-	duration: number
-	currentTime: number
-	onSeek: (time: number) => void
-	formatTime: (sec: number) => string
+	audio: ReturnType<typeof import('../hooks/useAudioPlayer').useAudioPlayer>
 }
 
-const Player = ({ song, duration, currentTime, onSeek, formatTime }: PlayerProps) => {
+const Player = ({ audio }: PlayerProps) => {
+	const { queue, currentIndex } = usePlayerStore()
+	const { duration, currentTime, setCurrentTime } = audio
+	const song = queue[currentIndex]
 	if (!song) return null
+
 	return (
 		<div className="player">
 			{song.cover ? <img className="player__cover" src={song.cover} alt="cover" /> : <div className="player__cover--default">🎵</div>}
@@ -19,7 +20,17 @@ const Player = ({ song, duration, currentTime, onSeek, formatTime }: PlayerProps
 					{song.artist} {song.album && <>— {song.album}</>}
 				</p>
 				<div className="player__controls">
-					<input className="player__progress" type="range" min={0} max={duration} value={currentTime} onChange={(e) => onSeek(Number(e.target.value))} />
+					<input
+						className="player__progress"
+						type="range"
+						min={0}
+						max={duration}
+						value={currentTime}
+						onChange={(e) => {
+							const time = Number(e.target.value)
+							setCurrentTime(time)
+						}}
+					/>
 					<div className="player__time">
 						<span>{formatTime(currentTime)}</span>
 						<span>{formatTime(duration)}</span>

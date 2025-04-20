@@ -1,19 +1,45 @@
-import { Song } from '../../types/song'
+import { usePlayerStore } from '../store/player'
 import { Play, Pause, Rewind, Trash, X, FastForward } from '@phosphor-icons/react'
 
 interface QueueProps {
-	queue: Song[]
-	currentIndex: number
-	isPlaying: boolean
-	playPrev: () => void
-	playNext: () => void
-	handlePause: () => void
-	handleResume: () => void
-	clearQueue: () => void
-	removeFromQueue: (index: number) => void
+	audio: ReturnType<typeof import('../hooks/useAudioPlayer').useAudioPlayer>
 }
 
-const Queue = ({ queue, currentIndex, isPlaying, playPrev, playNext, handlePause, handleResume, clearQueue, removeFromQueue }: QueueProps) => {
+const Queue = ({ audio }: QueueProps) => {
+	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex } = usePlayerStore()
+	const { handlePause, handleResume, isPlaying, handlePlay } = audio
+
+	const playPrev = () => {
+		if (currentIndex > 0) {
+			setCurrentIndex(currentIndex - 1)
+			handlePlay(queue[currentIndex - 1].path)
+		}
+	}
+
+	const playNext = () => {
+		if (currentIndex + 1 < queue.length) {
+			setCurrentIndex(currentIndex + 1)
+			handlePlay(queue[currentIndex + 1].path)
+		}
+	}
+
+	const handleRemoveFromQueue = (idx: number) => {
+		if (idx === currentIndex) {
+			// Si hay siguiente canción, reproducirla
+			if (idx < queue.length - 1) {
+				setCurrentIndex(idx) // el índice de la siguiente canción tras eliminar
+				removeFromQueue(idx)
+				handlePlay(queue[idx + 1].path)
+			} else {
+				// Si no hay más canciones, parar todo
+				removeFromQueue(idx)
+				handlePause()
+			}
+		} else {
+			removeFromQueue(idx)
+		}
+	}
+
 	return (
 		<div className="queue">
 			<h3 className="queue__title">Queue</h3>
@@ -23,7 +49,7 @@ const Queue = ({ queue, currentIndex, isPlaying, playPrev, playNext, handlePause
 						<span>{song.title}</span>
 						<small>({song.artist})</small>
 						{idx === currentIndex && '🎶'}
-						<button className="btn" onClick={() => removeFromQueue(idx)} title="Remove from queue">
+						<button className="btn" onClick={() => handleRemoveFromQueue(idx)} title="Remove from queue">
 							<X size={16} weight="bold" />
 						</button>
 					</li>
