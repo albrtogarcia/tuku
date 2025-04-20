@@ -64,7 +64,16 @@ const Queue = ({ audio }: QueueProps) => {
 						<Pause size={16} weight="fill" />
 					</button>
 				) : (
-					<button className="btn" onClick={handleResume} title="Play" disabled={currentIndex === -1}>
+					<button
+						className="btn"
+						onClick={() => {
+							if (queue[currentIndex]) {
+								handlePlay(queue[currentIndex].path)
+							}
+						}}
+						title="Play"
+						disabled={currentIndex === -1}
+					>
 						<Play size={16} weight="fill" />
 					</button>
 				)}

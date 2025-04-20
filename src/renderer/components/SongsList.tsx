@@ -11,7 +11,7 @@ interface SongsListProps {
 }
 
 const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }: SongsListProps) => {
-	const { playingPath } = usePlayerStore()
+	const { playingPath, setCurrentIndex, queue, currentIndex, insertInQueue } = usePlayerStore()
 	const { handlePause, handleResume, handlePlay, isPlaying } = audio
 
 	return (
@@ -48,7 +48,21 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 										<Pause size={16} weight="fill" />
 									</button>
 								) : (
-									<button className="btn btn-icon" onClick={() => handlePlay(song.path)}>
+									<button
+										className="btn btn-icon"
+										onClick={() => {
+											let idxInQueue = queue.findIndex((q) => q.path === song.path)
+											if (idxInQueue === -1) {
+												const insertAt = currentIndex === -1 ? 0 : currentIndex + 1
+												insertInQueue(song, insertAt)
+												setCurrentIndex(insertAt)
+												audio.handlePlay(song.path)
+											} else {
+												setCurrentIndex(idxInQueue)
+												audio.handlePlay(song.path)
+											}
+										}}
+									>
 										<Play size={16} weight="fill" />
 									</button>
 								)}

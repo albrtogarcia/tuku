@@ -13,6 +13,7 @@ interface PlayerState {
 	addToQueue: (song: Song) => void
 	clearQueue: () => void
 	removeFromQueue: (index: number) => void
+	insertInQueue: (song: Song, position: number) => void
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -46,5 +47,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 			newIndex = currentIndex - 1
 		}
 		set({ queue: newQueue, currentIndex: newIndex })
+	},
+	insertInQueue: (song, position) => {
+		const { queue } = get()
+		// Evitar duplicados
+		if (queue.find((q) => q.path === song.path)) return
+		const newQueue = [...queue]
+		newQueue.splice(position, 0, song)
+		set({ queue: newQueue })
 	},
 }))
