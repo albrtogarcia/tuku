@@ -1,8 +1,9 @@
-import { usePlayerStore } from '../store/player'
-import { formatTime } from '../utils'
+import { usePlayerStore } from '../../store/player'
+import { formatTime } from '../../utils'
+import './_player.scss'
 
 interface PlayerProps {
-	audio: ReturnType<typeof import('../hooks/useAudioPlayer').useAudioPlayer>
+	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 }
 
 const Player = ({ audio }: PlayerProps) => {

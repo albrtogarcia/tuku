@@ -1,0 +1,42 @@
+@use '../abstracts' as *;
+
+.page-footer {
+  background-image: url('..//images/page-footer-bg.webp');
+  background-color: $color-neutral-10;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  position: relative;
+  padding: 18rem 3.75rem 5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  overflow: visible;
+  margin-top: -12rem;
+  z-index: 0;
+
+  @media (width <=$phone) {
+    justify-content: space-between;
+  }
+
+  &::before {
+    content: '';
+    background-color: rgba($color-neutral-10, .9);
+    height: 12rem;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  &::after {
+    content: '';
+    background-color: rgba($color-neutral-10, .5);
+    height: 1rem;
+    width: 100%;
+    position: absolute;
+    top: 12rem;
+    left: 0;
+    z-index: 2;
+  }
+}

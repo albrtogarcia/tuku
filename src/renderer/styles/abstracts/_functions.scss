@@ -1,0 +1,25 @@
+@use "sass:list";
+
+// Z-INDEX FUNCTION
+// Usage: z('site-nav');
+@function z($name, $z-indexes-list: $z-indexes) {
+  @if list.index($z-indexes-list, $name) {
+    @return (list.length($z-indexes-list) - list.index($z-indexes-list, $name))+1;
+  }
+
+  @else {
+    @warn 'There is no item "#{$name}" in this list; choose one of: #{$z-indexes-list}';
+
+    @return null;
+  }
+}
+
+// Stack of z-indexes
+$z-indexes: (
+  'overlay',
+  'modal',
+  'site-nav',
+  'site-header',
+  'site-content',
+  'site-footer'
+);

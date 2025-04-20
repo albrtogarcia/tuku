@@ -1,0 +1,59 @@
+@use '../abstracts' as *;
+
+// BOUNCE
+.bounce {
+  animation: bounce 3s ease infinite;
+}
+
+@keyframes bounce {
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-30px);
+  }
+
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+// FADE IN UP
+.fade-in-up {
+  animation: 1.5s fadeInUp;
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+// FADE IN DOWN
+.fade-in-down {
+  animation: 1.5s fadeInDown;
+}
+
+@keyframes fadeInDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}

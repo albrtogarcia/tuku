@@ -1,0 +1,27 @@
+@use '../abstracts' as *;
+
+.list {
+  list-style: disc;
+  padding-left: 1rem;
+  text-align: left;
+}
+
+.list-icons {
+  display: flex;
+  gap: 2rem;
+  flex-flow: row wrap;
+  margin-block: 4rem;
+
+  &-item {
+    flex: 0 1 calc(33% - 2rem);
+    border-bottom: 1px solid $color-neutral-60;
+
+    @media (width <=$phone) {
+      flex-basis: calc(50% - 2rem);
+    }
+
+    p {
+      margin-block: 1rem;
+    }
+  }
+}

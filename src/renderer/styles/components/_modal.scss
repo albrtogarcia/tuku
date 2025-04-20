@@ -1,0 +1,215 @@
+@use '../abstracts' as *;
+
+/* VENTANA MODAL */
+/*--------------------------------------------------------------------*/
+
+.overall-layer {
+  display: block;
+  position: fixed;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background-color: $color-neutral-10;
+  z-index: z('modal');
+  overflow-y: auto;
+  transition: top ease-out 0.3s;
+
+  &.layer-opened {
+    top: 0;
+  }
+
+  .modal {
+    display: block;
+    width: 46rem;
+    max-width: 100%;
+    min-height: 100vh;
+    padding-block: 2rem;
+    margin: 0 auto;
+    position: relative;
+
+    @media (width <=$tablet) {
+      padding-block: 5rem;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      aspect-ratio: 16/9;
+
+    }
+
+    .slick-slide {
+      height: 100%;
+      margin: 0 1rem;
+    }
+
+    .carousel-prev,
+    .carousel-next {
+      top: 18rem;
+    }
+
+    .carousel-prev {
+      left: -0.5rem;
+    }
+
+    .carousel-next {
+      right: -0.5rem;
+    }
+
+    .video-wrapper {
+      min-height: 200px;
+
+      video {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    .slick-arrow {
+      position: absolute;
+      top: 25%;
+      display: block;
+      width: 40px;
+      height: 40px;
+      background-color: #fff;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: 2px solid #fff;
+      border-radius: 50px;
+      text-indent: -99999px;
+      overflow: hidden;
+      z-index: 100;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0px 2px 4px 0px #82828280;
+
+      &:hover {
+        background-image: url('../img/corner_big_over.svg');
+      }
+
+      &.slick-prev {
+        left: -0.5rem;
+        background-image: url('../images/icons/chevron-left.svg');
+      }
+
+      &.slick-next {
+        right: -0.5rem;
+        background-image: url('../images/icons/chevron-right.svg');
+      }
+
+      @media (width >=$phone) {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      &.slick-disabled {
+        display: none !important;
+      }
+    }
+  }
+
+  .closebtn {
+    display: block;
+    margin: 0 0 1rem auto;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    padding: .5rem;
+    background-color: $color-neutral-10;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 2px 4px 0px #82828280;
+    border-radius: 1.5rem;
+    position: fixed;
+    right: 2rem;
+
+    @media (width <=$phone) {
+      right: 1rem;
+      top: 1rem;
+    }
+
+    &:after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: url('../images/icons/close.svg') no-repeat center center;
+      background-size: contain;
+      vertical-align: middle;
+    }
+  }
+
+  .gallery {
+
+    .slick-slide {
+      height: 100%;
+    }
+
+    .caption {
+      margin: 2rem 0;
+
+      &-title {
+        color: $color-text;
+        font-family: $font-heading;
+        font-weight: 400;
+        font-size: 1.5rem;
+        line-height: 1.25;
+        text-transform: uppercase;
+        padding-left: 1rem;
+        border-left: 1px solid $color-neutral-100;
+      }
+    }
+  }
+
+  .image-description {
+    margin-top: 3rem;
+
+    .btn {
+      position: relative;
+
+      &::after {
+        content: '';
+        border-width: .4rem;
+        border-style: solid;
+        border-color: #fff transparent transparent transparent;
+        position: relative;
+        top: .2rem;
+        transform: rotate(0);
+        transform-origin: 50% .2rem;
+        transition: .25s transform ease;
+      }
+    }
+
+    &-details {
+      overflow: hidden;
+      max-height: 8rem;
+      display: block;
+      transition: max-height 500ms ease-in-out;
+
+      &[open] {
+        max-height: 500rem;
+
+        &>.btn::after {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    &-content {
+      margin-top: 3rem;
+
+      h2:not([class]) {
+        padding: 0;
+        border: none;
+      }
+    }
+  }
+}

@@ -1,8 +1,9 @@
-import { usePlayerStore } from '../store/player'
+import { usePlayerStore } from '../../store/player'
 import { Play, Pause, Rewind, Trash, X, FastForward } from '@phosphor-icons/react'
+import './_queue.scss'
 
 interface QueueProps {
-	audio: ReturnType<typeof import('../hooks/useAudioPlayer').useAudioPlayer>
+	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 }
 
 const Queue = ({ audio }: QueueProps) => {

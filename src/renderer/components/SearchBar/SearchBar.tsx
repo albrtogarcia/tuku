@@ -1,4 +1,5 @@
 import React from 'react'
+import './_searchbar.scss'
 
 interface SearchBarProps {
 	value: string

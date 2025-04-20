@@ -1,0 +1,49 @@
+@use '../abstracts' as *;
+
+.tooltip {
+  position: absolute;
+  bottom: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: $color-accent;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem;
+  width: 94%;
+  color: $color-neutral-10;
+  border-radius: .5rem;
+  font-family: $font-regular;
+  opacity: 0;
+  transition: all .15s ease-in-out;
+  pointer-events: none;
+
+
+  &::after {
+    content: '';
+    border-style: solid;
+    border-width: 8px 8px 0 8px;
+    border-color: $color-accent transparent transparent transparent;
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &-title {
+    font-family: $font-heading;
+    font-weight: 400;
+    font-size: 0.875;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  &-btn:hover+&,
+  &-btn:focus+& {
+    pointer-events: initial;
+    opacity: 1;
+    bottom: 5rem;
+  }
+}

@@ -1,0 +1,95 @@
+:root {
+	--primary: #4f46e5;
+	--primaryDark: #3730a3;
+	--accent: #f1a863;
+	--accentDark: #d89641;
+	--bg: #f7f7fa;
+	--bgPrimary: #f0f0f5;
+	--border: #e0e7ff;
+	--inputBg: #f0f0f5;
+	--textColor: #222;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--primary: #5457e0;
+		--primaryDark: #3730a3;
+		--accent: #f1a863;
+		--accentDark: #d89641;
+		--bg: #23232a;
+		--bgPrimary: #18181b;
+		--border: #27272a;
+		--inputBg: #27272a;
+		--textColor: #fff;
+	}
+}
+
+// Colors
+$red: #FF2842;
+$velvet: #5153ED;
+$dark-jungle: #101828;
+$american-blue: #3E3E7D;
+$slate-blue: #7F56D9;
+
+$color-neutral-100: #2E303F;
+$color-neutral-90: #424242;
+$color-neutral-80: #616161;
+$color-neutral-70: #757575;
+$color-neutral-60: #9E9E9E;
+$color-neutral-50: #C2C2C2;
+$color-neutral-40: #E0E0E0;
+$color-neutral-30: #EDEDED;
+$color-neutral-20: #F9F9F9;
+$color-neutral-10: #FFFFFF;
+
+$gradient-vertical: linear-gradient(180deg, #FF2301 0%, #FF9F84 50%, #FFB02F 75%, #2A41EA 100%);
+$gradient-horizontal: linear-gradient(270deg, rgba(132, 20, 167, 0.7) 0%, rgba(84, 84, 237, 0.7) 45.5%, rgba(219, 160, 22, 0.7) 75%, rgba(255, 43, 121, 0.7) 100%);
+
+$color-feedback-error: #F55400;
+$color-feedback-success: #2E945D;
+$color-feedback-warning: #E79C29;
+
+$color-text: $color-neutral-100;
+$color-border: $color-neutral-50;
+$color-bg-accent: $color-neutral-20;
+$color-bg-body: #2C3154;
+
+$color-primary: $velvet;
+$color-accent: $dark-jungle;
+
+$color-quiz: $american-blue;
+$color-quiz-accent: $slate-blue;
+
+// Base Fonts
+$font-light: 'Merriweather-Light', ui-serif;
+$font-light-italic: 'Merriweather-LightItalic', ui-serif;
+$font-regular: 'Merriweather-Regular', ui-serif;
+$font-regular-italic: 'Merriweather-Italic', ui-serif;
+$font-bold: 'Merriweather-Bold', ui-serif;
+$font-bold-italic: 'Merriweather-BoldItalic', ui-serif;
+
+// Heading fonts
+$font-heading: 'Merriweather-Sans', Helvetica, ui-sans-serif;
+$font-heading-italic: 'Merriweather-SansItalic', Helvetica, ui-sans-serif;
+
+// Texts
+$text-title-big: 2.5rem;
+$text-title-small: 1.5rem;
+$text-h1: 2rem;
+$text-h2: 1.5rem;
+$text-h3: 1.12rem;
+$text-paragraph: 1rem;
+$text-card: 0.88rem;
+
+// Breaqkpoints
+$phone: 720px;
+$tablet: 1024px;
+$desktop: 1200px;
+
+// Legacy
+$xs: 320px;
+$sm: 440px;
+$md: 768px;
+$lg: 1024px;
+$xl: 1248px;
+$xxl: 1400px;

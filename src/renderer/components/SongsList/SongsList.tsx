@@ -1,10 +1,11 @@
-import { usePlayerStore } from '../store/player'
+import { usePlayerStore } from '../../store/player'
 import { Play, Pause, Plus } from '@phosphor-icons/react'
-import { Song } from '../../types/song'
+import { Song } from '../../../types/song'
+import './_songslist.scss'
 
 interface SongsListProps {
 	songs: Song[]
-	audio: ReturnType<typeof import('../hooks/useAudioPlayer').useAudioPlayer>
+	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 	addToQueue: (song: Song) => void
 	handleSelectFolder: () => void
 	folderPath: string | null

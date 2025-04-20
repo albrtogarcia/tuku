@@ -1,0 +1,98 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.625rem;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-inline-size: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  color: currentColor;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+
+  &:not([class]) {
+    margin-bottom: 2em;
+    line-height: 1.25;
+    text-wrap: balance;
+    letter-spacing: -0.05ch;
+
+    &:not(:first-child) {
+      margin-top: 2em;
+    }
+  }
+}
+
+p,
+ol,
+ul {
+  &:not([class]) {
+    margin-block: 1em;
+  }
+}
+
+ol,
+ul {
+  &:not([class]) {
+    list-style: revert;
+
+    li+li {
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+a:not([class]) {
+  text-underline-offset: 0.25em;
+}

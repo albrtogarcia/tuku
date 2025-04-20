@@ -1,0 +1,83 @@
+@use './variables' as *;
+
+// PADDING MIXINS
+// padding-top
+@for $i from 0 to 7 {
+  .pt-#{$i} {
+    padding-top: #{$i}rem !important;
+  }
+}
+
+// padding-block
+@for $i from 0 to 7 {
+  .py-#{$i} {
+    padding-block: #{$i}rem !important;
+  }
+}
+
+// padding-bottom
+@for $i from 0 to 7 {
+  .pb-#{$i} {
+    padding-bottom: #{$i}rem !important;
+  }
+}
+
+// MARGIN MIXINS
+// margin-top
+@for $i from 0 to 7 {
+  .mt-#{$i} {
+    margin-top: #{$i}rem !important;
+  }
+}
+
+// margin-block
+@for $i from 0 to 7 {
+  .my-#{$i} {
+    margin-block: #{$i}rem !important;
+  }
+}
+
+// margin-bottom
+@for $i from 0 to 7 {
+  .mb-#{$i} {
+    margin-bottom: #{$i}rem !important;
+  }
+}
+
+// COLUMNS MIXINS
+$gap: 0rem;
+$cols: 16;
+$col: calc(100% / $cols);
+
+.row {
+  display: flex;
+  gap: $gap;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-width: 100%;
+
+  @media (width <=$phone) {
+    flex-direction: column;
+  }
+
+  .col {
+    flex: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    position: relative;
+  }
+
+  // columns
+  @for $i from 1 to $cols {
+    .col-#{$i} {
+      flex-basis: calc(#{$col * $i} - #{$gap});
+    }
+  }
+
+  // offsets
+  @for $i from 1 to $cols {
+    .offset-#{$i} {
+      margin-left: calc(#{$col * $i} - #{$gap});
+    }
+  }
+}
