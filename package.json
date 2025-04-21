@@ -16,6 +16,7 @@
 	},
 	"dependencies": {
 		"@phosphor-icons/react": "^2.1.7",
+		"better-sqlite3": "^11.9.1",
 		"electron": "^35.1.5",
 		"howler": "^2.2.4",
 		"music-metadata": "^11.2.0",
@@ -28,6 +29,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^16.3.0",
 		"@testing-library/user-event": "^14.6.1",
+		"@types/better-sqlite3": "^7.6.13",
 		"@types/jest": "^29.5.14",
 		"@types/node": "^22.14.1",
 		"@types/react": "^19.1.2",

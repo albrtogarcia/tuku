@@ -62,7 +62,7 @@ function App() {
 	return (
 		<div className="app">
 			{/* PLAYER */}
-			{isPlaying && <Player audio={audio} />}
+			{currentIndex !== -1 && queue[currentIndex] && <Player audio={audio} />}
 
 			{/* QUEUE */}
 			{queue.length > 0 && <Queue audio={audio} />}

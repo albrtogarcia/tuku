@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { Song } from '../../types/song'
+import { useEffect } from 'react'
+import type { Song } from '../../types/song'
 
 interface PlayerState {
 	queue: Song[]
@@ -21,7 +22,7 @@ interface PlayerState {
 	cleanQueueHistory: () => void
 }
 
-export const usePlayerStore = create<PlayerState>((set, get) => ({
+export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerState>) => void, get: () => PlayerState) => ({
 	queue: [],
 	currentIndex: -1,
 	isPlaying: false,
@@ -74,3 +75,20 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 		}
 	},
 }))
+
+// Hook para sincronizar la cola y el índice con SQLite
+export function useQueuePersistence(queue: Song[], currentIndex: number) {
+	useEffect(() => {
+		window.electronAPI.saveQueue(queue, currentIndex)
+	}, [queue, currentIndex])
+}
+
+// Al cargar el store, intentar restaurar la cola y el índice
+;(async () => {
+	const loaded: { queue: string[]; currentIndex: number } = await window.electronAPI.loadQueue()
+	if (loaded && loaded.queue) {
+		const songs: Song[] = loaded.queue.map((path: string) => ({ path, title: '', artist: '', album: '', duration: 0, cover: null, genre: '' }))
+		// NOTA: los metadatos se pueden mejorar si se cruza con la librería
+		usePlayerStore.setState({ queue: songs, currentIndex: loaded.currentIndex })
+	}
+})()

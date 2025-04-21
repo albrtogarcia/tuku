@@ -6,12 +6,44 @@ import fs from 'fs'
 import fsPromises from 'fs/promises'
 import { promisify } from 'util'
 import { parseFile } from 'music-metadata'
+import Database from 'better-sqlite3'
+import os from 'os'
 
 const isDev = !app.isPackaged
 const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 
 const AUDIO_EXTENSIONS = ['.mp3', '.flac', '.wav', '.ogg', '.m4a']
+
+// Inicializar la base de datos en la carpeta del usuario
+const dbPath = path.join(os.homedir(), '.tuku-player.sqlite3')
+const db = new Database(dbPath)
+
+// Crear tablas si no existen
+// Canciones de la librería
+// path es la clave primaria
+// Cola de reproducción (queue) y posición actual
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS library (
+  path TEXT PRIMARY KEY,
+  title TEXT,
+  artist TEXT,
+  album TEXT,
+  duration REAL,
+  cover TEXT,
+  genre TEXT
+);
+CREATE TABLE IF NOT EXISTS queue (
+  position INTEGER PRIMARY KEY AUTOINCREMENT,
+  path TEXT
+);
+CREATE TABLE IF NOT EXISTS queue_state (
+  id INTEGER PRIMARY KEY CHECK (id = 0),
+  currentIndex INTEGER
+);
+INSERT OR IGNORE INTO queue_state (id, currentIndex) VALUES (0, 0);
+`)
 
 async function createWindow() {
 	const win = new BrowserWindow({
@@ -110,6 +142,39 @@ ipcMain.handle('get-audio-buffer', async (_event, filePath: string) => {
 		console.error('[get-audio-buffer] Error reading file:', filePath, err)
 		return null
 	}
+})
+
+// Métodos para la librería
+ipcMain.handle('save-library', async (_event, songs) => {
+	const insert = db.prepare(`REPLACE INTO library (path, title, artist, album, duration, cover, genre) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+	const tx = db.transaction((songs) => {
+		for (const song of songs) {
+			insert.run(song.path, song.title, song.artist, song.album, song.duration, song.cover, song.genre)
+		}
+	})
+	tx(songs)
+	return true
+})
+ipcMain.handle('load-library', async () => {
+	return db.prepare('SELECT * FROM library').all()
+})
+
+// Métodos para la cola
+ipcMain.handle('save-queue', async (_event, queue, currentIndex) => {
+	db.prepare('DELETE FROM queue').run()
+	const insert = db.prepare('INSERT INTO queue (path) VALUES (?)')
+	for (const song of queue) {
+		insert.run(song.path)
+	}
+	db.prepare('UPDATE queue_state SET currentIndex = ? WHERE id = 0').run(currentIndex)
+	return true
+})
+
+ipcMain.handle('load-queue', async () => {
+	const queueRows = db.prepare('SELECT path FROM queue ORDER BY position').all() as { path: string }[]
+	const queue = queueRows.map((row) => row.path)
+	const state: { currentIndex?: number } = db.prepare('SELECT currentIndex FROM queue_state WHERE id = 0').get() || {}
+	return { queue, currentIndex: state.currentIndex ?? -1 }
 })
 
 app.whenReady().then(createWindow)
