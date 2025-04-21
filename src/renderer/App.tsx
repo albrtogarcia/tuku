@@ -21,8 +21,6 @@ function App() {
 
 	return (
 		<div className="app">
-			<h1>🎵 Tuku </h1>
-
 			{/* QUEUE */}
 			{queue.length > 0 && <Queue audio={audio} />}
 
