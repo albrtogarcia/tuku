@@ -1,5 +1,5 @@
 import { usePlayerStore } from '../../store/player'
-import { Play, Pause, Plus } from '@phosphor-icons/react'
+import { Play, Pause, Plus, MusicNotes } from '@phosphor-icons/react'
 import { Song } from '../../../types/song'
 import './_songslist.scss'
 
@@ -29,7 +29,11 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 				<ul className="songs__list">
 					{songs.map((song, idx) => (
 						<li className="song" key={song.path + '-' + idx}>
-							{!song.cover && <div className="song__cover--default" />}
+							{!song.cover && (
+								<div className="song__cover default">
+									<MusicNotes size={24} weight="fill" />
+								</div>
+							)}
 							{song.cover && <img className="song__cover" src={song.cover} alt={song.album} width={32} />}
 							<div className="song__info">
 								<p className="song__title">{song.title}</p>

@@ -1,3 +1,4 @@
+import { MusicNotes } from '@phosphor-icons/react/dist/ssr'
 import { usePlayerStore } from '../../store/player'
 import { formatTime } from '../../utils'
 import './_player.scss'
@@ -14,7 +15,13 @@ const Player = ({ audio }: PlayerProps) => {
 
 	return (
 		<div className="player">
-			{song.cover ? <img className="player__cover" src={song.cover} alt="cover" /> : <div className="player__cover--default">🎵</div>}
+			{song.cover ? (
+				<img className="player__cover" src={song.cover} alt="cover" />
+			) : (
+				<div className="player__cover default">
+					<MusicNotes size={48} weight="fill" />
+				</div>
+			)}
 			<div className="player__info">
 				<h4 className="song__title">{song.title || ''}</h4>
 				<p className="song__metadata">
