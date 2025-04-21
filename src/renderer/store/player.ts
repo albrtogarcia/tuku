@@ -6,14 +6,19 @@ interface PlayerState {
 	currentIndex: number
 	isPlaying: boolean
 	playingPath: string | null
+	repeat: boolean
+	shuffle: boolean
 	setQueue: (queue: Song[]) => void
 	setCurrentIndex: (idx: number) => void
 	setIsPlaying: (playing: boolean) => void
 	setPlayingPath: (path: string | null) => void
+	setRepeat: (repeat: boolean) => void
+	setShuffle: (shuffle: boolean) => void
 	addToQueue: (song: Song) => void
 	clearQueue: () => void
 	removeFromQueue: (index: number) => void
 	insertInQueue: (song: Song, position: number) => void
+	cleanQueueHistory: () => void
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -21,10 +26,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 	currentIndex: -1,
 	isPlaying: false,
 	playingPath: null,
+	repeat: false,
+	shuffle: false,
 	setQueue: (queue) => set({ queue }),
 	setCurrentIndex: (idx) => set({ currentIndex: idx }),
 	setIsPlaying: (isPlaying) => set({ isPlaying }),
 	setPlayingPath: (path) => set({ playingPath: path }),
+	setRepeat: (repeat) => set({ repeat }),
+	setShuffle: (shuffle) => set({ shuffle }),
 	addToQueue: (song) => {
 		const { queue, currentIndex } = get()
 		set({ queue: [...queue, song] })
@@ -55,5 +64,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 		const newQueue = [...queue]
 		newQueue.splice(position, 0, song)
 		set({ queue: newQueue })
+	},
+	cleanQueueHistory: () => {
+		const { queue, currentIndex } = get()
+		if (currentIndex > 3) {
+			const newQueue = queue.slice(currentIndex - 3)
+			const newIndex = 3
+			set({ queue: newQueue, currentIndex: newIndex })
+		}
 	},
 }))
