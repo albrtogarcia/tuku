@@ -45,10 +45,11 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Lectura de archivos y metadatos
 - [x] Buscador
 - [x] Cola de reproducción simple
-- [ ] Reproductor básico (play/pausa/siguiente/anterior)
+- [x] Reproductor básico (play/pausa/siguiente/anterior)
+- [x] Reproducción aleatoria
+- [x] Reproducción en bucle
 - [ ] Controles de volumen
 - [ ] Ordenar cola de reproducción
-- [ ] Reproducción en bucle
 - [ ] Reproducir álbum completo
 - [ ] Librería con cabeceras ordenables
 - [ ] Interfaz inicial
