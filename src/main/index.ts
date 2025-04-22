@@ -1,6 +1,6 @@
 console.log('Electron main process started')
 
-import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
@@ -59,6 +59,23 @@ async function createWindow() {
 	if (isDev) {
 		await win.loadURL('http://localhost:5173')
 		win.webContents.openDevTools()
+
+		// Menú de desarrollo con opción para DevTools
+		const template = [
+			{
+				label: 'View',
+				submenu: [
+					{
+						label: 'Toggle DevTools',
+						accelerator: 'CmdOrCtrl+Alt+I',
+						click: () => win.webContents.toggleDevTools(),
+					},
+					{ role: 'reload' },
+				],
+			},
+		]
+		const menu = Menu.buildFromTemplate(template)
+		Menu.setApplicationMenu(menu)
 	} else {
 		await win.loadFile(path.join(__dirname, '../../dist/index.html'))
 	}

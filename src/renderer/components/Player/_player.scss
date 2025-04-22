@@ -63,4 +63,15 @@
 		width: 100%;
 		margin: 8px 0;
 	}
+
+	&__volume {
+		display: flex;
+		align-items: center;
+		margin-left: 1rem;
+		gap: 0.25rem;
+
+		input[type="range"] {
+			width: 80px;
+		}
+	}
 }

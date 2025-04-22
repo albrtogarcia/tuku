@@ -1,5 +1,6 @@
 import { usePlayerStore } from '../../store/player'
 import { Play, Pause, Rewind, Trash, X, FastForward, Repeat, Shuffle } from '@phosphor-icons/react'
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd'
 import './_queue.scss'
 
 interface QueueProps {
@@ -7,7 +8,8 @@ interface QueueProps {
 }
 
 const Queue = ({ audio }: QueueProps) => {
-	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle } = usePlayerStore()
+	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle, setQueue } =
+		usePlayerStore()
 	const { handlePause, handleResume, isPlaying, handlePlay } = audio
 
 	const playPrev = () => {
@@ -43,8 +45,25 @@ const Queue = ({ audio }: QueueProps) => {
 		}
 	}
 
+	// Función para reordenar la cola
+	function onDragEnd(result: DropResult) {
+		if (!result.destination) return
+		const newQueue = Array.from(queue)
+		const [removed] = newQueue.splice(result.source.index, 1)
+		newQueue.splice(result.destination.index, 0, removed)
+		setQueue(newQueue)
+		// Si la canción actual se movió, actualiza el currentIndex
+		if (result.source.index === currentIndex) {
+			setCurrentIndex(result.destination.index)
+		} else if (result.source.index < currentIndex && result.destination.index >= currentIndex) {
+			setCurrentIndex(currentIndex - 1)
+		} else if (result.source.index > currentIndex && result.destination.index <= currentIndex) {
+			setCurrentIndex(currentIndex + 1)
+		}
+	}
+
 	return (
-		<>
+		<DragDropContext onDragEnd={onDragEnd}>
 			<div className="queue__actions">
 				<button className={`btn${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
 					<Shuffle size={16} weight="fill" />
@@ -91,22 +110,38 @@ const Queue = ({ audio }: QueueProps) => {
 						<Trash size={16} weight="fill" />
 					</button>
 				</header>
-				{queue.length === 0 && <p className="queue__empty">No songs in queue</p>}
-				{queue.length > 0 && (
-					<ol className="queue__list">
-						{queue.map((song, idx) => (
-							<li key={song.path + '-' + idx} className={`queue__item${idx === currentIndex ? ' playing' : ''}${idx < currentIndex ? ' played' : ''}`}>
-								<span>{song.title}</span>
-								<small>({song.artist})</small>
-								<button className="btn" onClick={() => handleRemoveFromQueue(idx)} title="Remove from queue">
-									<X size={16} weight="bold" />
-								</button>
-							</li>
-						))}
-					</ol>
-				)}
+				<Droppable droppableId="queue-list" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false as boolean} direction="vertical">
+					{(provided: DroppableProvided) => (
+						<ol className="queue__list" ref={provided.innerRef} {...provided.droppableProps}>
+							{queue.length === 0 ? (
+								<li className="queue__empty">No songs in queue</li>
+							) : (
+								queue.map((song, idx) => (
+									<Draggable key={song.path + '-' + idx} draggableId={song.path + '-' + idx} index={idx}>
+										{(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
+											<li
+												ref={provided.innerRef}
+												{...provided.draggableProps}
+												{...provided.dragHandleProps}
+												className={`queue__item${idx === currentIndex ? ' playing' : ''}${idx < currentIndex ? ' played' : ''}${snapshot.isDragging ? ' dragging' : ''}`}
+											>
+												<span style={{ cursor: 'grab', marginRight: 8 }}>☰</span>
+												<span>{song.title}</span>
+												<small>({song.artist})</small>
+												<button className="btn" onClick={() => handleRemoveFromQueue(idx)} title="Remove from queue">
+													<X size={16} weight="bold" />
+												</button>
+											</li>
+										)}
+									</Draggable>
+								))
+							)}
+							{provided.placeholder}
+						</ol>
+					)}
+				</Droppable>
 			</div>
-		</>
+		</DragDropContext>
 	)
 }
 

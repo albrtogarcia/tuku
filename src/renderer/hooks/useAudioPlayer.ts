@@ -9,6 +9,7 @@ export function useAudioPlayer() {
 	const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [playingPath, setPlayingPath] = useState<string | null>(null)
+	const [volume, setVolume] = useState(1)
 
 	const handlePlay = async (songPath: string) => {
 		console.log('[AUDIO] handlePlay called for', songPath)
@@ -34,6 +35,13 @@ export function useAudioPlayer() {
 			setPrevAudioUrl(null)
 		}
 	}, [audioUrl, prevAudioUrl])
+
+	// Sincronizar el volumen con el elemento audio
+	useEffect(() => {
+		if (audioRef.current) {
+			audioRef.current.volume = volume
+		}
+	}, [volume])
 
 	const handlePause = () => {
 		console.log('[AUDIO] handlePause called')
@@ -83,5 +91,7 @@ export function useAudioPlayer() {
 		handleResume,
 		handleCanPlay,
 		handleStop,
+		volume,
+		setVolume,
 	}
 }
