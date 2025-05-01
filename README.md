@@ -50,7 +50,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Reproducción en bucle
 - [x] Control de volumen
 - [x] Ordenar cola de reproducción
-- [ ] Reproducir álbum completo
+- [x] Reproducir álbum completo
 - [ ] Librería con cabeceras ordenables
 - [ ] Interfaz inicial
 

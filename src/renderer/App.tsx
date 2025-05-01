@@ -4,10 +4,30 @@ import Queue from './components/Queue/Queue'
 import Player from './components/Player/Player'
 import SongsList from './components/SongsList/SongsList'
 import SearchBar from './components/SearchBar/SearchBar'
+import AlbumsGrid from './components/AlbumsGrid/AlbumsGrid'
 import { useAudioPlayer } from './hooks/useAudioPlayer'
 import { useSongs } from './hooks/useSongs'
 import { formatTime, filterSongs } from './utils'
 import { usePlayerStore } from './store/player'
+
+function groupAlbums(songs) {
+	const albumsMap = new Map()
+	songs.forEach((song) => {
+		if (!albumsMap.has(song.album)) {
+			albumsMap.set(song.album, {
+				id: song.album,
+				title: song.album,
+				artist: song.artist,
+				cover: song.cover,
+				year: song.year,
+				songs: [song],
+			})
+		} else {
+			albumsMap.get(song.album).songs.push(song)
+		}
+	})
+	return Array.from(albumsMap.values())
+}
 
 function App() {
 	const { folderPath, songs, handleSelectFolder } = useSongs()
@@ -15,7 +35,8 @@ function App() {
 
 	const audio = useAudioPlayer()
 
-	const { queue, currentIndex, isPlaying, playingPath, addToQueue, clearQueue, setCurrentIndex, cleanQueueHistory, repeat, shuffle } = usePlayerStore()
+	const { queue, currentIndex, isPlaying, playingPath, addToQueue, clearQueue, setCurrentIndex, cleanQueueHistory, repeat, shuffle, setQueue } =
+		usePlayerStore()
 
 	function getNextShuffleIndex() {
 		if (queue.length <= 1) return currentIndex
@@ -58,6 +79,7 @@ function App() {
 	}
 
 	const filteredSongs = filterSongs(songs, search)
+	const albums = groupAlbums(songs)
 
 	return (
 		<div className="app">
@@ -69,6 +91,9 @@ function App() {
 
 			{/* SEARCH */}
 			<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+
+			{/* ALBUMS GRID */}
+			<AlbumsGrid albums={albums} setQueue={setQueue} audio={audio} />
 
 			{/* SONGS LIST */}
 			<SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} handleSelectFolder={handleSelectFolder} folderPath={folderPath} />
