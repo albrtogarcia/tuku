@@ -1,7 +1,9 @@
 import { usePlayerStore } from '../../store/player'
-import { Play, Pause, Plus, MusicNotes } from '@phosphor-icons/react'
-import { Song } from '../../../types/song'
+import { useState } from 'react'
+import SongsTable, { SongsTableColumn } from '../SongsTable/SongsTable'
 import './_songslist.scss'
+
+import { Song } from '../../../types/song'
 
 interface SongsListProps {
 	songs: Song[]
@@ -11,9 +13,36 @@ interface SongsListProps {
 	folderPath: string | null
 }
 
+const columns: SongsTableColumn[] = [
+	{ key: 'title', label: 'Título', sortable: true },
+	{ key: 'artist', label: 'Artista', sortable: true },
+	{ key: 'album', label: 'Álbum', sortable: true },
+	{ key: 'duration', label: 'Duración', sortable: true },
+	{ key: 'year', label: 'Año', sortable: true },
+	{ key: 'genre', label: 'Género', sortable: true },
+]
+
 const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }: SongsListProps) => {
 	const { playingPath, setCurrentIndex, queue, currentIndex, insertInQueue } = usePlayerStore()
 	const { handlePause, handleResume, handlePlay, isPlaying } = audio
+	const [sortKey, setSortKey] = useState<string>('title')
+	const [sortAsc, setSortAsc] = useState<boolean>(true)
+
+	const sortedSongs = [...songs].sort((a, b) => {
+		if (a[sortKey] === undefined || b[sortKey] === undefined) return 0
+		if (a[sortKey] < b[sortKey]) return sortAsc ? -1 : 1
+		if (a[sortKey] > b[sortKey]) return sortAsc ? 1 : -1
+		return 0
+	})
+
+	const handleSort = (key: string) => {
+		if (sortKey === key) {
+			setSortAsc(!sortAsc)
+		} else {
+			setSortKey(key)
+			setSortAsc(true)
+		}
+	}
 
 	return (
 		<section className="songs">
@@ -23,62 +52,7 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 					{folderPath ? folderPath : 'Select music folder'}
 				</button>
 			</header>
-			{songs.length === 0 ? (
-				<p>No songs found in this folder.</p>
-			) : (
-				<ul className="songs__list">
-					{songs.map((song, idx) => (
-						<li className="song" key={song.path + '-' + idx}>
-							{!song.cover && (
-								<div className="song__cover default">
-									<MusicNotes size={24} weight="fill" />
-								</div>
-							)}
-							{song.cover && <img className="song__cover" src={song.cover} alt={song.album} width={32} />}
-							<div className="song__info">
-								<p className="song__title">{song.title}</p>
-								<small className="song__metadata">
-									{song.artist} ({song.album})
-									{song.genre && (
-										<span>
-											{' '}
-											— <em>{song.genre}</em>
-										</span>
-									)}
-								</small>
-							</div>
-							<div className="song__actions">
-								{playingPath === song.path && isPlaying ? (
-									<button className="btn btn-icon" onClick={handlePause}>
-										<Pause size={16} weight="fill" />
-									</button>
-								) : (
-									<button
-										className="btn btn-icon"
-										onClick={() => {
-											let idxInQueue = queue.findIndex((q) => q.path === song.path)
-											if (idxInQueue === -1) {
-												const insertAt = currentIndex === -1 ? 0 : currentIndex + 1
-												insertInQueue(song, insertAt)
-												setCurrentIndex(insertAt)
-												audio.handlePlay(song.path)
-											} else {
-												setCurrentIndex(idxInQueue)
-												audio.handlePlay(song.path)
-											}
-										}}
-									>
-										<Play size={16} weight="fill" />
-									</button>
-								)}
-								<button className="btn btn-icon" onClick={() => addToQueue(song)}>
-									<Plus size={16} weight="bold" />
-								</button>
-							</div>
-						</li>
-					))}
-				</ul>
-			)}
+			{songs.length === 0 ? <p>No songs found in this folder.</p> : <SongsTable songs={sortedSongs} columns={columns} onSort={handleSort} />}
 		</section>
 	)
 }

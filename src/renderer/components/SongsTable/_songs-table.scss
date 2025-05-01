@@ -1,0 +1,31 @@
+.table-container {
+	display: flex;
+	flex-direction: column;
+	overflow-x: scroll;
+}
+
+.songs-table {
+	background: var(--bgPrimary);
+	border-radius: 0.5rem;
+	margin-bottom: 1rem;
+
+
+	&__header {
+		background-color: var(--color-header-background);
+		color: var(--color-header-text);
+		font-weight: bold;
+	}
+
+	&__row {
+		&:hover {
+			background-color: var(--color-row-hover);
+		}
+	}
+
+	th,
+	td {
+		padding: 0.5rem;
+		text-align: left;
+		white-space: nowrap;
+	}
+}

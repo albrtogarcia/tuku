@@ -10,8 +10,19 @@ import { useSongs } from './hooks/useSongs'
 import { formatTime, filterSongs } from './utils'
 import { usePlayerStore } from './store/player'
 
-function groupAlbums(songs) {
-	const albumsMap = new Map()
+import { Song } from '../types/song'
+
+interface Album {
+	id: string
+	title: string
+	artist: string
+	cover: string
+	year: number
+	songs: Song[]
+}
+
+function groupAlbums(songs: Song[]): Album[] {
+	const albumsMap = new Map<string, Album>()
 	songs.forEach((song) => {
 		if (!albumsMap.has(song.album)) {
 			albumsMap.set(song.album, {
@@ -23,7 +34,7 @@ function groupAlbums(songs) {
 				songs: [song],
 			})
 		} else {
-			albumsMap.get(song.album).songs.push(song)
+			albumsMap.get(song.album)!.songs.push(song)
 		}
 	})
 	return Array.from(albumsMap.values())

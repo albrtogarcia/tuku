@@ -1,4 +1,6 @@
 import React from 'react'
+import './_songs-table.scss'
+import { formatTime } from '../../utils'
 
 export interface SongsTableColumn {
 	key: string
@@ -16,29 +18,37 @@ interface SongsTableProps {
 
 const SongsTable: React.FC<SongsTableProps> = ({ songs, columns, onSort, onEdit }) => {
 	return (
-		<table className="songs-table">
-			<thead>
-				<tr>
-					{columns.map((col) => (
-						<th key={col.key} onClick={() => col.sortable && onSort?.(col.key)}>
-							{col.label}
-							{col.sortable && <span className="sortable-indicator">⇅</span>}
-						</th>
-					))}
-				</tr>
-			</thead>
-			<tbody>
-				{songs.map((song, idx) => (
-					<tr key={song.id || idx}>
+		<div className="table-container">
+			<table className="songs-table">
+				<thead>
+					<tr>
 						{columns.map((col) => (
-							<td key={col.key}>
-								{col.editable ? <input type="text" value={song[col.key]} onChange={(e) => onEdit?.(song.id, col.key, e.target.value)} /> : song[col.key]}
-							</td>
+							<th key={col.key} onClick={() => col.sortable && onSort?.(col.key)}>
+								{col.label}
+								{col.sortable && <span className="sortable-indicator">⇅</span>}
+							</th>
 						))}
 					</tr>
-				))}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{songs.map((song, idx) => (
+						<tr key={song.id || idx}>
+							{columns.map((col) => (
+								<td key={col.key}>
+									{col.key === 'duration' ? (
+										formatTime(song[col.key])
+									) : col.editable ? (
+										<input type="text" value={song[col.key]} onChange={(e) => onEdit?.(song.id, col.key, e.target.value)} />
+									) : (
+										song[col.key]
+									)}
+								</td>
+							))}
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
 	)
 }
 
