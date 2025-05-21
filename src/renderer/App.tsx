@@ -29,8 +29,8 @@ function groupAlbums(songs: Song[]): Album[] {
 				id: song.album,
 				title: song.album,
 				artist: song.artist,
-				cover: song.cover,
-				year: song.year,
+				cover: song.cover || '',
+				year: song.year || 0,
 				songs: [song],
 			})
 		} else {

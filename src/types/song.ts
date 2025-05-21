@@ -6,4 +6,6 @@ export type Song = {
 	duration: number
 	cover: string | null
 	genre: string
+	year?: number
+	track: string
 }
