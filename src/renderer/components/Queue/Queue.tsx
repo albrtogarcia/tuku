@@ -1,5 +1,5 @@
 import { usePlayerStore } from '../../store/player'
-import { Play, Pause, Rewind, Trash, X, FastForward, Repeat, Shuffle } from '@phosphor-icons/react'
+import { Trash, X } from '@phosphor-icons/react'
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd'
 import './_queue.scss'
 
@@ -8,25 +8,8 @@ interface QueueProps {
 }
 
 const Queue = ({ audio }: QueueProps) => {
-	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle, setQueue } =
-		usePlayerStore()
-	const { handlePause, handleResume, isPlaying, handlePlay } = audio
-
-	const playPrev = () => {
-		if (currentIndex > 0) {
-			setCurrentIndex(currentIndex - 1)
-			cleanQueueHistory()
-			handlePlay(queue[currentIndex - 1].path)
-		}
-	}
-
-	const playNext = () => {
-		if (currentIndex + 1 < queue.length) {
-			setCurrentIndex(currentIndex + 1)
-			cleanQueueHistory()
-			handlePlay(queue[currentIndex + 1].path)
-		}
-	}
+	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue } = usePlayerStore()
+	const { handlePause, handlePlay } = audio
 
 	const handleRemoveFromQueue = (idx: number) => {
 		if (idx === currentIndex) {
@@ -64,43 +47,6 @@ const Queue = ({ audio }: QueueProps) => {
 
 	return (
 		<DragDropContext onDragEnd={onDragEnd}>
-			<div className="queue__actions">
-				<button className={`btn${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
-					<Shuffle size={16} weight="fill" />
-				</button>
-
-				<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
-					<Rewind size={16} weight="fill" />
-				</button>
-
-				{isPlaying ? (
-					<button className="btn" onClick={handlePause} title="Pause" disabled={currentIndex === -1}>
-						<Pause size={16} weight="fill" />
-					</button>
-				) : (
-					<button
-						className="btn"
-						onClick={() => {
-							if (queue[currentIndex]) {
-								handlePlay(queue[currentIndex].path)
-							}
-						}}
-						title="Play"
-						disabled={currentIndex === -1}
-					>
-						<Play size={16} weight="fill" />
-					</button>
-				)}
-
-				<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-					<FastForward size={16} weight="fill" />
-				</button>
-
-				<button className={`btn${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title="Repeat queue">
-					<Repeat size={16} weight="fill" />
-				</button>
-			</div>
-
 			<div className="queue">
 				<header className="queue__header">
 					<h2 className="queue__title">

@@ -1,21 +1,21 @@
 @use '../abstracts' as *;
 
 .btn {
-	background: var(--primary);
+	background: transparent;
 	color: var(--textColor);
-	border: none;
-	border-radius: 0.25rem;
-	padding: 0.5rem 1rem;
+	border-width: 1px;
+	border-style: solid;
+	border-color: transparent;
+	padding: 0.5rem;
 	font-size: 1rem;
-	cursor: pointer;
-	transition: background 0.2s;
+	transition: all 0.2s ease-in-out;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	line-height: 1;
 
 	&:hover {
-		background: var(--primaryDark);
+		color: var(--accent);
 	}
 
 	&:disabled {
@@ -24,6 +24,15 @@
 	}
 
 	&.active {
-		background: var(--primaryDark);
+		color: var(--accent);
+	}
+
+	&--secondary {
+		opacity: 0.5;
+	}
+
+	&--lg {
+		font-size: 1.25rem;
+		padding: 0.75rem;
 	}
 }

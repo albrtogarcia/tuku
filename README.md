@@ -51,7 +51,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Control de volumen
 - [x] Ordenar cola de reproducción
 - [x] Reproducir álbum completo
-- [ ] Librería con cabeceras ordenables
+- [x] Librería con cabeceras ordenables
 - [ ] Interfaz inicial
 
 ### 🚧 Fase 2: Alpha

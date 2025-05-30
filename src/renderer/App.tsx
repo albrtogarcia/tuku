@@ -93,21 +93,24 @@ function App() {
 	const albums = groupAlbums(songs)
 
 	return (
-		<div className="app">
-			{/* PLAYER */}
-			{currentIndex !== -1 && queue[currentIndex] && <Player audio={audio} />}
+		<div className="container">
+			<div className="container__player">
+				{/* PLAYER */}
+				{currentIndex !== -1 && queue[currentIndex] && <Player audio={audio} />}
+			</div>
+			<div className="container__queue">
+				{/* QUEUE */}
+				{queue.length > 0 && <Queue audio={audio} />}
+			</div>
+			<div className="container__library">
+				{/* SEARCH */}
+				<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+				{/* ALBUMS GRID */}
+				<AlbumsGrid albums={albums} setQueue={setQueue} audio={audio} />
 
-			{/* QUEUE */}
-			{queue.length > 0 && <Queue audio={audio} />}
-
-			{/* SEARCH */}
-			<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
-
-			{/* ALBUMS GRID */}
-			<AlbumsGrid albums={albums} setQueue={setQueue} audio={audio} />
-
-			{/* SONGS LIST */}
-			<SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} handleSelectFolder={handleSelectFolder} folderPath={folderPath} />
+				{/* SONGS LIST */}
+				<SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} handleSelectFolder={handleSelectFolder} folderPath={folderPath} />
+			</div>
 
 			{/* Audio player (hidden) */}
 			<audio

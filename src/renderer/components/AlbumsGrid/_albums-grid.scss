@@ -5,8 +5,9 @@
 }
 
 .album__cover {
-	width: 8rem;
-	height: 8rem;
+	height: auto;
+	width: 100%;
+	aspect-ratio: 1 / 1;
 	border-radius: 0.25rem;
 	display: flex;
 	align-items: center;
@@ -15,7 +16,11 @@
 	object-fit: cover;
 
 	&.default {
-		background: #ddd;
-		color: #666;
+		background: var(--bgPrimary);
+		color: var(--bg);
 	}
+}
+
+.album-card__info {
+	display: none;
 }

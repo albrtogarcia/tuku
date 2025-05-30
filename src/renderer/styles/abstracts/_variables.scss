@@ -8,6 +8,9 @@
 	--border: #e0e7ff;
 	--inputBg: #f0f0f5;
 	--textColor: #222;
+
+	--font-base: 'VictorMono', Helvetica, ui-sans-serif;
+	--font-base-italic: 'VictorMonoItalic', Helvetica, ui-sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,8 +19,8 @@
 		--primaryDark: #3730a3;
 		--accent: #f1a863;
 		--accentDark: #d89641;
-		--bg: #23232a;
-		--bgPrimary: #18181b;
+		--bg: #1E1E2E;
+		--bgPrimary: #313244;
 		--border: #27272a;
 		--inputBg: #27272a;
 		--textColor: #fff;
@@ -61,16 +64,8 @@ $color-quiz: $american-blue;
 $color-quiz-accent: $slate-blue;
 
 // Base Fonts
-$font-light: 'Merriweather-Light', ui-serif;
-$font-light-italic: 'Merriweather-LightItalic', ui-serif;
-$font-regular: 'Merriweather-Regular', ui-serif;
-$font-regular-italic: 'Merriweather-Italic', ui-serif;
-$font-bold: 'Merriweather-Bold', ui-serif;
-$font-bold-italic: 'Merriweather-BoldItalic', ui-serif;
-
-// Heading fonts
-$font-heading: 'Merriweather-Sans', Helvetica, ui-sans-serif;
-$font-heading-italic: 'Merriweather-SansItalic', Helvetica, ui-sans-serif;
+$font-base: 'VictorMono', Helvetica, ui-sans-serif;
+$font-base-italic: 'VictorMonoItalic', Helvetica, ui-sans-serif;
 
 // Texts
 $text-title-big: 2.5rem;

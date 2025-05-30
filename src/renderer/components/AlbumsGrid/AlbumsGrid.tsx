@@ -21,7 +21,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio }) => {
 			{albums.map((album, idx) => (
 				<div className="album-card" key={album.id || idx} onClick={() => handleAlbumClick(album)} tabIndex={0} role="button">
 					{album.cover ? (
-						<img src={album.cover} alt={album.title} className="album-card__cover" />
+						<img src={album.cover} alt={album.title} className="album-card__cover album__cover" />
 					) : (
 						<div className="album-card__cover album__cover default">
 							<span role="img" aria-label="No cover">

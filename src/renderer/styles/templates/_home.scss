@@ -1,118 +1,35 @@
 @use '../abstracts' as *;
 
-.page-home {
-  background-image:
-    url('../images/home-bg.webp'),
-    url('../images/home-splash.webp');
-  background-position-x: center, left;
-  background-position-y: top, top 62rem;
-  background-repeat: no-repeat, no-repeat;
+$player: 20dvh;
+$queue: 33dvh;
+$library: calc(47dvh - 2rem);
 
-  @media (max-width: $phone) {
-    background-image:
-      url('../images/home-bg-mobile.webp')
-  }
+.container {
+	max-width: 40rem;
+	margin: 0 auto;
+	padding: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 
-  .page-header {
-    margin-bottom: 4rem;
-  }
+	&>* {
+		border: 1px solid #313244;
+		padding: 0.5rem;
+		position: relative;
+	}
 
-  .to-content {
-    text-align: center;
-    margin: clamp(2rem, 10vw, 6rem) 0;
+	&__player {
+		height: $player;
+		overflow-y: auto;
+	}
 
-    @media (max-width: $phone) {
-      margin: 2rem 0 10rem;
-    }
-  }
+	&__queue {
+		height: $queue;
+		overflow-y: auto;
+	}
 
-  .page-content {
-    width: 56.75rem;
-    max-width: 100vw;
-    margin: 0 auto;
-    z-index: 1;
-    position: relative;
-
-    .heading {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      overflow: hidden;
-
-      @media (max-width: $tablet) {
-        gap: 1.75rem;
-        margin-left: 1.5rem;
-      }
-
-
-      .boxed {
-        overflow: visible;
-        background-color: rgba($color-neutral-10, 0.85);
-
-        &::after {
-          content: '';
-          position: absolute;
-          width: calc((1440px - 56.75rem) / 2);
-          top: 0;
-          right: calc(((1440px - 56.75rem) / 2)* -1);
-          background-color: rgba($color-neutral-10, 0.85);
-          height: 100%;
-
-        }
-      }
-    }
-  }
-
-  .content .boxed {
-    background: linear-gradient(180deg,
-        rgba($color-neutral-10, 0.9) 0%,
-        rgba($color-neutral-10, 0.9) 75%,
-        rgba($color-neutral-10, 0) 100%);
-  }
-
-  .boxed-top {
-    margin-top: 1rem;
-
-    &::after {
-      content: '';
-      width: 1rem;
-      height: 100%;
-      position: absolute;
-      top: -1rem;
-      left: -1rem;
-      background-image: url('../images/box-shadow-left.png');
-      background-repeat: no-repeat;
-    }
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-
-    @media (min-width: $desktop) {
-      flex-direction: row;
-
-      span:not(:last-child)::after {
-        content: '|';
-        padding: 0 1rem;
-      }
-    }
-  }
-
-  .page-footer {
-
-    @media (width <=$phone) {
-      justify-content: center;
-    }
-  }
-
-  .carousel {
-    .carousel-prev {
-      left: -3.5rem;
-    }
-
-    .carousel-next {
-      right: -3.5rem;
-    }
-  }
+	&__library {
+		height: $library;
+		overflow-y: auto;
+	}
 }

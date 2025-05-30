@@ -1,0 +1,67 @@
+.controls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-top: auto;
+	padding-inline: 0.5rem;
+	padding-bottom: 0.5rem;
+	gap: 1rem;
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	&__settings {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		.btn {
+			opacity: 0.5;
+		}
+	}
+
+	&__playback {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		.btn--lg {
+			border: 1px solid var(--bgPrimary);
+			border-radius: 50%;
+		}
+	}
+
+	&__volume {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+}
+
+.volume-knob {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: 2px solid var(--bgPrimary);
+	position: relative;
+	cursor: pointer;
+	transition: border-color 0.2s ease;
+
+	&:hover {
+		border-color: var(--accent);
+	}
+
+	&__indicator {
+		position: absolute;
+		top: -2px;
+		left: 50%;
+		width: 2px;
+		height: 12px;
+		background: var(--accent);
+		transform-origin: center 14px;
+		transition: transform 0.1s ease;
+		margin-left: -1px;
+	}
+}

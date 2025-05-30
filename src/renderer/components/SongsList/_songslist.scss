@@ -38,8 +38,8 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background-color: #ddd;
-				color: #666;
+				background: var(--bgPrimary);
+				color: var(--bg);
 			}
 
 			&__info {

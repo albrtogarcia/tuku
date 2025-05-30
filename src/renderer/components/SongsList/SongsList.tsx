@@ -22,16 +22,18 @@ const columns: SongsTableColumn[] = [
 	{ key: 'genre', label: 'Género', sortable: true },
 ]
 
+type SortKey = 'title' | 'artist' | 'album' | 'duration' | 'year' | 'genre'
+
 const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }: SongsListProps) => {
-	const { playingPath, setCurrentIndex, queue, currentIndex, insertInQueue } = usePlayerStore()
-	const { handlePause, handleResume, handlePlay, isPlaying } = audio
-	const [sortKey, setSortKey] = useState<string>('title')
+	const [sortKey, setSortKey] = useState<SortKey>('title')
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
 
 	const sortedSongs = [...songs].sort((a, b) => {
-		if (a[sortKey] === undefined || b[sortKey] === undefined) return 0
-		if (a[sortKey] < b[sortKey]) return sortAsc ? -1 : 1
-		if (a[sortKey] > b[sortKey]) return sortAsc ? 1 : -1
+		const aValue = a[sortKey]
+		const bValue = b[sortKey]
+		if (aValue === undefined || bValue === undefined) return 0
+		if (aValue < bValue) return sortAsc ? -1 : 1
+		if (aValue > bValue) return sortAsc ? 1 : -1
 		return 0
 	})
 
@@ -39,7 +41,7 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 		if (sortKey === key) {
 			setSortAsc(!sortAsc)
 		} else {
-			setSortKey(key)
+			setSortKey(key as SortKey)
 			setSortAsc(true)
 		}
 	}
