@@ -6,6 +6,8 @@ interface ElectronAPI {
 	getAudioBuffer: (filePath: string) => Promise<ArrayBuffer | null>
 	saveLibrary: (songs: Song[]) => Promise<boolean>
 	loadLibrary: () => Promise<Song[]>
+	getLibraryMetadata: (key: string) => Promise<string | null>
+	setLibraryMetadata: (key: string, value: string) => Promise<boolean>
 	saveQueue: (queue: Song[], currentIndex: number) => Promise<boolean>
 	loadQueue: () => Promise<{ queue: string[]; currentIndex: number }>
 }

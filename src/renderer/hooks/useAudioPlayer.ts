@@ -20,7 +20,7 @@ export function useAudioPlayer() {
 			try {
 				audioRef.current.currentTime = validTime
 			} catch (error) {
-				console.warn('[AUDIO] Error setting currentTime:', error)
+				// Error setting currentTime
 			}
 		}
 	}
@@ -31,23 +31,19 @@ export function useAudioPlayer() {
 	}
 
 	const handlePlay = async (songPath: string) => {
-		console.log('[AUDIO] handlePlay called for', songPath)
 		const buffer = await window.electronAPI.getAudioBuffer(songPath)
 		if (buffer) {
-			if (audioUrl) setPrevAudioUrl(audioUrl) // Guardar el anterior para revocarlo después
+			if (audioUrl) setPrevAudioUrl(audioUrl) // Save previous for cleanup later
 			const blob = new Blob([buffer])
 			const url = URL.createObjectURL(blob)
-			console.log('[AUDIO] New audioUrl generated:', url)
 			setAudioUrl(url)
 			setPlayingPath(songPath)
 			setPendingPlay(true)
 			setIsPlaying(true)
-		} else {
-			console.warn('[AUDIO] No buffer received for', songPath)
 		}
 	}
 
-	// Revocar el audioUrl anterior solo después de que el nuevo esté en uso
+	// Cleanup previous audioUrl only after new one is in use
 	useEffect(() => {
 		if (prevAudioUrl && prevAudioUrl !== audioUrl) {
 			URL.revokeObjectURL(prevAudioUrl)
@@ -55,7 +51,7 @@ export function useAudioPlayer() {
 		}
 	}, [audioUrl, prevAudioUrl])
 
-	// Sincronizar el volumen con el elemento audio
+	// Sync volume with audio element
 	useEffect(() => {
 		if (audioRef.current) {
 			audioRef.current.volume = volume
@@ -63,22 +59,18 @@ export function useAudioPlayer() {
 	}, [volume])
 
 	const handlePause = () => {
-		console.log('[AUDIO] handlePause called')
 		audioRef.current?.pause()
 		setIsPlaying(false)
 	}
 
 	const handleResume = () => {
-		console.log('[AUDIO] handleResume called')
 		audioRef.current?.play()
 		setIsPlaying(true)
 	}
 
 	const handleCanPlay = () => {
-		console.log('[AUDIO] handleCanPlay, pendingPlay:', pendingPlay)
 		if (pendingPlay && audioRef.current && audioRef.current.readyState >= 3) {
 			audioRef.current.play().catch((error) => {
-				console.error('[AUDIO] Error playing audio:', error)
 				setIsPlaying(false)
 			})
 			setPendingPlay(false)
@@ -86,7 +78,6 @@ export function useAudioPlayer() {
 	}
 
 	const handleStop = () => {
-		console.log('[AUDIO] handleStop called')
 		audioRef.current?.pause()
 		if (audioRef.current) audioRef.current.currentTime = 0
 		setPlayingPath(null)

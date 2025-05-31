@@ -54,13 +54,13 @@ const Queue = ({ audio }: QueueProps) => {
 
 	const handleRemoveFromQueue = (idx: number) => {
 		if (idx === currentIndex) {
-			// Si hay siguiente canción, reproducirla
+			// If there's a next song, play it
 			if (idx < queue.length - 1) {
-				setCurrentIndex(idx) // el índice de la siguiente canción tras eliminar
+				setCurrentIndex(idx) // the index of the next song after removing
 				removeFromQueue(idx)
 				handlePlay(queue[idx + 1].path)
 			} else {
-				// Si no hay más canciones, parar todo
+				// If no more songs, stop everything
 				removeFromQueue(idx)
 				handlePause()
 			}
@@ -70,25 +70,25 @@ const Queue = ({ audio }: QueueProps) => {
 	}
 	const handleQueueItemDoubleClick = (idx: number) => {
 		if (idx === currentIndex) {
-			// Si es la canción actual, solo reiniciar reproducción
+			// If it's the current song, just restart playback
 			handlePlay(queue[idx].path)
 			return
 		}
 
-		// Mover la canción a la posición actual + 1 (siguiente en reproducir)
+		// Move the song to current position + 1 (next to play)
 		const newQueue = [...queue]
 		const [selectedSong] = newQueue.splice(idx, 1)
 
-		// Insertar después de la canción actual
+		// Insert after the current song
 		newQueue.splice(currentIndex + 1, 0, selectedSong)
 
 		setQueue(newQueue)
-		// Avanzar al siguiente índice (donde pusimos la canción)
+		// Advance to the next index (where we put the song)
 		setCurrentIndex(currentIndex + 1)
 		handlePlay(selectedSong.path)
 	}
 
-	// Función para reordenar la cola
+	// Function to reorder the queue
 	function handleDragEnd(event: DragEndEvent) {
 		const { active, over } = event
 
@@ -99,7 +99,7 @@ const Queue = ({ audio }: QueueProps) => {
 			const newQueue = arrayMove(queue, activeIndex, overIndex)
 			setQueue(newQueue)
 
-			// Si la canción actual se movió, actualiza el currentIndex
+			// If the current song moved, update the currentIndex
 			if (activeIndex === currentIndex) {
 				setCurrentIndex(overIndex)
 			} else if (activeIndex < currentIndex && overIndex >= currentIndex) {

@@ -38,7 +38,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio }) => {
 								<MusicNotesIcon size={48} weight="fill" />
 							</span>
 							<div className="album-card__info">
-								<strong>{album.title || 'Álbum desconocido'}</strong>
+								<strong>{album.title || 'Unknown Album'}</strong>
 								{album.artist && <div className="album-card__artist">{album.artist}</div>}
 							</div>
 						</div>

@@ -10,7 +10,7 @@ export interface SongsTableColumn {
 }
 
 interface SongsTableProps {
-	songs: Array<any> // Reemplaza 'any' por el tipo de canción si lo tienes tipado
+	songs: Array<any> // Replace 'any' with the song type if you have it typed
 	columns: SongsTableColumn[]
 	onSort?: (key: string) => void
 	onEdit?: (songId: string, key: string, value: string) => void

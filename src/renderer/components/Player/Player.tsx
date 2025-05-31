@@ -1,4 +1,4 @@
-import { MusicNotes, Shuffle } from '@phosphor-icons/react/dist/ssr'
+import { MusicNotesIcon, Shuffle } from '@phosphor-icons/react/dist/ssr'
 import { usePlayerStore } from '../../store/player'
 import { formatTime } from '../../utils'
 import Controls from '../Controls/Controls'
@@ -6,15 +6,16 @@ import './_player.scss'
 
 interface PlayerProps {
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
-	songs: Array<any> // Biblioteca completa de canciones
+	songs: Array<any> // Complete library of songs
+	onOpenSettings: () => void
 }
 
-const Player = ({ audio, songs }: PlayerProps) => {
+const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 	const { queue, currentIndex, setQueue, setCurrentIndex } = usePlayerStore()
 	const { duration, currentTime, setCurrentTime, handlePlay, isPlaying, playingPath } = audio
 	const song = queue[currentIndex]
 
-	// Función para reproducir una canción aleatoria
+	// Function to play a random song
 	const handleSurpriseMe = () => {
 		if (songs.length === 0) return
 
@@ -26,13 +27,13 @@ const Player = ({ audio, songs }: PlayerProps) => {
 		handlePlay(randomSong.path)
 	}
 
-	// Si no hay canción en la cola pero hay algo reproduciéndose, buscar en la biblioteca
+	// If there's no song in queue but something is playing, search in library
 	let currentSong = song
 	if (!song && isPlaying && playingPath) {
 		currentSong = songs.find((s) => s.path === playingPath)
 	}
 
-	// Si no hay canción actual y no hay nada reproduciéndose, mostrar empty state
+	// If there's no current song and nothing is playing, show empty state
 	if (!currentSong && (!isPlaying || !playingPath)) {
 		return (
 			<>
@@ -46,12 +47,12 @@ const Player = ({ audio, songs }: PlayerProps) => {
 						</button>
 					</div>
 				</div>
-				<Controls audio={audio} />
+				<Controls audio={audio} onOpenSettings={onOpenSettings} />
 			</>
 		)
 	}
 
-	// Si no encontramos la canción en la biblioteca pero hay algo reproduciéndose, mostrar info básica
+	// If we don't find the song in library but something is playing, show basic info
 	if (!currentSong && isPlaying && playingPath) {
 		const fileName = playingPath.split('/').pop() || playingPath
 		currentSong = {
@@ -62,6 +63,7 @@ const Player = ({ audio, songs }: PlayerProps) => {
 			duration: 0,
 			cover: null,
 			genre: '',
+			track: '1',
 		}
 	}
 
@@ -87,7 +89,7 @@ const Player = ({ audio, songs }: PlayerProps) => {
 					<img className="player__cover" src={currentSong.cover} alt="cover" />
 				) : (
 					<div className="player__cover default">
-						<MusicNotes size={48} weight="fill" />
+						<MusicNotesIcon size={48} weight="fill" />
 					</div>
 				)}
 				<div className="player__info">
@@ -123,7 +125,7 @@ const Player = ({ audio, songs }: PlayerProps) => {
 				</div>
 			</div>
 
-			<Controls audio={audio} />
+			<Controls audio={audio} onOpenSettings={onOpenSettings} />
 		</>
 	)
 }

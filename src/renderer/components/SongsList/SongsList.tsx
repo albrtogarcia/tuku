@@ -9,22 +9,21 @@ interface SongsListProps {
 	songs: Song[]
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 	addToQueue: (song: Song) => void
-	handleSelectFolder: () => void
 	folderPath: string | null
 }
 
 const columns: SongsTableColumn[] = [
-	{ key: 'title', label: 'Título', sortable: true },
-	{ key: 'artist', label: 'Artista', sortable: true },
-	{ key: 'album', label: 'Álbum', sortable: true },
-	{ key: 'duration', label: 'Duración', sortable: true },
-	{ key: 'year', label: 'Año', sortable: true },
-	{ key: 'genre', label: 'Género', sortable: true },
+	{ key: 'title', label: 'Title', sortable: true },
+	{ key: 'artist', label: 'Artist', sortable: true },
+	{ key: 'album', label: 'Album', sortable: true },
+	{ key: 'duration', label: 'Duration', sortable: true },
+	{ key: 'year', label: 'Year', sortable: true },
+	{ key: 'genre', label: 'Genre', sortable: true },
 ]
 
 type SortKey = 'title' | 'artist' | 'album' | 'duration' | 'year' | 'genre'
 
-const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }: SongsListProps) => {
+const SongsList = ({ songs, audio, addToQueue, folderPath }: SongsListProps) => {
 	const { playNow } = usePlayerStore()
 	const [sortKey, setSortKey] = useState<SortKey>('title')
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
@@ -63,14 +62,10 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 
 	return (
 		<section className="songs">
-			<header className="songs__header">
-				<h2>Library: {songs.length} songs</h2>
-				<button className="btn btn-secondary" onClick={handleSelectFolder}>
-					{folderPath ? folderPath : 'Select music folder'}
-				</button>
-			</header>
 			{songs.length === 0 ? (
-				<p>No songs found in this folder.</p>
+				<div className="empty-state">
+					<p>No songs found.</p>
+				</div>
 			) : (
 				<SongsTable songs={sortedSongs} columns={columns} onSort={handleSort} onDoubleClick={handleSongDoubleClick} onRightClick={handleSongRightClick} />
 			)}

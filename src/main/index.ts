@@ -1,5 +1,3 @@
-console.log('Electron main process started')
-
 import { app, BrowserWindow, ipcMain, dialog, Menu, screen } from 'electron'
 import path from 'path'
 import fs from 'fs'
@@ -15,14 +13,14 @@ const stat = promisify(fs.stat)
 
 const AUDIO_EXTENSIONS = ['.mp3', '.flac', '.wav', '.ogg', '.m4a']
 
-// Inicializar la base de datos en la carpeta del usuario
+// Initialize database in user folder
 const dbPath = path.join(os.homedir(), '.tuku-player.sqlite3')
 const db = new Database(dbPath)
 
-// Crear tablas si no existen
-// Canciones de la librería
-// path es la clave primaria
-// Cola de reproducción (queue) y posición actual
+// Create tables if they don't exist
+// Songs in the library
+// path is the primary key
+// Playback queue and current position
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS library (
@@ -33,6 +31,10 @@ CREATE TABLE IF NOT EXISTS library (
   duration REAL,
   cover TEXT,
   genre TEXT
+);
+CREATE TABLE IF NOT EXISTS library_metadata (
+  key TEXT PRIMARY KEY,
+  value TEXT
 );
 CREATE TABLE IF NOT EXISTS queue (
   position INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +48,7 @@ INSERT OR IGNORE INTO queue_state (id, currentIndex) VALUES (0, 0);
 `)
 
 async function createWindow() {
-	// Obtener las dimensiones de la pantalla
+	// Get screen dimensions
 	const primaryDisplay = screen.getPrimaryDisplay()
 	const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize
 
@@ -66,7 +68,7 @@ async function createWindow() {
 		await win.loadURL('http://localhost:5173')
 		win.webContents.openDevTools()
 
-		// Menú de desarrollo con opción para DevTools
+		// Development menu with DevTools option
 		const template: Electron.MenuItemConstructorOptions[] = [
 			{
 				label: 'View',
@@ -115,21 +117,16 @@ async function getAllAudioFiles(dir: string): Promise<string[]> {
 }
 
 ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
-	console.log('[get-audio-files] Handler called with:', folderPath)
-	console.log('typeof parseFile:', typeof parseFile, parseFile)
 	try {
 		const audioFilePaths = await getAllAudioFiles(folderPath)
-		console.log('[get-audio-files] Found audio files:', audioFilePaths)
 		const songs = []
 		for (const filePath of audioFilePaths) {
-			console.log('[get-audio-files] Processing file:', filePath)
 			try {
 				const metadata = await parseFile(filePath)
-				console.log('[get-audio-files] Metadata for', filePath, metadata)
 				songs.push({
 					path: filePath,
 					title: metadata.common.title || path.basename(filePath),
-					artist: metadata.common.artist || 'Desconocido',
+					artist: metadata.common.artist || 'Unknown',
 					album: metadata.common.album || '',
 					duration: metadata.format.duration || 0,
 					cover: metadata.common.picture?.[0]
@@ -138,11 +135,10 @@ ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 					genre: Array.isArray(metadata.common.genre) ? metadata.common.genre.join(', ') : metadata.common.genre || '',
 				})
 			} catch (err) {
-				console.error('[get-audio-files] Error reading metadata for', filePath, err)
 				songs.push({
 					path: filePath,
 					title: path.basename(filePath),
-					artist: 'Desconocido',
+					artist: 'Unknown',
 					album: '',
 					duration: 0,
 					cover: null,
@@ -152,7 +148,6 @@ ipcMain.handle('get-audio-files', async (_event, folderPath: string) => {
 		}
 		return songs
 	} catch (err) {
-		console.error('[get-audio-files] Error reading audio files:', err)
 		return []
 	}
 })
@@ -162,18 +157,20 @@ ipcMain.handle('get-audio-buffer', async (_event, filePath: string) => {
 		const buffer = await fsPromises.readFile(filePath)
 		return buffer
 	} catch (err) {
-		console.error('[get-audio-buffer] Error reading file:', filePath, err)
 		return null
 	}
 })
 
-// Métodos para la librería
+// Methods for the library
 ipcMain.handle('save-library', async (_event, songs) => {
 	const insert = db.prepare(`REPLACE INTO library (path, title, artist, album, duration, cover, genre) VALUES (?, ?, ?, ?, ?, ?, ?)`)
 	const tx = db.transaction((songs) => {
 		for (const song of songs) {
 			insert.run(song.path, song.title, song.artist, song.album, song.duration, song.cover, song.genre)
 		}
+		// Update lastUpdated timestamp
+		const now = new Date().toISOString()
+		db.prepare('REPLACE INTO library_metadata (key, value) VALUES (?, ?)').run('lastUpdated', now)
 	})
 	tx(songs)
 	return true
@@ -182,7 +179,17 @@ ipcMain.handle('load-library', async () => {
 	return db.prepare('SELECT * FROM library').all()
 })
 
-// Métodos para la cola
+// Methods for library metadata
+ipcMain.handle('get-library-metadata', async (_event, key) => {
+	const result = db.prepare('SELECT value FROM library_metadata WHERE key = ?').get(key) as { value: string } | undefined
+	return result ? result.value : null
+})
+ipcMain.handle('set-library-metadata', async (_event, key, value) => {
+	db.prepare('REPLACE INTO library_metadata (key, value) VALUES (?, ?)').run(key, value)
+	return true
+})
+
+// Methods for the queue
 ipcMain.handle('save-queue', async (_event, queue, currentIndex) => {
 	db.prepare('DELETE FROM queue').run()
 	const insert = db.prepare('INSERT INTO queue (path) VALUES (?)')

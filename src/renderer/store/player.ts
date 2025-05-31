@@ -35,13 +35,13 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	shuffle: false,
 	setQueue: (queue) => {
 		set({ queue })
-		// Guardar automáticamente cuando se cambie la cola
+		// Auto-save when queue changes
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
 	setCurrentIndex: (idx) => {
 		set({ currentIndex: idx })
-		// Guardar automáticamente cuando se cambie el índice
+		// Auto-save when index changes
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
@@ -56,7 +56,7 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		if (currentIndex === -1) {
 			set({ currentIndex: 0, playingPath: song.path, isPlaying: true })
 		}
-		// Guardar automáticamente
+		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
@@ -69,7 +69,7 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		if (currentIndex === -1 && uniqueSongs.length > 0) {
 			set({ currentIndex: 0, playingPath: uniqueSongs[0].path, isPlaying: true })
 		}
-		// Guardar automáticamente
+		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
@@ -85,14 +85,14 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 			const newQueue = [...queue, song]
 			set({ queue: newQueue, currentIndex: newQueue.length - 1, playingPath: song.path, isPlaying: true })
 		}
-		// Guardar automáticamente
+		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
 	clearQueue: () => {
 		set({ queue: [], currentIndex: -1 })
-		// No establecer isPlaying: false ni playingPath: null para permitir que la canción actual siga reproduciéndose
-		// Guardar automáticamente
+		// Don't set isPlaying: false or playingPath: null to allow current song to continue playing
+		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
@@ -110,18 +110,18 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 			newIndex = currentIndex - 1
 		}
 		set({ queue: newQueue, currentIndex: newIndex })
-		// Guardar automáticamente
+		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
 	insertInQueue: (song, position) => {
 		const { queue } = get()
-		// Evitar duplicados
+		// Avoid duplicates
 		if (queue.find((q) => q.path === song.path)) return
 		const newQueue = [...queue]
 		newQueue.splice(position, 0, song)
 		set({ queue: newQueue })
-		// Guardar automáticamente
+		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
@@ -131,7 +131,7 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 			const newQueue = queue.slice(currentIndex - 3)
 			const newIndex = 3
 			set({ queue: newQueue, currentIndex: newIndex })
-			// Guardar automáticamente
+			// Auto-save
 			const { saveQueueToStorage } = get()
 			saveQueueToStorage()
 		}
@@ -140,22 +140,18 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		try {
 			const loaded = await window.electronAPI.loadQueue()
 			if (!loaded || !loaded.queue || loaded.queue.length === 0) {
-				console.log('No queue found in storage or queue is empty')
 				return
 			}
 
-			console.log('Loading queue from storage:', loaded)
-
-			// Cargar la librería completa para obtener metadatos
+			// Load the full library to get metadata
 			const library: Song[] = await window.electronAPI.loadLibrary()
 			if (library.length === 0) {
-				console.log('No library found, cannot restore queue with metadata')
 				return
 			}
 
 			const libraryMap = new Map(library.map((song) => [song.path, song]))
 
-			// Construir la cola con metadatos completos
+			// Build the queue with complete metadata
 			const queueWithMetadata: Song[] = loaded.queue.map((path) => libraryMap.get(path)).filter((song): song is Song => song !== undefined)
 
 			if (queueWithMetadata.length > 0) {
@@ -166,28 +162,15 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 					currentIndex: currentIndex,
 					playingPath: queueWithMetadata[currentIndex]?.path || null,
 				})
-
-				console.log(`Queue restored: ${queueWithMetadata.length} songs, currentIndex: ${currentIndex}`)
-			} else {
-				console.log('No valid songs found for queue restoration')
 			}
-		} catch (error) {
-			console.error('Error loading queue from storage:', error)
-		}
+		} catch (error) {}
 	},
 	saveQueueToStorage: async () => {
 		try {
 			const { queue, currentIndex } = get()
 			await window.electronAPI.saveQueue(queue, currentIndex)
 		} catch (error) {
-			console.error('Error saving queue to storage:', error)
+			// Error saving queue to storage
 		}
 	},
 }))
-
-// Hook para sincronizar la cola y el índice con SQLite (opcional, no se usa actualmente)
-export function useQueuePersistence(queue: Song[], currentIndex: number) {
-	useEffect(() => {
-		window.electronAPI.saveQueue(queue, currentIndex)
-	}, [queue, currentIndex])
-}

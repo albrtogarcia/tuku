@@ -1,13 +1,14 @@
-import { SpeakerHigh, Play, Pause, Rewind, FastForward, Repeat, Shuffle } from '@phosphor-icons/react/dist/ssr'
+import { PlayIcon, PauseIcon, RewindIcon, FastForwardIcon, RepeatIcon, ShuffleIcon } from '@phosphor-icons/react/dist/ssr'
 import { usePlayerStore } from '../../store/player'
 import './_controls.scss'
-import { Sliders } from '@phosphor-icons/react'
+import { SlidersIcon } from '@phosphor-icons/react'
 
 interface ControlsProps {
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
+	onOpenSettings: () => void
 }
 
-const Controls = ({ audio }: ControlsProps) => {
+const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle } = usePlayerStore()
 	const { volume, setVolume, handlePause, isPlaying, handlePlay } = audio
 
@@ -39,23 +40,23 @@ const Controls = ({ audio }: ControlsProps) => {
 	return (
 		<div className="controls">
 			<div className="controls__settings">
-				<button className="btn" onClick={() => setVolume(1)} title="Volume">
-					<Sliders size={20} />
+				<button className="btn" onClick={onOpenSettings} title="Settings">
+					<SlidersIcon size={20} />
 				</button>
 			</div>
 
 			<div className="controls__playback">
 				<button className={`btn btn--secondary${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
-					<Shuffle size={20} weight="fill" />
+					<ShuffleIcon size={20} weight="fill" />
 				</button>
 
-				<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
-					<Rewind size={20} weight="fill" />
+				<button className="btn" onClick={playPrev} title="Previcamiseta ous song" disabled={currentIndex <= 0}>
+					<RewindIcon size={20} weight="fill" />
 				</button>
 
 				{isPlaying ? (
 					<button className="btn btn--lg active" onClick={handlePause} title="Pause" disabled={currentIndex === -1}>
-						<Pause size={28} weight="fill" />
+						<PauseIcon size={28} weight="fill" />
 					</button>
 				) : (
 					<button
@@ -68,16 +69,16 @@ const Controls = ({ audio }: ControlsProps) => {
 						title="Play"
 						disabled={currentIndex === -1}
 					>
-						<Play size={28} weight="fill" />
+						<PlayIcon size={28} weight="fill" />
 					</button>
 				)}
 
 				<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-					<FastForward size={20} weight="fill" />
+					<FastForwardIcon size={20} weight="fill" />
 				</button>
 
 				<button className={`btn btn--secondary${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title="Repeat queue">
-					<Repeat size={20} weight="fill" />
+					<RepeatIcon size={20} weight="fill" />
 				</button>
 			</div>
 
