@@ -34,12 +34,7 @@ const SongsTable: React.FC<SongsTableProps> = ({ songs, columns, onSort, onEdit,
 				</thead>
 				<tbody>
 					{songs.map((song, idx) => (
-						<tr 
-							key={song.id || idx} 
-							className="songs-table__row"
-							onDoubleClick={() => onDoubleClick?.(song)}
-							onContextMenu={(e) => onRightClick?.(song, e)}
-						>
+						<tr key={song.id || idx} className="songs-table__row" onDoubleClick={() => onDoubleClick?.(song)} onContextMenu={(e) => onRightClick?.(song, e)}>
 							{columns.map((col) => (
 								<td key={col.key}>
 									{col.key === 'duration' ? (

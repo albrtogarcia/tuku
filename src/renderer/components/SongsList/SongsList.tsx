@@ -72,13 +72,7 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 			{songs.length === 0 ? (
 				<p>No songs found in this folder.</p>
 			) : (
-				<SongsTable 
-					songs={sortedSongs} 
-					columns={columns} 
-					onSort={handleSort}
-					onDoubleClick={handleSongDoubleClick}
-					onRightClick={handleSongRightClick}
-				/>
+				<SongsTable songs={sortedSongs} columns={columns} onSort={handleSort} onDoubleClick={handleSongDoubleClick} onRightClick={handleSongRightClick} />
 			)}
 		</section>
 	)
