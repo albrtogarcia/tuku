@@ -25,6 +25,7 @@ const columns: SongsTableColumn[] = [
 type SortKey = 'title' | 'artist' | 'album' | 'duration' | 'year' | 'genre'
 
 const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }: SongsListProps) => {
+	const { playNow } = usePlayerStore()
 	const [sortKey, setSortKey] = useState<SortKey>('title')
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
 
@@ -46,6 +47,20 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 		}
 	}
 
+	// Handle double click: play song immediately and add to queue
+	const handleSongDoubleClick = (song: Song) => {
+		// Use playNow to handle adding to queue and setting as current
+		playNow(song)
+		// Start audio playback
+		audio.handlePlay(song.path)
+	}
+
+	// Handle right click: add to queue
+	const handleSongRightClick = (song: Song, event: React.MouseEvent) => {
+		event.preventDefault() // Prevent default context menu
+		addToQueue(song)
+	}
+
 	return (
 		<section className="songs">
 			<header className="songs__header">
@@ -54,7 +69,17 @@ const SongsList = ({ songs, audio, addToQueue, handleSelectFolder, folderPath }:
 					{folderPath ? folderPath : 'Select music folder'}
 				</button>
 			</header>
-			{songs.length === 0 ? <p>No songs found in this folder.</p> : <SongsTable songs={sortedSongs} columns={columns} onSort={handleSort} />}
+			{songs.length === 0 ? (
+				<p>No songs found in this folder.</p>
+			) : (
+				<SongsTable 
+					songs={sortedSongs} 
+					columns={columns} 
+					onSort={handleSort}
+					onDoubleClick={handleSongDoubleClick}
+					onRightClick={handleSongRightClick}
+				/>
+			)}
 		</section>
 	)
 }

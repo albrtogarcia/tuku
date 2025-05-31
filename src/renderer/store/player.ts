@@ -17,6 +17,7 @@ interface PlayerState {
 	setShuffle: (shuffle: boolean) => void
 	addToQueue: (song: Song) => void
 	addAlbumToQueue: (songs: Song[]) => void
+	playNow: (song: Song) => void
 	clearQueue: () => void
 	removeFromQueue: (index: number) => void
 	insertInQueue: (song: Song, position: number) => void
@@ -67,6 +68,22 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		set({ queue: newQueue })
 		if (currentIndex === -1 && uniqueSongs.length > 0) {
 			set({ currentIndex: 0, playingPath: uniqueSongs[0].path, isPlaying: true })
+		}
+		// Guardar automáticamente
+		const { saveQueueToStorage } = get()
+		saveQueueToStorage()
+	},
+	playNow: (song) => {
+		const { queue } = get()
+		// Check if song is already in queue
+		const existingIndex = queue.findIndex((q) => q.path === song.path)
+		if (existingIndex !== -1) {
+			// Song exists in queue, just set it as current
+			set({ currentIndex: existingIndex, playingPath: song.path, isPlaying: true })
+		} else {
+			// Song not in queue, add it and play
+			const newQueue = [...queue, song]
+			set({ queue: newQueue, currentIndex: newQueue.length - 1, playingPath: song.path, isPlaying: true })
 		}
 		// Guardar automáticamente
 		const { saveQueueToStorage } = get()

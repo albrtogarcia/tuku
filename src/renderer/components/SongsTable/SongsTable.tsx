@@ -14,9 +14,11 @@ interface SongsTableProps {
 	columns: SongsTableColumn[]
 	onSort?: (key: string) => void
 	onEdit?: (songId: string, key: string, value: string) => void
+	onDoubleClick?: (song: any) => void
+	onRightClick?: (song: any, event: React.MouseEvent) => void
 }
 
-const SongsTable: React.FC<SongsTableProps> = ({ songs, columns, onSort, onEdit }) => {
+const SongsTable: React.FC<SongsTableProps> = ({ songs, columns, onSort, onEdit, onDoubleClick, onRightClick }) => {
 	return (
 		<div className="table-container">
 			<table className="songs-table">
@@ -32,7 +34,12 @@ const SongsTable: React.FC<SongsTableProps> = ({ songs, columns, onSort, onEdit 
 				</thead>
 				<tbody>
 					{songs.map((song, idx) => (
-						<tr key={song.id || idx}>
+						<tr 
+							key={song.id || idx} 
+							className="songs-table__row"
+							onDoubleClick={() => onDoubleClick?.(song)}
+							onContextMenu={(e) => onRightClick?.(song, e)}
+						>
 							{columns.map((col) => (
 								<td key={col.key}>
 									{col.key === 'duration' ? (
