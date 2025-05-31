@@ -1,6 +1,6 @@
 console.log('Electron main process started')
 
-import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, Menu, screen } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
@@ -46,9 +46,15 @@ INSERT OR IGNORE INTO queue_state (id, currentIndex) VALUES (0, 0);
 `)
 
 async function createWindow() {
+	// Obtener las dimensiones de la pantalla
+	const primaryDisplay = screen.getPrimaryDisplay()
+	const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize
+
 	const win = new BrowserWindow({
-		width: 1200,
-		height: 800,
+		width: 640,
+		height: screenHeight,
+		minWidth: 640,
+		minHeight: 600,
 		webPreferences: {
 			preload: path.join(__dirname, '../preload.js'),
 			contextIsolation: true,
@@ -61,7 +67,7 @@ async function createWindow() {
 		win.webContents.openDevTools()
 
 		// Menú de desarrollo con opción para DevTools
-		const template = [
+		const template: Electron.MenuItemConstructorOptions[] = [
 			{
 				label: 'View',
 				submenu: [

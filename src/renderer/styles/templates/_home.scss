@@ -5,7 +5,7 @@ $queue: 33dvh;
 $library: calc(47dvh - 2rem);
 
 .container {
-	max-width: 640px;
+	min-width: 640px;
 	margin: 0 auto;
 	padding: 0.5rem;
 	display: flex;
@@ -32,4 +32,47 @@ $library: calc(47dvh - 2rem);
 		height: $library;
 		overflow-y: auto;
 	}
+}
+
+.library-header {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+// Library tabs styles
+.library-tabs {
+	display: flex;
+	flex: 1;
+	gap: 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+	&__button {
+		background: none;
+		border: none;
+		padding: 0.25rem 1.5rem 0.75rem;
+		color: rgba(255, 255, 255, 0.7);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: 0.9rem;
+		font-weight: 500;
+		border-bottom: 2px solid transparent;
+
+		&:hover {
+			color: rgba(255, 255, 255, 0.9);
+			background-color: rgba(255, 255, 255, 0.05);
+		}
+
+		&.active {
+			color: var(--accent);
+			border-bottom-color: var(--accent);
+		}
+	}
+}
+
+.library-content {
+	flex: 1;
+	overflow: hidden;
 }

@@ -13,6 +13,7 @@
 	align-items: center;
 	justify-content: center;
 	line-height: 1;
+	gap: 0.5rem;
 
 	&:hover {
 		color: var(--accent);
@@ -23,7 +24,7 @@
 		cursor: not-allowed;
 
 		&:hover {
-			color: var(--textColor);
+			color: var(--accent);
 		}
 	}
 

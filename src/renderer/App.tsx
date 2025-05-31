@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './styles/app.scss'
 import Queue from './components/Queue/Queue'
 import Player from './components/Player/Player'
@@ -43,11 +43,29 @@ function groupAlbums(songs: Song[]): Album[] {
 function App() {
 	const { folderPath, songs, handleSelectFolder } = useSongs()
 	const [search, setSearch] = useState('')
+	const [activeTab, setActiveTab] = useState<'albums' | 'songs'>('albums')
 
 	const audio = useAudioPlayer()
 
-	const { queue, currentIndex, isPlaying, playingPath, addToQueue, clearQueue, setCurrentIndex, cleanQueueHistory, repeat, shuffle, setQueue } =
-		usePlayerStore()
+	const {
+		queue,
+		currentIndex,
+		isPlaying,
+		playingPath,
+		addToQueue,
+		clearQueue,
+		setCurrentIndex,
+		cleanQueueHistory,
+		repeat,
+		shuffle,
+		setQueue,
+		loadQueueFromStorage,
+	} = usePlayerStore()
+
+	// Load queue from storage when app starts
+	useEffect(() => {
+		loadQueueFromStorage()
+	}, [loadQueueFromStorage])
 
 	function getNextShuffleIndex() {
 		if (queue.length <= 1) return currentIndex
@@ -57,7 +75,6 @@ function App() {
 		return randomIdx
 	}
 
-	// Función para avanzar automáticamente a la siguiente canción y limpiar historial
 	const handleSongEnd = () => {
 		if (shuffle) {
 			const nextIdx = getNextShuffleIndex()
@@ -92,24 +109,45 @@ function App() {
 	const filteredSongs = filterSongs(songs, search)
 	const albums = groupAlbums(songs)
 
+	// Function to set queue and start playing
+	const handleSetQueue = (songs: Array<any>) => {
+		setQueue(songs)
+		setCurrentIndex(0)
+	}
+
 	return (
 		<div className="container">
 			<div className="container__player">
-				{/* PLAYER */}
-				{currentIndex !== -1 && queue[currentIndex] && <Player audio={audio} />}
+				{/* PLAYER - Always show with empty state if needed */}
+				<Player audio={audio} songs={songs} />
 			</div>
 			<div className="container__queue">
-				{/* QUEUE */}
-				{queue.length > 0 && <Queue audio={audio} />}
+				{/* QUEUE - Always show with empty state if needed */}
+				<Queue audio={audio} />
 			</div>
 			<div className="container__library">
-				{/* SEARCH */}
-				<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
-				{/* ALBUMS GRID */}
-				<AlbumsGrid albums={albums} setQueue={setQueue} audio={audio} />
+				<div className="library-header">
+					{/* TABS */}
+					<div className="library-tabs">
+						<button className={`library-tabs__button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}>
+							Albums
+						</button>
+						<button className={`library-tabs__button ${activeTab === 'songs' ? 'active' : ''}`} onClick={() => setActiveTab('songs')}>
+							Songs
+						</button>
+					</div>
 
-				{/* SONGS LIST */}
-				<SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} handleSelectFolder={handleSelectFolder} folderPath={folderPath} />
+					{/* SEARCH */}
+					<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+				</div>
+
+				{/* TAB CONTENT */}
+				<div className="library-content">
+					{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} />}
+					{activeTab === 'songs' && (
+						<SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} handleSelectFolder={handleSelectFolder} folderPath={folderPath} />
+					)}
+				</div>
 			</div>
 
 			{/* Audio player (hidden) */}

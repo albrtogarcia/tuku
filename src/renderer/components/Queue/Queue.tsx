@@ -1,5 +1,5 @@
 import { usePlayerStore } from '../../store/player'
-import { Trash, X } from '@phosphor-icons/react'
+import { TrashIcon, X } from '@phosphor-icons/react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
@@ -116,15 +116,22 @@ const Queue = ({ audio }: QueueProps) => {
 				<h2 className="queue__title">
 					Queue <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
 				</h2>
-				<button className="btn" onClick={clearQueue} title="Clear queue">
-					<Trash size={16} weight="fill" />
-				</button>
+				{queue.length != 0 && (
+					<button className="btn" onClick={clearQueue} title="Clear queue">
+						<TrashIcon size={16} weight="fill" />
+					</button>
+				)}
 			</header>
 			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
 				<SortableContext items={queue.map((song) => song.path)} strategy={verticalListSortingStrategy}>
 					<ol className="queue__list">
 						{queue.length === 0 ? (
-							<li className="queue__empty">No songs in queue</li>
+							<li className="queue__empty">
+								<div className="queue__empty-content">
+									<span className="queue__empty-text">No upcoming songs</span>
+									<small className="queue__empty-subtitle">Add songs to start listening</small>
+								</div>
+							</li>
 						) : (
 							queue.map((song, idx) => (
 								<SortableQueueItem

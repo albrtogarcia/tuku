@@ -8,7 +8,7 @@ interface SearchBarProps {
 
 const SearchBar = ({ value, onChange }: SearchBarProps) => (
 	<div className="search">
-		<input type="search" placeholder="Search songs..." value={value} onChange={onChange} className="search__input" />
+		<input type="search" placeholder="Search songs, artists..." value={value} onChange={onChange} className="search__input" />
 	</div>
 )
 

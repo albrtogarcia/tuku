@@ -1,19 +1,18 @@
 .search {
-	margin-bottom: 1rem;
-}
+	input {
+		background: var(--bgPrimary);
+		color: var(--textColor);
+		border: 1px solid var(--border);
+		border-radius: 0.25rem;
+		width: 100%;
+		min-width: 20rem;
+		padding: 0.5rem 0.75rem;
+		font-size: 1rem;
+		transition: border 0.2s;
 
-input[type="search"] {
-	background: var(--bgPrimary);
-	color: var(--textColor);
-	border: 1px solid var(--border);
-	border-radius: 0.25rem;
-	width: 100%;
-	padding: 1rem;
-	font-size: 1rem;
-	transition: border 0.2s;
-
-	&:focus {
-		outline: none;
-		border-color: var(--primary);
+		&:focus {
+			outline: none;
+			border-color: var(--accent);
+		}
 	}
 }

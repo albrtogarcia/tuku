@@ -5,16 +5,6 @@
 }
 
 .songs-table {
-	background: var(--bgPrimary);
-	border-radius: 0.5rem;
-	margin-bottom: 1rem;
-
-
-	&__header {
-		background-color: var(--color-header-background);
-		color: var(--color-header-text);
-		font-weight: bold;
-	}
 
 	&__row {
 		&:hover {
@@ -22,10 +12,36 @@
 		}
 	}
 
+	th {
+		text-transform: uppercase;
+		border-bottom: 1px solid var(--border);
+		opacity: 0.5;
+	}
+
+	.sortable-indicator {
+		display: inline-block;
+		margin-inline: 0.25rem;
+		opacity: 0.5;
+
+		&:hover {
+			opacity: 1;
+			cursor: default
+		}
+	}
+
 	th,
 	td {
-		padding: 0.5rem;
+		padding: 0.25rem;
 		text-align: left;
 		white-space: nowrap;
+		font-size: 80%;
+
+		&:first-child {
+			padding-left: 0;
+		}
+
+		&:last-child {
+			padding-right: 0;
+		}
 	}
 }

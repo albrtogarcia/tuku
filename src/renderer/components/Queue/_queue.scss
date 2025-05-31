@@ -8,6 +8,15 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.5rem;
+
+		.btn {
+			color: var(--accent);
+			opacity: 0.5;
+
+			&:hover {
+				opacity: 1;
+			}
+		}
 	}
 
 	&__item small {
@@ -28,7 +37,6 @@
 		li {
 			display: flex;
 			align-items: center;
-			padding-block: 0.1rem;
 
 			&.playing {
 				color: var(--accent);
@@ -53,14 +61,41 @@
 		align-items: center;
 		gap: 0.5rem;
 		transition: background-color 0.2s ease;
+		padding-block: 0.25rem;
 
 		&:active {
 			cursor: grabbing;
 		}
 
 		&:hover {
-			background-color: rgba(255, 255, 255, 0.05);
-			border-radius: 4px;
+			background-color: var(--bgPrimary);
 		}
+	}
+
+	&__empty {
+		text-align: center;
+		padding: 1.5rem 1rem;
+		opacity: 0.7;
+		border: none !important;
+		display: block !important;
+	}
+
+	&__empty-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		align-items: center;
+	}
+
+	&__empty-text {
+		font-size: 0.9rem;
+		color: var(--textMuted);
+		font-weight: 500;
+	}
+
+	&__empty-subtitle {
+		font-size: 0.8rem;
+		color: var(--textMuted);
+		opacity: 0.7;
 	}
 }
