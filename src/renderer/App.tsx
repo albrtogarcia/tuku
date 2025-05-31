@@ -119,7 +119,7 @@ function App() {
 				style={{ display: 'none' }}
 				onEnded={handleSongEnd}
 				onCanPlay={audio.handleCanPlay}
-				onTimeUpdate={() => audio.setCurrentTime(audio.audioRef.current?.currentTime || 0)}
+				onTimeUpdate={() => audio.setCurrentTimeOnly(audio.audioRef.current?.currentTime || 0)}
 				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
 			/>
 		</div>

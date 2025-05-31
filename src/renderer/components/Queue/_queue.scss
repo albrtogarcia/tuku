@@ -17,6 +17,7 @@
 
 	&__title {
 		margin: 0;
+		font-size: 1rem;
 	}
 
 	&__list {
@@ -27,14 +28,14 @@
 		li {
 			display: flex;
 			align-items: center;
-			padding-block: 0.25rem;
+			padding-block: 0.1rem;
 
 			&.playing {
 				color: var(--accent);
 			}
 
 			&.played {
-				opacity: 0.5;
+				opacity: 0.33;
 			}
 		}
 
@@ -42,6 +43,24 @@
 			margin-left: auto;
 			background-color: transparent;
 			padding: 0.5rem;
+		}
+	}
+
+	&__item-content {
+		cursor: grab;
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		transition: background-color 0.2s ease;
+
+		&:active {
+			cursor: grabbing;
+		}
+
+		&:hover {
+			background-color: rgba(255, 255, 255, 0.05);
+			border-radius: 4px;
 		}
 	}
 }

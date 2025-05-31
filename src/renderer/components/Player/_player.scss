@@ -12,9 +12,109 @@
 	&__progress {
 		width: 100%;
 		height: 4px;
-		border-radius: 0.25rem;
-		border-color: transparent;
-		accent-color: var(--accent);
+		border: none;
+		background: #333;
+		cursor: pointer;
+		-webkit-appearance: none;
+		appearance: none;
+		border-radius: 2px;
+		outline: none;
+		position: relative;
+
+		// WebKit (Chrome, Safari, Edge)
+		&::-webkit-slider-track {
+			width: 100%;
+			height: 4px;
+			background: transparent;
+			border-radius: 2px;
+			border: none;
+		}
+
+		&::-webkit-slider-thumb {
+			display: none;
+			// -webkit-appearance: none;
+			// appearance: none;
+			// width: 8px;
+			// height: 8px;
+			// background: var(--accent);
+			// border-radius: 50%;
+			// cursor: pointer;
+			// border: none;
+			// transition: transform 0.1s ease;
+			// position: relative;
+			// z-index: 2;
+
+			// &:hover {
+			// 	transform: scale(1.2);
+			// }
+		}
+
+		// Firefox
+		&::-moz-range-track {
+			width: 100%;
+			height: 4px;
+			background: transparent;
+			border-radius: 2px;
+			border: none;
+		}
+
+		&::-moz-range-thumb {
+			display: none;
+			// width: 8px;
+			// height: 8px;
+			// background: var(--accent);
+			// border-radius: 50%;
+			// cursor: pointer;
+			// border: none;
+			// transition: transform 0.1s ease;
+			// position: relative;
+			// z-index: 2;
+
+			// &:hover {
+			// 	transform: scale(1.2);
+			// }
+		}
+
+		// Progress fill using CSS custom property
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 4px;
+			background: var(--accent);
+			border-radius: 2px;
+			width: var(--progress-fill, 0%);
+			pointer-events: none;
+			z-index: 1;
+		}
+
+		// Background track
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 4px;
+			background: #333;
+			border-radius: 2px;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		// Focus styles
+		&:focus {
+			outline: none;
+
+			&::-webkit-slider-thumb {
+				box-shadow: 0 0 0 2px var(--accent);
+			}
+
+			&::-moz-range-thumb {
+				box-shadow: 0 0 0 2px var(--accent);
+			}
+		}
 	}
 
 	&__time {
@@ -82,118 +182,5 @@
 
 	&__album {
 		color: #FDC601;
-	}
-}
-
-
-
-@mixin track {
-	appearance: none;
-	width: 100%;
-	height: 8px;
-	background: none;
-	cursor: pointer;
-	border: none;
-	color: transparent; // Ticks in ms
-}
-
-@mixin thumb {
-	appearance: none;
-	box-shadow: 0 0 10px rgba(black, .15);
-	border: none;
-	height: 8px;
-	width: 8px;
-	border-radius: 4px;
-	background: var(--accent);
-	cursor: pointer;
-}
-
-@mixin input-type-range {
-	appearance: none;
-	background: none;
-
-	&:focus {
-		outline: none;
-	}
-
-	&::-webkit-slider-runnable-track {
-		@include track;
-	}
-
-	&::-moz-range-track {
-		@include track;
-	}
-
-	&::-ms-track {
-		@include track;
-	}
-
-	&::-webkit-slider-thumb {
-		@include thumb;
-	}
-
-	&::-moz-range-thumb {
-		@include thumb;
-	}
-
-	&::-ms-thumb {
-		@include thumb;
-	}
-
-	&::-ms-fill-lower,
-	&::-ms-fill-upper,
-	&::-ms-tooltip {
-		display: none;
-	}
-}
-
-.player__progress-container {
-	transform: translateY(0px);
-	position: relative;
-	margin-top: auto;
-
-	&:before,
-	&:after {
-		content: '';
-		display: block;
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 50%;
-		height: 1px;
-	}
-
-	&:before {
-		background: var(--bgPrimary);
-	}
-
-	&:after {
-		content: attr(data-value);
-		font-size: .78rem;
-		line-height: 56px;
-		text-align: left;
-		background: #30343f;
-		left: inherit;
-		transition: color .25s ease-in-out;
-		color: transparent;
-		white-space: nowrap;
-		text-indent: -1.25rem;
-	}
-
-	&.show-output:after {
-		color: white;
-	}
-
-	input[type=range] {
-		@include input-type-range;
-		display: block;
-		position: absolute;
-		z-index: 2;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 100%;
-		margin: 0;
-		padding: 0;
-		border: none;
 	}
 }

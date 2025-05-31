@@ -68,7 +68,7 @@ const Controls = ({ audio }: ControlsProps) => {
 						title="Play"
 						disabled={currentIndex === -1}
 					>
-						<Play size={24} weight="fill" />
+						<Play size={28} weight="fill" />
 					</button>
 				)}
 

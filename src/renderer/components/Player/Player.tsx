@@ -15,6 +15,21 @@ const Player = ({ audio }: PlayerProps) => {
 
 	if (!song) return null
 
+	// Calculate progress percentage for the visual fill
+	const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0
+
+	// Handle direct clicks on the progress bar
+	const handleProgressClick = (e: React.MouseEvent<HTMLInputElement>) => {
+		const rect = e.currentTarget.getBoundingClientRect()
+		const clickX = e.clientX - rect.left
+		const percentage = clickX / rect.width
+		const newTime = percentage * duration
+
+		if (newTime >= 0 && newTime <= duration) {
+			setCurrentTime(newTime)
+		}
+	}
+
 	return (
 		<>
 			<div className="player">
@@ -39,10 +54,16 @@ const Player = ({ audio }: PlayerProps) => {
 							min={0}
 							max={duration}
 							value={currentTime}
+							style={
+								{
+									'--progress-fill': `${progressPercentage}%`,
+								} as React.CSSProperties
+							}
 							onChange={(e) => {
 								const time = Number(e.target.value)
 								setCurrentTime(time)
 							}}
+							onClick={handleProgressClick}
 						/>
 					</div>
 					<div className="player__time">

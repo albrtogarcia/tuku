@@ -1,15 +1,56 @@
 import { usePlayerStore } from '../../store/player'
 import { Trash, X } from '@phosphor-icons/react'
-import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd'
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import './_queue.scss'
 
 interface QueueProps {
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 }
 
+// Sortable Queue Item Component
+interface SortableQueueItemProps {
+	song: any
+	index: number
+	isPlaying: boolean
+	isPlayed: boolean
+	onRemove: (idx: number) => void
+	onDoubleClick: (idx: number) => void
+}
+
+function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubleClick }: SortableQueueItemProps) {
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: song.path })
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	}
+
+	return (
+		<li ref={setNodeRef} style={style} className={`queue__item${isPlaying ? ' playing' : ''}${isPlayed ? ' played' : ''}${isDragging ? ' dragging' : ''}`}>
+			<div {...attributes} {...listeners} className="queue__item-content" onDoubleClick={() => onDoubleClick(index)}>
+				<span>{song.title}</span>
+				<small>({song.artist})</small>
+			</div>
+			<button className="btn" onClick={() => onRemove(index)} title="Remove from queue">
+				<X size={16} weight="bold" />
+			</button>
+		</li>
+	)
+}
+
 const Queue = ({ audio }: QueueProps) => {
 	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue } = usePlayerStore()
 	const { handlePause, handlePlay } = audio
+
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
+	)
 
 	const handleRemoveFromQueue = (idx: number) => {
 		if (idx === currentIndex) {
@@ -27,67 +68,80 @@ const Queue = ({ audio }: QueueProps) => {
 			removeFromQueue(idx)
 		}
 	}
+	const handleQueueItemDoubleClick = (idx: number) => {
+		if (idx === currentIndex) {
+			// Si es la canción actual, solo reiniciar reproducción
+			handlePlay(queue[idx].path)
+			return
+		}
+
+		// Mover la canción a la posición actual + 1 (siguiente en reproducir)
+		const newQueue = [...queue]
+		const [selectedSong] = newQueue.splice(idx, 1)
+
+		// Insertar después de la canción actual
+		newQueue.splice(currentIndex + 1, 0, selectedSong)
+
+		setQueue(newQueue)
+		// Avanzar al siguiente índice (donde pusimos la canción)
+		setCurrentIndex(currentIndex + 1)
+		handlePlay(selectedSong.path)
+	}
 
 	// Función para reordenar la cola
-	function onDragEnd(result: DropResult) {
-		if (!result.destination) return
-		const newQueue = Array.from(queue)
-		const [removed] = newQueue.splice(result.source.index, 1)
-		newQueue.splice(result.destination.index, 0, removed)
-		setQueue(newQueue)
-		// Si la canción actual se movió, actualiza el currentIndex
-		if (result.source.index === currentIndex) {
-			setCurrentIndex(result.destination.index)
-		} else if (result.source.index < currentIndex && result.destination.index >= currentIndex) {
-			setCurrentIndex(currentIndex - 1)
-		} else if (result.source.index > currentIndex && result.destination.index <= currentIndex) {
-			setCurrentIndex(currentIndex + 1)
+	function handleDragEnd(event: DragEndEvent) {
+		const { active, over } = event
+
+		if (active.id !== over?.id) {
+			const activeIndex = queue.findIndex((song) => song.path === active.id)
+			const overIndex = queue.findIndex((song) => song.path === over?.id)
+
+			const newQueue = arrayMove(queue, activeIndex, overIndex)
+			setQueue(newQueue)
+
+			// Si la canción actual se movió, actualiza el currentIndex
+			if (activeIndex === currentIndex) {
+				setCurrentIndex(overIndex)
+			} else if (activeIndex < currentIndex && overIndex >= currentIndex) {
+				setCurrentIndex(currentIndex - 1)
+			} else if (activeIndex > currentIndex && overIndex <= currentIndex) {
+				setCurrentIndex(currentIndex + 1)
+			}
 		}
 	}
 
 	return (
-		<DragDropContext onDragEnd={onDragEnd}>
-			<div className="queue">
-				<header className="queue__header">
-					<h2 className="queue__title">
-						Queue <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
-					</h2>
-					<button className="btn" onClick={clearQueue} title="Clear queue">
-						<Trash size={16} weight="fill" />
-					</button>
-				</header>
-				<Droppable droppableId="queue-list" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false as boolean} direction="vertical">
-					{(provided: DroppableProvided) => (
-						<ol className="queue__list" ref={provided.innerRef} {...provided.droppableProps}>
-							{queue.length === 0 ? (
-								<li className="queue__empty">No songs in queue</li>
-							) : (
-								queue.map((song, idx) => (
-									<Draggable key={song.path + '-' + idx} draggableId={song.path + '-' + idx} index={idx}>
-										{(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-											<li
-												ref={provided.innerRef}
-												{...provided.draggableProps}
-												{...provided.dragHandleProps}
-												className={`queue__item${idx === currentIndex ? ' playing' : ''}${idx < currentIndex ? ' played' : ''}${snapshot.isDragging ? ' dragging' : ''}`}
-											>
-												<span style={{ cursor: 'grab', marginRight: 8 }}>☰</span>
-												<span>{song.title}</span>
-												<small>({song.artist})</small>
-												<button className="btn" onClick={() => handleRemoveFromQueue(idx)} title="Remove from queue">
-													<X size={16} weight="bold" />
-												</button>
-											</li>
-										)}
-									</Draggable>
-								))
-							)}
-							{provided.placeholder}
-						</ol>
-					)}
-				</Droppable>
-			</div>
-		</DragDropContext>
+		<div className="queue">
+			<header className="queue__header">
+				<h2 className="queue__title">
+					Queue <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
+				</h2>
+				<button className="btn" onClick={clearQueue} title="Clear queue">
+					<Trash size={16} weight="fill" />
+				</button>
+			</header>
+			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+				<SortableContext items={queue.map((song) => song.path)} strategy={verticalListSortingStrategy}>
+					<ol className="queue__list">
+						{queue.length === 0 ? (
+							<li className="queue__empty">No songs in queue</li>
+						) : (
+							queue.map((song, idx) => (
+								<SortableQueueItem
+									key={song.path}
+									song={song}
+									index={idx}
+									isPlaying={idx === currentIndex}
+									isPlayed={idx < currentIndex}
+									onRemove={handleRemoveFromQueue}
+									onDoubleClick={handleQueueItemDoubleClick}
+								/>
+							))
+						)}
+					</ol>
+				</SortableContext>
+			</DndContext>
+		</div>
 	)
 }
 

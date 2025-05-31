@@ -11,6 +11,25 @@ export function useAudioPlayer() {
 	const [playingPath, setPlayingPath] = useState<string | null>(null)
 	const [volume, setVolume] = useState(1)
 
+	// Enhanced setCurrentTime that also updates the audio element (for user interactions)
+	const setCurrentTimeWithSeek = (time: number) => {
+		const validTime = Math.max(0, Math.min(time, duration || 0))
+		setCurrentTime(validTime)
+
+		if (audioRef.current && !isNaN(validTime) && validTime >= 0 && audioRef.current.duration) {
+			try {
+				audioRef.current.currentTime = validTime
+			} catch (error) {
+				console.warn('[AUDIO] Error setting currentTime:', error)
+			}
+		}
+	}
+
+	// Regular setCurrentTime for automatic updates (no audio element modification)
+	const setCurrentTimeOnly = (time: number) => {
+		setCurrentTime(time)
+	}
+
 	const handlePlay = async (songPath: string) => {
 		console.log('[AUDIO] handlePlay called for', songPath)
 		const buffer = await window.electronAPI.getAudioBuffer(songPath)
@@ -57,8 +76,11 @@ export function useAudioPlayer() {
 
 	const handleCanPlay = () => {
 		console.log('[AUDIO] handleCanPlay, pendingPlay:', pendingPlay)
-		if (pendingPlay && audioRef.current) {
-			audioRef.current.play()
+		if (pendingPlay && audioRef.current && audioRef.current.readyState >= 3) {
+			audioRef.current.play().catch((error) => {
+				console.error('[AUDIO] Error playing audio:', error)
+				setIsPlaying(false)
+			})
 			setPendingPlay(false)
 		}
 	}
@@ -81,7 +103,8 @@ export function useAudioPlayer() {
 		isPlaying,
 		pendingPlay,
 		currentTime,
-		setCurrentTime,
+		setCurrentTime: setCurrentTimeWithSeek,
+		setCurrentTimeOnly,
 		duration,
 		setDuration,
 		playingPath,

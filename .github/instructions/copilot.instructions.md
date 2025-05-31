@@ -31,6 +31,7 @@ Copilot should follow these code conventions:
 - Include **type annotations** for props, state, and function arguments where possible.
 - Use **modular, composable components**.
 - Avoid writing platform-specific code unless explicitly required.
+- Avoid inline styles; use Sass for styling.
 - Use functional React components — avoid class components.
 - **All code comments, variable and classes names, etc., must be written in English.**
 
