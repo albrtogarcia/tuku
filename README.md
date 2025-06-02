@@ -52,7 +52,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Ordenar cola de reproducción
 - [x] Reproducir álbum completo
 - [x] Librería con cabeceras ordenables
-- [ ] Interfaz inicial
+- [x] Interfaz inicial
 
 ### 🚧 Fase 2: Alpha
 

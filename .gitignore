@@ -10,6 +10,7 @@ _assets
 # Production
 /build
 /dist
+/dist-electron
 /out
 
 # Electron build
