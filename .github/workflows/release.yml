@@ -1,15 +1,10 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
-    branches:
-      - main # Only run on main branch
+  workflow_dispatch: # Manual trigger for testing
 
 permissions:
-  contents: write  # Needed to create releases
-  actions: read    # Needed to read workflow info
+  contents: write
 
 jobs:
   release:
@@ -18,22 +13,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for release-it
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Verify Node.js version
-        run: |
-          node --version
-          npm --version
-          yarn --version
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build application
-        run: yarn build
+      - name: Release
+        run: yarn release --ci
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

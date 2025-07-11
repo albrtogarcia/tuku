@@ -15,6 +15,7 @@
 		"build:mac": "npm run build:renderer && npm run build:main && electron-builder --config electron-builder.config.js --mac",
 		"build:win": "npm run build:renderer && npm run build:main && electron-builder --config electron-builder.config.js --win",
 		"build:linux": "npm run build:renderer && npm run build:main && electron-builder --config electron-builder.config.js --linux",
+		"release": "release-it",
 		"lint": "eslint . --ext .ts,.tsx",
 		"type-check": "tsc --noEmit",
 		"test": "vitest",
