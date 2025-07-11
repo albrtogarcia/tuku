@@ -15,4 +15,12 @@ export default defineConfig({
 		outDir: 'dist',
 		emptyOutDir: true,
 	},
+	// @ts-ignore
+	test: {
+		globals: true,
+		environment: 'jsdom',
+		setupFiles: ['./src/renderer/setupTests.ts'],
+		css: true,
+		include: ['src/**/*.{test,spec}.{ts,tsx}'],
+	},
 })

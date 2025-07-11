@@ -53,10 +53,10 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Reproducir álbum completo
 - [x] Librería con cabeceras ordenables
 - [x] Interfaz inicial
+- [x] Base de datos persistente con SQLite
 
 ### 🚧 Fase 2: Alpha
 
-- [ ] Base de datos persistente con SQLite
 - [ ] Playlists personalizadas
 - [ ] Historial de reproducción
 - [ ] Búsqueda y filtros
