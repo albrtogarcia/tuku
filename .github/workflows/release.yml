@@ -7,6 +7,10 @@ on:
     branches:
       - main # Only run on main branch
 
+permissions:
+  contents: write  # Needed to create releases
+  actions: read    # Needed to read workflow info
+
 jobs:
   release:
     runs-on: macos-latest
