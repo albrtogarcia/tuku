@@ -8,10 +8,15 @@ _assets
 /coverage
 
 # Production
-/build
 /dist
 /dist-electron
 /out
+
+# Build files but keep icons
+/build/*
+!/build/icons/
+!/build/icon.png
+!/build/icon-1024.png
 
 # Electron build
 /release-builds
