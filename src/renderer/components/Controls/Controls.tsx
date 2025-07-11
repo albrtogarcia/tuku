@@ -54,8 +54,8 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 					<RewindIcon size={20} weight="fill" />
 				</button>
 
-				{isPlaying ? (
-					<button className="btn btn--lg active" onClick={handlePause} title="Pause" disabled={currentIndex === -1}>
+				{isPlaying && currentIndex !== -1 ? (
+					<button className="btn btn--lg active" onClick={handlePause} title="Pause">
 						<PauseIcon size={28} weight="fill" />
 					</button>
 				) : (

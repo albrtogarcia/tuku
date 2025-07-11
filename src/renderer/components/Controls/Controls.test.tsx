@@ -217,7 +217,7 @@ describe('Controls Component', () => {
 			const mockAudio = createMockAudio()
 			render(<Controls audio={mockAudio} onOpenSettings={mockOnOpenSettings} />)
 
-			expect(screen.getByTitle('Pause')).toBeDisabled()
+			expect(screen.getByTitle('Play')).toBeDisabled()
 			expect(screen.getByTitle('Next song')).toBeDisabled()
 		})
 	})
