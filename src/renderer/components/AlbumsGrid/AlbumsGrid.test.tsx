@@ -135,9 +135,9 @@ describe('AlbumsGrid Component', () => {
 			expect(albumsGrid).toBeInTheDocument()
 
 			// Should render all album cards (divs with role="button")
-			const albumCards = screen.getAllByRole('button').filter(button => button.getAttribute('tabIndex') === '0')
+			const albumCards = screen.getAllByRole('button').filter((button) => button.getAttribute('tabIndex') === '0')
 			expect(albumCards).toHaveLength(mockAlbums.length) // One album card per album
-			
+
 			// Should render all "Add to Queue" buttons
 			const addToQueueButtons = screen.getAllByTitle('Add to Queue')
 			expect(addToQueueButtons).toHaveLength(mockAlbums.length) // One add-to-queue button per album
