@@ -55,7 +55,7 @@ describe('SearchBar Component', () => {
 
 			// Should be called for each character typed
 			expect(mockOnChange).toHaveBeenCalledTimes(10) // "Abbey Road".length
-			
+
 			// Check that onChange was called with proper events
 			expect(mockOnChange).toHaveBeenCalled()
 		})
@@ -68,12 +68,12 @@ describe('SearchBar Component', () => {
 			fireEvent.change(searchInput, { target: { value: 'Queen' } })
 
 			expect(mockOnChange).toHaveBeenCalledTimes(1)
-			
+
 			// Verify that onChange was called with an event object
 			const call = mockOnChange.mock.calls[0][0]
 			expect(call).toHaveProperty('target')
 			expect(call.target).toBeInstanceOf(HTMLInputElement)
-			
+
 			// Now update the component with the new value (simulating parent state update)
 			rerender(<SearchBar value="Queen" onChange={mockOnChange} />)
 			expect(searchInput).toHaveValue('Queen')
@@ -84,10 +84,10 @@ describe('SearchBar Component', () => {
 			render(<SearchBar value="Test" onChange={mockOnChange} />)
 
 			const searchInput = screen.getByRole('searchbox')
-			
+
 			// Clear the input
 			await user.clear(searchInput)
-			
+
 			expect(mockOnChange).toHaveBeenCalled()
 		})
 
@@ -106,13 +106,13 @@ describe('SearchBar Component', () => {
 			render(<SearchBar value="" onChange={mockOnChange} />)
 
 			const searchInput = screen.getByRole('searchbox')
-			
+
 			// Test Enter key
 			fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' })
-			
+
 			// Test Escape key
 			fireEvent.keyDown(searchInput, { key: 'Escape', code: 'Escape' })
-			
+
 			// Should not affect onChange for key events (only change events do)
 			expect(mockOnChange).not.toHaveBeenCalled()
 		})
@@ -131,7 +131,7 @@ describe('SearchBar Component', () => {
 
 			const searchInput = screen.getByRole('searchbox')
 			expect(searchInput).not.toHaveFocus()
-			
+
 			searchInput.focus()
 			expect(searchInput).toHaveFocus()
 		})
@@ -141,7 +141,7 @@ describe('SearchBar Component', () => {
 			render(<SearchBar value="" onChange={mockOnChange} />)
 
 			const searchInput = screen.getByRole('searchbox')
-			
+
 			await user.tab()
 			expect(searchInput).toHaveFocus()
 		})
@@ -220,9 +220,9 @@ describe('SearchBar Component', () => {
 			const { rerender } = render(<SearchBar value="" onChange={mockOnChange} />)
 
 			const searchInput = screen.getByRole('searchbox')
-			
+
 			const values = ['a', 'ab', 'abc', 'abcd', 'abcde']
-			values.forEach(value => {
+			values.forEach((value) => {
 				rerender(<SearchBar value={value} onChange={mockOnChange} />)
 				expect(searchInput).toHaveValue(value)
 			})
@@ -233,7 +233,7 @@ describe('SearchBar Component', () => {
 		it('should work in a controlled component pattern', async () => {
 			const TestParent = () => {
 				const [searchValue, setSearchValue] = React.useState('')
-				
+
 				const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 					setSearchValue(e.target.value)
 				}

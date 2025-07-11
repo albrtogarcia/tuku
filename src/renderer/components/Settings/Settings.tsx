@@ -25,6 +25,12 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUp
 		}).format(new Date(dateString))
 	}
 
+	const getDisplayPath = (path: string | null) => {
+		if (!path) return 'No folder selected'
+		// Show full path
+		return path
+	}
+
 	return (
 		<div className="settings-overlay">
 			<div className="settings">
@@ -42,10 +48,17 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUp
 						<div className="settings__field">
 							<label className="settings__label">Library Folder</label>
 							<div className="settings__folder-info">
-								<input type="text" className="settings__folder-path" value={folderPath || 'No folder selected'} readOnly placeholder="No folder selected" />
+								<input
+									type="text"
+									className={`settings__folder-path ${folderPath ? 'has-value' : ''}`}
+									value={getDisplayPath(folderPath)}
+									readOnly
+									placeholder="No folder selected"
+									title={folderPath || 'No folder selected'}
+								/>
 								<button className="btn btn--primary" onClick={onSelectFolder} title="Select music folder">
 									<FolderOpenIcon size={16} />
-									Import Folder
+									{folderPath ? 'Change Folder' : 'Import Folder'}
 								</button>
 							</div>
 						</div>

@@ -15,6 +15,12 @@ export function useSongs() {
 				// Load last updated timestamp from SQLite
 				const timestamp = await window.electronAPI.getLibraryMetadata('lastUpdated')
 				setLastUpdated(timestamp)
+				// Load folder path from SQLite
+				const savedFolderPath = await window.electronAPI.getLibraryMetadata('folderPath')
+				console.log('Loaded folderPath from DB:', savedFolderPath)
+				if (savedFolderPath) {
+					setFolderPath(savedFolderPath)
+				}
 			}
 		})()
 	}, [])
@@ -43,6 +49,10 @@ export function useSongs() {
 		const path = await window.electronAPI.selectFolder()
 		if (path) {
 			setFolderPath(path)
+			// Save folder path to SQLite
+			console.log('Saving folderPath to DB:', path)
+			const saved = await window.electronAPI.setLibraryMetadata('folderPath', path)
+			console.log('FolderPath saved:', saved)
 			const files = await window.electronAPI.getAudioFiles(path)
 			setSongs(files)
 			// Timestamp is updated automatically by saveLibrary in the useEffect above

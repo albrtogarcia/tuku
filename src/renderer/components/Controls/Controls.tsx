@@ -2,6 +2,7 @@ import { PlayIcon, PauseIcon, RewindIcon, FastForwardIcon, RepeatIcon, ShuffleIc
 import { usePlayerStore } from '../../store/player'
 import './_controls.scss'
 import { SlidersIcon } from '@phosphor-icons/react'
+import { useEffect, useRef } from 'react'
 
 interface ControlsProps {
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
@@ -11,15 +12,27 @@ interface ControlsProps {
 const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle } = usePlayerStore()
 	const { volume, setVolume, handlePause, isPlaying, handlePlay } = audio
+	const volumeWheelRef = useRef<HTMLDivElement>(null)
 
 	// Calculate rotation angle (-120 to 120 degrees based on volume 0-1)
 	const rotationAngle = volume * 240 - 120
 
-	const handleVolumeWheel = (e: React.WheelEvent) => {
-		e.preventDefault()
-		const delta = e.deltaY < 0 ? 0.05 : -0.05
-		setVolume((v) => Math.max(0, Math.min(1, v + delta)))
-	}
+	// Use useEffect to register non-passive wheel event listener
+	useEffect(() => {
+		const element = volumeWheelRef.current
+		if (element) {
+			const handleVolumeWheel = (e: WheelEvent) => {
+				e.preventDefault()
+				const delta = e.deltaY < 0 ? 0.05 : -0.05
+				setVolume((v) => Math.max(0, Math.min(1, v + delta)))
+			}
+
+			element.addEventListener('wheel', handleVolumeWheel, { passive: false })
+			return () => {
+				element.removeEventListener('wheel', handleVolumeWheel)
+			}
+		}
+	}, [setVolume])
 
 	const playPrev = () => {
 		if (currentIndex > 0) {
@@ -83,7 +96,7 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 			</div>
 
 			<div className="controls__volume">
-				<div className="volume-knob" onWheel={handleVolumeWheel} title={`Volume: ${Math.round(volume * 100)}%`}>
+				<div className="volume-knob" ref={volumeWheelRef} title={`Volume: ${Math.round(volume * 100)}%`}>
 					<div className="volume-knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }} />
 				</div>
 			</div>
