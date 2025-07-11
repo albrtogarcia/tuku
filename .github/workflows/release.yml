@@ -31,13 +31,5 @@ jobs:
 
       - name: Build application
         run: yarn build
-
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dist-electron/*.dmg
-            dist-electron/*.blockmap
-          generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
