@@ -17,7 +17,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'yarn'
+
+      - name: Verify Node.js version
+        run: |
+          node --version
+          npm --version
+          yarn --version
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
