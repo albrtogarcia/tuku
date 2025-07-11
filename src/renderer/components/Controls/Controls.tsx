@@ -50,7 +50,7 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 					<ShuffleIcon size={20} weight="fill" />
 				</button>
 
-				<button className="btn" onClick={playPrev} title="Previcamiseta ous song" disabled={currentIndex <= 0}>
+				<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
 					<RewindIcon size={20} weight="fill" />
 				</button>
 
