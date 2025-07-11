@@ -23,23 +23,14 @@ vi.mock('../SongsTable/SongsTable', () => ({
 		<div data-testid="songs-table">
 			<div data-testid="songs-count">{songs.length}</div>
 			{songs.map((song: any, index: number) => (
-				<div
-					key={song.path}
-					data-testid={`song-item-${index}`}
-					onDoubleClick={() => onDoubleClick?.(song)}
-					onContextMenu={(e) => onRightClick?.(song, e)}
-				>
+				<div key={song.path} data-testid={`song-item-${index}`} onDoubleClick={() => onDoubleClick?.(song)} onContextMenu={(e) => onRightClick?.(song, e)}>
 					<span data-testid={`song-title-${index}`}>{song.title}</span>
 					<span data-testid={`song-artist-${index}`}>{song.artist}</span>
 					<span data-testid={`song-album-${index}`}>{song.album}</span>
 				</div>
 			))}
 			{columns.map((col: any) => (
-				<button
-					key={col.key}
-					data-testid={`sort-${col.key}`}
-					onClick={() => onSort?.(col.key)}
-				>
+				<button key={col.key} data-testid={`sort-${col.key}`} onClick={() => onSort?.(col.key)}>
 					Sort by {col.key}
 				</button>
 			))}
@@ -246,7 +237,7 @@ describe('SongsList Component', () => {
 			fireEvent.doubleClick(firstSong)
 
 			// First song in sorted order is "Bohemian Rhapsody"
-			const expectedSong = mockSongs.find(song => song.title === 'Bohemian Rhapsody')
+			const expectedSong = mockSongs.find((song) => song.title === 'Bohemian Rhapsody')
 			expect(mockPlayerStore.playNow).toHaveBeenCalledWith(expectedSong)
 			expect(mockAudio.handlePlay).toHaveBeenCalledWith(expectedSong!.path)
 		})
@@ -259,7 +250,7 @@ describe('SongsList Component', () => {
 			fireEvent.contextMenu(firstSong)
 
 			// First song in sorted order is "Bohemian Rhapsody"
-			const expectedSong = mockSongs.find(song => song.title === 'Bohemian Rhapsody')
+			const expectedSong = mockSongs.find((song) => song.title === 'Bohemian Rhapsody')
 			expect(mockAddToQueue).toHaveBeenCalledWith(expectedSong)
 		})
 
