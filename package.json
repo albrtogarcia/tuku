@@ -1,6 +1,6 @@
 {
 	"name": "tuku",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Reproductor de música local construido con Electron y React",
 	"main": "dist/main/index.js",
 	"author": "albrtogarcia",
