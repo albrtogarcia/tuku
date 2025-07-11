@@ -51,6 +51,12 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	setShuffle: (shuffle) => set({ shuffle }),
 	addToQueue: (song) => {
 		const { queue, currentIndex } = get()
+		// Check if song is already in queue
+		const existingIndex = queue.findIndex((q) => q.path === song.path)
+		if (existingIndex !== -1) {
+			// Song already exists in queue, don't add it
+			return
+		}
 		const newQueue = [...queue, song]
 		set({ queue: newQueue })
 		if (currentIndex === -1) {
