@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main # Only run on main branch
 
 jobs:
   release:
