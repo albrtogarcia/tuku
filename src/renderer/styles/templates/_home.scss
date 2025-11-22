@@ -1,8 +1,12 @@
 @use '../abstracts' as *;
 
-$player: 20dvh;
-$queue: 33dvh;
-$library: calc(47dvh - 2rem);
+// $player: 20dvh;
+// $queue: 33dvh;
+// $library: calc(47dvh - 2rem);
+
+$player: 220px;
+$queue: clamp(128px, 25vh, 300px);
+$library: calc(100% - 2rem);
 
 .container {
 	min-width: 640px;
@@ -11,6 +15,7 @@ $library: calc(47dvh - 2rem);
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
+	height: 100dvh;
 
 	&>* {
 		border: 1px solid #313244;
@@ -19,17 +24,19 @@ $library: calc(47dvh - 2rem);
 	}
 
 	&__player {
-		height: $player;
 		overflow-y: auto;
+		min-height: $player;
+		flex: 1 0 $player;
 	}
 
 	&__queue {
-		height: $queue;
 		overflow-y: auto;
+		min-height: $queue;
+		flex: 1 0 $queue;
 	}
 
 	&__library {
-		height: $library;
+		flex-grow: 1;
 		overflow-y: auto;
 	}
 }

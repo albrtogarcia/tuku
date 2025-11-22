@@ -34,9 +34,11 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubl
 				<span>{song.title}</span>
 				<small>({song.artist})</small>
 			</div>
-			<button className="btn" onClick={() => onRemove(index)} title="Remove from queue">
-				<X size={16} weight="bold" />
-			</button>
+			<div className="btn-holder">
+				<button className="btn" onClick={() => onRemove(index)} title="Remove from queue">
+					<X size={16} weight="bold" />
+				</button>
+			</div>
 		</li>
 	)
 }
@@ -117,9 +119,11 @@ const Queue = ({ audio }: QueueProps) => {
 					Queue <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
 				</h2>
 				{queue.length != 0 && (
-					<button className="btn" onClick={clearQueue} title="Clear queue">
-						<TrashIcon size={16} weight="fill" />
-					</button>
+					<div className="btn-holder">
+						<button className="btn" onClick={clearQueue} title="Clear queue">
+							<TrashIcon size={16} weight="fill" />
+						</button>
+					</div>
 				)}
 			</header>
 			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

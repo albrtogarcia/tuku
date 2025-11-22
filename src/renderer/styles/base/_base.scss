@@ -6,7 +6,10 @@ html {
 
 body {
 	font-family: $font-base;
-	background: var(--bg);
 	color: var(--textColor);
 	line-height: 1.5;
+
+	container: synth / inline-size;
+	background-image: url("../../images/noise.svg"), var(--synth-body);
+	background-size: 200px 200px, auto;
 }
