@@ -13,6 +13,7 @@
 		"build:renderer": "vite build",
 		"build:main": "tsc -p tsconfig.main.json",
 		"build:mac": "npm run build:renderer && npm run build:main && electron-builder --config electron-builder.config.js --mac",
+		"build:mac-unsigned": "npm run build:renderer && npm run build:main && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.js --mac",
 		"build:win": "npm run build:renderer && npm run build:main && electron-builder --config electron-builder.config.js --win",
 		"build:linux": "npm run build:renderer && npm run build:main && electron-builder --config electron-builder.config.js --linux",
 		"release": "release-it",
