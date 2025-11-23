@@ -1,12 +1,7 @@
 @use '../abstracts' as *;
 
-// $player: 20dvh;
-// $queue: 33dvh;
-// $library: calc(47dvh - 2rem);
-
 $player: 220px;
 $queue: clamp(128px, 25vh, 300px);
-$library: calc(100% - 2rem);
 
 .container {
 	min-width: 640px;
@@ -24,20 +19,17 @@ $library: calc(100% - 2rem);
 	}
 
 	&__player {
-		overflow-y: auto;
 		min-height: $player;
 		flex: 1 0 $player;
 	}
 
 	&__queue {
-		overflow-y: auto;
 		min-height: $queue;
 		flex: 1 0 $queue;
 	}
 
 	&__library {
 		flex-grow: 1;
-		overflow-y: auto;
 	}
 }
 
