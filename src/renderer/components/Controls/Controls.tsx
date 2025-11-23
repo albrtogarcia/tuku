@@ -110,18 +110,14 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 			</div>
 
 			<div className="controls__volume">
-				<div className="knob-container" title={`Volume: ${Math.round(volume * 100)}%`}>
-					<div className="knob-outer" ref={volumeWheelRef}>
-						<div className="knob-inner-shadow"></div>
-						<div className="knob-inner volume-knob">
-							<div className="knob-indicator volume-knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }}></div>
+				<div className="knob__container" title={`Volume: ${Math.round(volume * 100)}%`}>
+					<div className="knob__outer" ref={volumeWheelRef}>
+						<div className="knob__shadow"></div>
+						<div className="knob__inner">
+							<div className="knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }}></div>
 						</div>
 					</div>
 				</div>
-
-				{/* <div className="volume-knob" ref={volumeWheelRef} title={`Volume: ${Math.round(volume * 100)}%`}>
-					<div className="volume-knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }} />
-				</div> */}
 			</div>
 		</div>
 	)

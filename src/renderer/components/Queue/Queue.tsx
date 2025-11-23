@@ -1,5 +1,5 @@
 import { usePlayerStore } from '../../store/player'
-import { TrashIcon, X } from '@phosphor-icons/react'
+import { TrashIcon, XIcon } from '@phosphor-icons/react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
@@ -34,11 +34,9 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubl
 				<span>{song.title}</span>
 				<small>({song.artist})</small>
 			</div>
-			<div className="btn-holder">
-				<button className="btn" onClick={() => onRemove(index)} title="Remove from queue">
-					<X size={16} weight="bold" />
-				</button>
-			</div>
+			<button className="btn btn--ghost" onClick={() => onRemove(index)} title="Remove from queue">
+				<XIcon size={16} weight="bold" />
+			</button>
 		</li>
 	)
 }
@@ -119,11 +117,9 @@ const Queue = ({ audio }: QueueProps) => {
 					Queue <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
 				</h2>
 				{queue.length != 0 && (
-					<div className="btn-holder">
-						<button className="btn" onClick={clearQueue} title="Clear queue">
-							<TrashIcon size={16} weight="fill" />
-						</button>
-					</div>
+					<button className="btn" onClick={clearQueue} title="Clear queue">
+						<TrashIcon size={16} weight="fill" />
+					</button>
 				)}
 			</header>
 			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

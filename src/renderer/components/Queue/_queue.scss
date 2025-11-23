@@ -37,6 +37,7 @@
 		li {
 			display: flex;
 			align-items: center;
+			padding-block: 0.25rem;
 
 			&.playing {
 				color: var(--accent);
@@ -45,12 +46,16 @@
 			&.played {
 				opacity: 0.33;
 			}
+
+			&:hover {
+				background-color: var(--bgPrimary);
+			}
 		}
 
 		.btn {
 			margin-left: auto;
 			background-color: transparent;
-			padding: 0.5rem;
+			opacity: 0.33;
 		}
 	}
 
@@ -61,15 +66,13 @@
 		align-items: center;
 		gap: 0.5rem;
 		transition: background-color 0.2s ease;
-		padding-block: 0.25rem;
+		font-size: 0.85rem;
 
 		&:active {
 			cursor: grabbing;
 		}
 
-		&:hover {
-			background-color: var(--bgPrimary);
-		}
+
 	}
 
 	&__empty {

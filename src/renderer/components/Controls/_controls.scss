@@ -37,98 +37,116 @@
 		align-items: center;
 		gap: 0.5rem;
 	}
+
+
+	// Buttons
+	.btn-holder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 40px;
+		height: 40px;
+		background-color: var(--button-container);
+		border: 2px solid transparent;
+		border-radius: 1px;
+		box-shadow: none;
+		border-radius: 8px;
+
+		&--big {
+			height: 64px;
+			width: 64px;
+			border-radius: 50%;
+		}
+	}
+
+	.btn {
+		padding: 0;
+		border: none;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		border-radius: 6px;
+		font-size: var(--x-small);
+		color: var(--element);
+		background-image: var(--button-background);
+		box-shadow: var(--button-shadow);
+
+		&.active {
+			color: var(--accent);
+			box-shadow: inset 0 1px 5px #000000e2;
+			filter: brightness(.9);
+			translate: 0 .5px;
+		}
+
+		&:hover {
+			color: var(--accent);
+		}
+
+		&--lg {
+			font-size: 1.25rem;
+			padding: 0.75rem;
+			border-radius: 50%;
+		}
+	}
 }
 
-// .volume-knob {
-// 	width: 32px;
-// 	height: 32px;
-// 	border-radius: 50%;
-// 	border: 2px solid var(--bgPrimary);
-// 	position: relative;
-// 	cursor: pointer;
-// 	transition: border-color 0.2s ease;
+.knob {
+	&__container {
+		display: flex;
+		flex-direction: column;
+		grid-row: span 2;
+		gap: 10px;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		width: 75px;
+		height: 75px;
+	}
 
-// 	&:hover {
-// 		border-color: var(--accent);
-// 	}
+	&__outer {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		max-width: 60px;
+		aspect-ratio: 1;
+		cursor: ns-resize;
+		background: var(--knob-background);
+		border-radius: 50%;
+		box-shadow: var(--knob-shadow);
+	}
 
-// 	&__indicator {
-// 		position: absolute;
-// 		top: -2px;
-// 		left: 50%;
-// 		width: 2px;
-// 		height: 12px;
-// 		background: var(--accent);
-// 		transform-origin: center 14px;
-// 		transition: transform 0.1s ease;
-// 		margin-left: -1px;
-// 	}
-// }
+	&__shadow {
+		position: absolute;
+		inset: 0;
+		width: 30px;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		box-shadow: var(--knob-inner-shadow);
+		translate: 50% 50%;
+	}
 
-.knob-container {
-	display: flex;
-	flex-direction: column;
-	grid-row: span 2;
-	gap: 10px;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	width: 75px;
-	height: 75px;
-}
+	&__inner {
+		position: relative;
+		width: 30px;
+		aspect-ratio: 1;
+		background: var(--knob-inner-background);
+		border-radius: 50%;
+	}
 
-.knob-outer {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	max-width: 60px;
-	aspect-ratio: 1;
-	cursor: ns-resize;
-	background: var(--knob-background);
-	border-radius: 50%;
-	box-shadow: var(--knob-shadow);
-}
-
-.knob-inner-shadow {
-	position: absolute;
-	inset: 0;
-	width: 30px;
-	aspect-ratio: 1;
-	border-radius: 50%;
-	box-shadow: var(--knob-inner-shadow);
-	translate: 50% 50%;
-}
-
-.knob-inner {
-	position: relative;
-	width: 30px;
-	aspect-ratio: 1;
-	background: var(--knob-inner-background);
-	border-radius: 50%;
-}
-
-.knob-indicator {
-	// --radius: 10px;
-	// --dot: 4px;
-	// position: absolute;
-	// top: calc(50% - var(--dot) / 2);
-	// left: calc(50% - var(--dot) / 2);
-	// width: var(--dot);
-	// height: var(--dot);
-	// background: var(--knob-indicator-background);
-	// border-radius: 50%;
-	// transform-origin: center;
-	// translate: calc(sin(var(--angle) * -1) * var(--radius)) calc(cos(var(--angle)) * var(--radius));
-
-	position: absolute;
-	top: -2px;
-	left: 50%;
-	width: 2px;
-	height: 12px;
-	background: var(--accent);
-	transform-origin: center 16px;
-	transition: transform 0.1s ease;
-	margin-left: -1px;
+	&__indicator {
+		position: absolute;
+		top: -2px;
+		left: 50%;
+		width: 2px;
+		height: 12px;
+		background: var(--accent);
+		transform-origin: center 16px;
+		transition: transform 0.1s ease;
+		margin-left: -1px;
+	}
 }
