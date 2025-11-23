@@ -84,7 +84,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 
 Si al instalar dependencias o al ejecutar electron-rebuild ves errores como:
 
-```
+```basj
 make: g++: No such file or directory
 Error: The module '.../better-sqlite3.node' was compiled against a different Node.js version
 ```
@@ -92,21 +92,27 @@ Error: The module '.../better-sqlite3.node' was compiled against a different Nod
 Esto se debe a que los módulos nativos de Node.js/Electron requieren herramientas de compilación y librerías de desarrollo específicas en Fedora (y otras distros Linux). Para solucionarlo:
 
 1. Instala las herramientas de desarrollo y las librerías de SQLite:
+
    ```bash
    sudo dnf groupinstall "Development Tools"
    sudo dnf install sqlite-devel
    ```
+
    > Nota: En Fedora y otras distros Linux, también es necesario instalar el compilador C++ (g++):
    >
    > ```bash
    > sudo dnf install gcc-c++
    > ```
+
 2. Borra node_modules y reinstala dependencias:
+
    ```bash
    rm -rf node_modules yarn.lock package-lock.json
    yarn install
    ```
+
 3. Reconstruye los módulos nativos para Electron:
+
    ```bash
    npx electron-rebuild
    ```
