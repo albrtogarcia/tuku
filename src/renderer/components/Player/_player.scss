@@ -41,7 +41,7 @@
 		flex-grow: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.25rem;
 	}
 
 	&__progress {
@@ -194,11 +194,10 @@
 		color: white;
 		font-size: 1rem;
 		margin: 0;
-		font-weight: 600;
+		font-weight: 500;
 	}
 
 	&__metadata {
-		opacity: 0.7;
 		margin: 0;
 		display: flex;
 		flex-direction: column;
@@ -206,16 +205,12 @@
 		font-size: 0.875rem;
 	}
 
-	&__artist,
-	&__album {
-		font-family: var(--font-base-italic);
-	}
-
 	&__artist {
-		color: #A5FF90;
+		opacity: 0.8;
+		font-weight: 300;
 	}
 
 	&__album {
-		color: #FDC601;
+		opacity: 0.5;
 	}
 }

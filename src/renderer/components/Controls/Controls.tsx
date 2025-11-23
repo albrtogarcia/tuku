@@ -23,6 +23,8 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 		if (element) {
 			const handleVolumeWheel = (e: WheelEvent) => {
 				e.preventDefault()
+				// Debug log to verify the wheel event is attached and firing
+				console.log('volume knob wheel', { deltaY: e.deltaY })
 				const delta = e.deltaY < 0 ? 0.05 : -0.05
 				setVolume((v) => Math.max(0, Math.min(1, v + delta)))
 			}
@@ -53,51 +55,68 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	return (
 		<div className="controls">
 			<div className="controls__settings">
-				<button className="btn" onClick={onOpenSettings} title="Settings">
-					<SlidersIcon size={20} />
-				</button>
+				<div className="btn-holder">
+					<button className="btn" onClick={onOpenSettings} title="Settings">
+						<SlidersIcon size={20} />
+					</button>
+				</div>
 			</div>
 
 			<div className="controls__playback">
-				<button className={`btn btn--secondary${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
-					<ShuffleIcon size={20} weight="fill" />
-				</button>
-
-				<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
-					<RewindIcon size={20} weight="fill" />
-				</button>
-
-				{isPlaying && currentIndex !== -1 ? (
-					<button className="btn btn--lg active" onClick={handlePause} title="Pause">
-						<PauseIcon size={28} weight="fill" />
+				<div className="btn-holder">
+					<button className={`btn btn--secondary${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
+						<ShuffleIcon size={20} weight="fill" />
 					</button>
-				) : (
-					<button
-						className="btn btn--lg"
-						onClick={() => {
-							if (queue[currentIndex]) {
-								handlePlay(queue[currentIndex].path)
-							}
-						}}
-						title="Play"
-						disabled={currentIndex === -1}
-					>
-						<PlayIcon size={28} weight="fill" />
+				</div>
+
+				<div className="btn-holder">
+					<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
+						<RewindIcon size={20} weight="fill" />
 					</button>
-				)}
+				</div>
 
-				<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-					<FastForwardIcon size={20} weight="fill" />
-				</button>
+				<div className="btn-holder btn-holder--big">
+					{isPlaying && currentIndex !== -1 ? (
+						<button className="btn btn--lg active" onClick={handlePause} title="Pause">
+							<PauseIcon size={28} weight="fill" />
+						</button>
+					) : (
+						<button
+							className="btn btn--lg"
+							onClick={() => {
+								if (queue[currentIndex]) {
+									handlePlay(queue[currentIndex].path)
+								}
+							}}
+							title="Play"
+							disabled={currentIndex === -1}
+						>
+							<PlayIcon size={28} weight="fill" />
+						</button>
+					)}
+				</div>
 
-				<button className={`btn btn--secondary${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title="Repeat queue">
-					<RepeatIcon size={20} weight="fill" />
-				</button>
+				<div className="btn-holder">
+					<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
+						<FastForwardIcon size={20} weight="fill" />
+					</button>
+				</div>
+
+				<div className="btn-holder">
+					<button className={`btn btn--secondary${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title="Repeat queue">
+						<RepeatIcon size={20} weight="fill" />
+					</button>
+				</div>
 			</div>
 
 			<div className="controls__volume">
-				<div className="volume-knob" ref={volumeWheelRef} title={`Volume: ${Math.round(volume * 100)}%`}>
-					<div className="volume-knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }} />
+				<div className="knob__container" title={`Volume: ${Math.round(volume * 100)}%`}>
+					<div className="knob__outer" ref={volumeWheelRef}>
+						<div className="knob__shadow"></div>
+						<div className="knob__inner">
+							<div className="knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }}></div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

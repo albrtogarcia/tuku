@@ -20,11 +20,11 @@
 	}
 
 	&:disabled {
-		opacity: 0.5;
+		color: unset !important;
 		cursor: not-allowed;
 
-		&:hover {
-			color: var(--accent);
+		svg {
+			opacity: 0.2;
 		}
 	}
 
@@ -32,12 +32,9 @@
 		color: var(--accent);
 	}
 
-	&--secondary {
-		opacity: 0.5;
-	}
-
-	&--lg {
-		font-size: 1.25rem;
-		padding: 0.75rem;
+	&--ghost {
+		padding: 0;
+		width: 1rem;
+		height: 1rem;
 	}
 }

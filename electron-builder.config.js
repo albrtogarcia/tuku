@@ -13,6 +13,13 @@ module.exports = {
 		target: 'dmg',
 		category: 'public.app-category.music',
 		icon: 'build/icons/icon.icns',
+		// Configuración para code signing (descomenta si tienes certificado)
+		// identity: "Developer ID Application: Tu Nombre (TEAM_ID)",
+		// hardenedRuntime: true,
+		// gatekeeperAssess: false,
+		// notarize: {
+		// 	teamId: "TU_TEAM_ID"
+		// },
 		extendInfo: {
 			CFBundleIdentifier: 'com.tuku.musicplayer',
 			CFBundleName: 'Tuku',
