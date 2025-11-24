@@ -8,7 +8,8 @@ body {
 	font-family: $font-base;
 	color: var(--textColor);
 	line-height: 1.5;
-
+	height: 100dvh;
+	overflow: hidden;
 	container: synth / inline-size;
 	background-image: url("../../images/noise.svg"), var(--synth-body);
 	background-size: 200px 200px, auto;

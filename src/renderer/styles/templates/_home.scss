@@ -1,21 +1,21 @@
 @use '../abstracts' as *;
 
-$player: 220px;
+$player: 200px;
 $queue: clamp(128px, 25vh, 300px);
 
 .container {
 	min-width: 640px;
-	margin: 0 auto;
 	padding: 0.5rem;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
-	height: 100dvh;
+	height: 100vh;
 
 	&>* {
 		border: 1px solid rgba(0, 0, 0, 0.25);
 		padding: 0.5rem;
 		position: relative;
+		overflow: hidden;
 	}
 
 	&__player {
