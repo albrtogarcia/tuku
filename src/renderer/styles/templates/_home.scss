@@ -20,16 +20,19 @@ $queue: clamp(128px, 25vh, 300px);
 
 	&__player {
 		min-height: $player;
-		flex: 1 0 $player;
+		flex: 0 0 $player;
 	}
 
 	&__queue {
 		min-height: $queue;
-		flex: 1 0 $queue;
+		flex: 0 0 $queue;
 	}
 
 	&__library {
-		flex-grow: 1;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
 	}
 }
 
@@ -73,5 +76,8 @@ $queue: clamp(128px, 25vh, 300px);
 
 .library-content {
 	flex: 1;
+	min-height: 0;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }

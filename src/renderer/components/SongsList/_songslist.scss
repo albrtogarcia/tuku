@@ -1,4 +1,7 @@
 .songs {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
 
 	&__header {
 		display: flex;
@@ -71,5 +74,11 @@
 		.btn {
 			margin-left: auto;
 		}
+	}
+
+	.table-container {
+		flex: 1;
+		min-height: 0;
+		overflow: auto;
 	}
 }

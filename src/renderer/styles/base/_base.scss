@@ -14,3 +14,21 @@ body {
 	background-image: url("../../images/noise.svg"), var(--synth-body);
 	background-size: 200px 200px, auto;
 }
+
+html ::-webkit-scrollbar {
+	width: 2px;
+	background-color: #333;
+	-webkit-border-radius: 100px;
+}
+
+html ::-webkit-scrollbar-thumb:vertical,
+html ::-webkit-scrollbar-thumb:horizontal {
+	background-color: #aaa;
+	-webkit-border-radius: 100px;
+}
+
+html ::-webkit-scrollbar-thumb:vertical:active,
+html ::-webkit-scrollbar-thumb:horizontal:active {
+	background-color: #ccc;
+	-webkit-border-radius: 100px;
+}
