@@ -109,7 +109,7 @@ function App() {
 		return randomIdx
 	}
 
-	const handleSongEnd = () => {
+	const handleNext = () => {
 		if (shuffle) {
 			const nextIdx = getNextShuffleIndex()
 			if (nextIdx !== -1) {
@@ -140,6 +140,49 @@ function App() {
 			audio.handleStop()
 		}
 	}
+
+	const handlePrevious = () => {
+		// If > 3 seconds in, restart song
+		if (audio.currentTime > 3) {
+			audio.setCurrentTime(0)
+			return
+		}
+
+		if (currentIndex > 0) {
+			setCurrentIndex(currentIndex - 1)
+			audio.handlePlay(queue[currentIndex - 1].path)
+		} else {
+			audio.setCurrentTime(0)
+		}
+	}
+
+	const handleSongEnd = () => {
+		handleNext()
+	}
+
+	// Media Session API Support
+	useEffect(() => {
+		if (!('mediaSession' in navigator)) return
+
+		const currentSong = queue[currentIndex]
+
+		if (currentSong) {
+			navigator.mediaSession.metadata = new MediaMetadata({
+				title: currentSong.title || 'Unknown Title',
+				artist: currentSong.artist || 'Unknown Artist',
+				album: currentSong.album || 'Unknown Album',
+				artwork: currentSong.cover ? [{ src: currentSong.cover, sizes: '512x512', type: 'image/jpeg' }] : []
+			})
+		}
+
+		navigator.mediaSession.setActionHandler('play', () => audio.handleResume())
+		navigator.mediaSession.setActionHandler('pause', () => audio.handlePause())
+		navigator.mediaSession.setActionHandler('previoustrack', handlePrevious)
+		navigator.mediaSession.setActionHandler('nexttrack', handleNext)
+
+		// Clear handlers on unmount? optional, but good practice if dependencies change often
+	}, [currentIndex, queue, audio.handleResume, audio.handlePause, handleNext, handlePrevious])
+
 
 	const filteredSongs = filterSongs(songs, search)
 	const albums = groupAlbums(songs)
@@ -222,6 +265,8 @@ function App() {
 				style={{ display: 'none' }}
 				onEnded={handleSongEnd}
 				onCanPlay={audio.handleCanPlay}
+				onPlay={() => audio.setIsPlaying(true)}
+				onPause={() => audio.setIsPlaying(false)}
 				onTimeUpdate={() => audio.setCurrentTimeOnly(audio.audioRef.current?.currentTime || 0)}
 				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
 			/>

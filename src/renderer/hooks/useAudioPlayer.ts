@@ -92,6 +92,7 @@ export function useAudioPlayer() {
 		audioRef,
 		audioUrl,
 		isPlaying,
+		setIsPlaying,
 		pendingPlay,
 		currentTime,
 		setCurrentTime: setCurrentTimeWithSeek,
