@@ -11,42 +11,25 @@
 
 	&:hover {
 		transform: translateY(-2px);
-
-		.btn {
-			opacity: 1;
-			visibility: visible;
-		}
 	}
+}
 
-	.btn {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		border-radius: 50%;
-		padding: 0.25rem;
-		background-color: var(--bgPrimary);
-		opacity: 0;
-		visibility: hidden;
-		opacity: 0;
-		visibility: hidden;
-		z-index: 2;
+.spinner {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	border-top-color: var(--accent);
+	animation: spin 1s ease-in-out infinite;
+	transform: translate(-50%, -50%);
+}
 
-		&:hover {
-			background: var(--accent);
-			color: white;
-			transform: scale(1.1);
-		}
-	}
-
-	.btn-cover {
-		right: auto;
-		left: 1rem;
-
-		&.loading {
-			opacity: 1;
-			visibility: visible;
-			cursor: wait;
-		}
+@keyframes spin {
+	to {
+		transform: translate(-50%, -50%) rotate(360deg);
 	}
 }
 
@@ -73,24 +56,6 @@
 	font-size: 0.75rem;
 	text-align: center;
 	color: var(--textMuted);
-}
-
-.spin {
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-
-	to {
-		transform: rotate(360deg);
-	}
-
-	to {
-		transform: rotate(360deg);
-	}
 }
 
 .albums-grid--empty {

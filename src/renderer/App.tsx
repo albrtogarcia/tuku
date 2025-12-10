@@ -47,7 +47,13 @@ function App() {
 	const [activeTab, setActiveTab] = useState<'albums' | 'songs'>('albums')
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 	const [isScanning, setIsScanning] = useState(false)
+	const [notification, setNotification] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
 	const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 })
+
+	const handleShowNotification = (message: string, type: 'error' | 'success' | 'info' = 'info') => {
+		setNotification({ message, type })
+		setTimeout(() => setNotification(null), 3000)
+	}
 
 	useEffect(() => {
 		// Listen for scan events
@@ -193,7 +199,7 @@ function App() {
 
 					{/* TAB CONTENT */}
 					<div className="library__body">
-						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} onOpenSettings={() => setIsSettingsOpen(true)} />}
+						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} onOpenSettings={() => setIsSettingsOpen(true)} onShowNotification={handleShowNotification} />}
 						{activeTab === 'songs' && <SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} folderPath={folderPath} />}
 					</div>
 				</div>
@@ -256,6 +262,32 @@ function App() {
 							}}
 						/>
 					</div>
+				</div>
+			)}
+
+			{/* Notifications */}
+			{notification && (
+				<div
+					style={{
+						position: 'fixed',
+						bottom: '20px',
+						left: '50%',
+						transform: 'translateX(-50%)',
+						backgroundColor: notification.type === 'error' ? '#d32f2f' : '#1e1e1e',
+						padding: '12px 24px',
+						borderRadius: '8px',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '8px',
+						boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+						zIndex: 1000,
+						border: '1px solid #333',
+						minWidth: '300px',
+						justifyContent: 'center',
+						color: 'white'
+					}}
+				>
+					{notification.message}
 				</div>
 			)}
 		</div>

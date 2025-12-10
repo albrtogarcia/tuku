@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, screen, protocol, net } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, Menu, screen, protocol, net, shell } from 'electron'
 import { pathToFileURL } from 'url'
 import path from 'path'
 import fs from 'fs'
@@ -413,6 +413,29 @@ ipcMain.handle('load-queue', async () => {
 	const queue = queueRows.map((row) => row.path)
 	const state: { currentIndex?: number } = db.prepare('SELECT currentIndex FROM queue_state WHERE id = 0').get() || {}
 	return { queue, currentIndex: state.currentIndex ?? -1 }
+})
+
+// Methods for file management
+ipcMain.handle('open-in-finder', async (_event, path) => {
+	await shell.showItemInFolder(path)
+})
+
+ipcMain.handle('delete-album', async (_event, albumPath) => {
+	try {
+        console.log(`[Main] Deleting album at: ${albumPath}`)
+		await shell.trashItem(albumPath)
+
+		// Delete from DB: remove all songs that start with this path
+        // We use LIKE with % to match all files in the directory
+        console.log('[Main] Removing from database...')
+		const deleteStmt = db.prepare('DELETE FROM library WHERE path LIKE ?')
+		const info = deleteStmt.run(`${albumPath}%`)
+        console.log(`[Main] Deleted ${info.changes} songs from library`)
+		return true
+	} catch (error) {
+		console.error('[Main] Error deleting album:', error)
+		return false
+	}
 })
 
 app.whenReady().then(createWindow)

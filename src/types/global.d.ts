@@ -15,6 +15,8 @@ interface ElectronAPI {
 	onScanStart: (callback: (total: number) => void) => void
 	onScanProgress: (callback: (progress: { current: number; total: number }) => void) => void
 	onScanComplete: (callback: () => void) => void
+	openInFinder: (path: string) => Promise<void>
+	deleteAlbum: (path: string) => Promise<boolean>
 }
 
 declare global {

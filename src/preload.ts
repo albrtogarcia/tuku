@@ -16,4 +16,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	onScanStart: (callback: (total: number) => void) => ipcRenderer.on('scan-start', (_event, total) => callback(total)),
 	onScanProgress: (callback: (progress: { current: number; total: number }) => void) => ipcRenderer.on('scan-progress', (_event, progress) => callback(progress)),
 	onScanComplete: (callback: () => void) => ipcRenderer.on('scan-complete', callback),
+	openInFinder: (path: string) => ipcRenderer.invoke('open-in-finder', path),
+	deleteAlbum: (path: string) => ipcRenderer.invoke('delete-album', path),
 })

@@ -1,0 +1,36 @@
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 0;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+
+  &__item {
+    padding: 0.5rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+    width: 100%;
+
+    &:hover {
+      background-color: var(--bgSecondary);
+    }
+
+    &.danger {
+      color: #ff4d4d;
+
+      &:hover {
+        background-color: rgba(255, 77, 77, 0.1);
+      }
+    }
+  }
+}
