@@ -128,25 +128,27 @@ function App() {
 				<Queue audio={audio} />
 			</div>
 			<div className="container__library">
-				<div className="library__header">
-					{/* TABS */}
-					<div className="tabs">
-						<button className={`tabs__button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}>
-							Albums <small>({albums.length})</small>
-						</button>
-						<button className={`tabs__button ${activeTab === 'songs' ? 'active' : ''}`} onClick={() => setActiveTab('songs')}>
-							Songs <small>({songs.length})</small>
-						</button>
+				<div className="library">
+					<div className="library__header">
+						{/* TABS */}
+						<div className="tabs">
+							<button className={`tabs__button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}>
+								Albums <small>({albums.length})</small>
+							</button>
+							<button className={`tabs__button ${activeTab === 'songs' ? 'active' : ''}`} onClick={() => setActiveTab('songs')}>
+								Songs <small>({songs.length})</small>
+							</button>
+						</div>
+
+						{/* SEARCH */}
+						<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
 					</div>
 
-					{/* SEARCH */}
-					<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
-				</div>
-
-				{/* TAB CONTENT */}
-				<div className="library__body">
-					{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} />}
-					{activeTab === 'songs' && <SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} folderPath={folderPath} />}
+					{/* TAB CONTENT */}
+					<div className="library__body">
+						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} />}
+						{activeTab === 'songs' && <SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} folderPath={folderPath} />}
+					</div>
 				</div>
 			</div>
 

@@ -1,7 +1,7 @@
 @use '../abstracts' as *;
 
 $player: 220px;
-$queue: clamp(128px, 25vh, 300px);
+$queue: 25vh;
 
 .container {
 	min-width: 640px;
@@ -16,12 +16,15 @@ $queue: clamp(128px, 25vh, 300px);
 
 	&>* {
 		border: 1px solid rgba(0, 0, 0, 0.25);
-		padding: 0.5rem;
 		position: relative;
 		overflow: hidden;
 	}
 
-	&__player {}
+	&__player>*,
+	&__queue>*,
+	&__library>* {
+		padding: 0.5rem;
+	}
 
 	&__queue {}
 
@@ -33,9 +36,16 @@ $queue: clamp(128px, 25vh, 300px);
 
 		.library__body {
 			overflow: hidden;
+			max-height: 100%;
 			overflow-y: auto;
 		}
 	}
+}
+
+.library {
+	max-height: 100%;
+	overflow: hidden;
+
 }
 
 .library__header {

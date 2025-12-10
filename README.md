@@ -1,6 +1,6 @@
 # 🎶 Tuku (nombre provisional)
 
-**Tuku** es un reproductor de música de escritorio diseñado para reproducir y organizar archivos de audio locales desde tu propio sistema de archivos. Funciona en macOS y Linux, y está construido con **Electron + React** para una experiencia moderna, rápida y multiplataforma.
+**Tuku** es un reproductor de música de escritorio diseñado para reproducir y organizar archivos de audio locales desde tu propio sistema de archivos. Es multiplataforma (Windows, macOS y Linux), y está construido con **Electron + React**.
 
 ---
 
@@ -17,7 +17,7 @@ Consulta el [Roadmap de desarrollo](#-roadmap) más abajo para conocer las fases
 Crear una aplicación sencilla, rápida y personalizable para:
 
 - Leer archivos de música desde carpetas locales.
-- Reproducirlos con una interfaz moderna.
+- Reproducirlos con una interfaz clara y sencilla.
 - Organizar música por artista, álbum, año, etc.
 - Crear playlists y mantener un historial de reproducción.
 - Recuperar metadatos/carátulas desde bases de datos públicas.
