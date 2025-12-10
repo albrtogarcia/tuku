@@ -8,11 +8,23 @@ interface AlbumsGridProps {
 	setQueue: (songs: any[]) => void
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 	onUpdateCover: (albumName: string, artistName: string, newCover: string) => void
+	onOpenSettings: () => void
 }
 
-const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover }) => {
+const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover, onOpenSettings }) => {
 	const { addAlbumToQueue } = usePlayerStore()
 	const [loadingCovers, setLoadingCovers] = useState<Set<string>>(new Set())
+
+	if (albums.length === 0) {
+		return (
+			<div className="albums-grid--empty">
+				<p>No albums found in your library.</p>
+				<button className="btn-primary" onClick={onOpenSettings}>
+					Configure Library
+				</button>
+			</div>
+		)
+	}
 
 	const handleAlbumClick = (album: any) => {
 		if (album.songs && album.songs.length > 0) {

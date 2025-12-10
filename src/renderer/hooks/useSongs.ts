@@ -25,18 +25,7 @@ export function useSongs() {
 		})()
 	}, [])
 
-	useEffect(() => {
-		const fetchFiles = async () => {
-			if (folderPath) {
-				const files = await window.electronAPI.getAudioFiles(folderPath)
-				setSongs(files)
-				// Update timestamp when songs are loaded - stored in SQLite automatically by saveLibrary
-				const now = new Date().toISOString()
-				setLastUpdated(now)
-			}
-		}
-		fetchFiles()
-	}, [folderPath])
+
 
 	useEffect(() => {
 		// Save the library every time it changes

@@ -46,6 +46,25 @@ function App() {
 	const [search, setSearch] = useState('')
 	const [activeTab, setActiveTab] = useState<'albums' | 'songs'>('albums')
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+	const [isScanning, setIsScanning] = useState(false)
+	const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 })
+
+	useEffect(() => {
+		// Listen for scan events
+		window.electronAPI.onScanStart((total) => {
+			setIsScanning(true)
+			setScanProgress({ current: 0, total })
+		})
+
+		window.electronAPI.onScanProgress((progress) => {
+			setScanProgress(progress)
+		})
+
+		window.electronAPI.onScanComplete(() => {
+			setIsScanning(false)
+			setScanProgress({ current: 0, total: 0 })
+		})
+	}, [])
 
 	const audio = useAudioPlayer()
 
@@ -65,8 +84,15 @@ function App() {
 	} = usePlayerStore()
 
 	// Load queue from storage when app starts
+	// Load queue from storage when app starts
 	useEffect(() => {
 		loadQueueFromStorage()
+
+		// Listen for native menu settings event
+		window.electronAPI.onOpenSettings(() => {
+			console.log('[App] Received open-settings event from native menu')
+			setIsSettingsOpen(true)
+		})
 	}, [loadQueueFromStorage])
 
 	function getNextShuffleIndex() {
@@ -118,21 +144,22 @@ function App() {
 		setCurrentIndex(0)
 	}
 
+	const { updateSongMetadata } = usePlayerStore()
+
 	const handleUpdateAlbumCover = (albumName: string, artistName: string, newCover: string) => {
 		console.log(`[App] Updating cover for Album="${albumName}", Artist="${artistName}"`)
 		let updatedCount = 0
 		const updatedSongs = songs.map((song) => {
 			if (song.album === albumName && song.artist === artistName) {
 				updatedCount++
+				// Also update in queue if present
+				updateSongMetadata(song.path, { cover: newCover })
 				return { ...song, cover: newCover }
 			}
 			return song
 		})
 		console.log(`[App] Updated ${updatedCount} songs. Triggering setSongs...`)
 		// This will trigger useSongs -> saveLibrary
-		// We can cast to any if setSongs expects SetStateAction
-		// But setSongs comes from useState<Song[]>, so passing Song[] is fine.
-		// However, setSongs is from useSongs hook.
 		// @ts-ignore
 		setSongs(updatedSongs)
 	}
@@ -166,7 +193,7 @@ function App() {
 
 					{/* TAB CONTENT */}
 					<div className="library__body">
-						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} />}
+						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} onOpenSettings={() => setIsSettingsOpen(true)} />}
 						{activeTab === 'songs' && <SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} folderPath={folderPath} />}
 					</div>
 				</div>
@@ -192,6 +219,45 @@ function App() {
 				onTimeUpdate={() => audio.setCurrentTimeOnly(audio.audioRef.current?.currentTime || 0)}
 				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
 			/>
+
+			{/* Scan Progress Bar */}
+			{isScanning && (
+				<div
+					style={{
+						position: 'fixed',
+						bottom: '20px',
+						left: '50%',
+						transform: 'translateX(-50%)',
+						backgroundColor: '#1e1e1e',
+						padding: '12px 24px',
+						borderRadius: '8px',
+						display: 'flex',
+						flexDirection: 'column',
+						gap: '8px',
+						boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+						zIndex: 1000,
+						border: '1px solid #333',
+						minWidth: '300px',
+					}}
+				>
+					<div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: '14px' }}>
+						<span>Scanning Library...</span>
+						<span>
+							{scanProgress.current} / {scanProgress.total}
+						</span>
+					</div>
+					<div style={{ width: '100%', height: '4px', backgroundColor: '#333', borderRadius: '2px', overflow: 'hidden' }}>
+						<div
+							style={{
+								width: `${(scanProgress.current / scanProgress.total) * 100}%`,
+								height: '100%',
+								backgroundColor: '#ff5722',
+								transition: 'width 0.2s ease',
+							}}
+						/>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

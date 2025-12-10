@@ -22,6 +22,7 @@ interface PlayerState {
 	removeFromQueue: (index: number) => void
 	insertInQueue: (song: Song, position: number) => void
 	cleanQueueHistory: () => void
+	updateSongMetadata: (path: string, metadata: Partial<Song>) => void
 	loadQueueFromStorage: () => Promise<void>
 	saveQueueToStorage: () => Promise<void>
 }
@@ -137,6 +138,23 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 			const newQueue = queue.slice(currentIndex - 3)
 			const newIndex = 3
 			set({ queue: newQueue, currentIndex: newIndex })
+			// Auto-save
+			const { saveQueueToStorage } = get()
+			saveQueueToStorage()
+		}
+	},
+	updateSongMetadata: (path, metadata) => {
+		const { queue } = get()
+		const newQueue = queue.map((song) => {
+			if (song.path === path) {
+				return { ...song, ...metadata } // Update cover or other fields
+			}
+			return song
+		})
+
+		// Only update if something changed
+		if (JSON.stringify(newQueue) !== JSON.stringify(queue)) {
+			set({ queue: newQueue })
 			// Auto-save
 			const { saveQueueToStorage } = get()
 			saveQueueToStorage()

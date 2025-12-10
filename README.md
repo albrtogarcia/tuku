@@ -54,6 +54,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Librería con cabeceras ordenables
 - [x] Interfaz inicial
 - [x] Base de datos persistente con SQLite
+- [x] Añadir portadas de álbum de iTunes
 
 ### 🚧 Fase 2: Alpha
 
