@@ -27,12 +27,25 @@
 		background-color: var(--bgPrimary);
 		opacity: 0;
 		visibility: hidden;
+		opacity: 0;
+		visibility: hidden;
 		z-index: 2;
 
 		&:hover {
 			background: var(--accent);
 			color: white;
 			transform: scale(1.1);
+		}
+	}
+
+	.btn-cover {
+		right: auto;
+		left: 1rem;
+
+		&.loading {
+			opacity: 1;
+			visibility: visible;
+			cursor: wait;
 		}
 	}
 }
@@ -61,4 +74,18 @@
 	font-size: 0.75rem;
 	text-align: center;
 	color: var(--textMuted);
+}
+
+.spin {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
 }

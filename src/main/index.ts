@@ -197,7 +197,59 @@ ipcMain.handle('save-queue', async (_event, queue, currentIndex) => {
 		insert.run(song.path)
 	}
 	db.prepare('UPDATE queue_state SET currentIndex = ? WHERE id = 0').run(currentIndex)
+	db.prepare('UPDATE queue_state SET currentIndex = ? WHERE id = 0').run(currentIndex)
 	return true
+})
+
+// Methods for cover retrieval
+ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string) => {
+	console.log(`[Main] fetch-album-cover called for: Artist="${artist}", Album="${album}"`)
+	try {
+		const query = encodeURIComponent(`${artist} ${album}`)
+		const url = `https://itunes.apple.com/search?term=${query}&entity=album&limit=1`
+		console.log(`[Main] Querying iTunes API: ${url}`)
+
+		const response = await fetch(url)
+		console.log(`[Main] iTunes API status: ${response.status}`)
+
+		const data = await response.json()
+		console.log(`[Main] iTunes API result count: ${data.resultCount}`)
+
+		if (data.results && data.results.length > 0) {
+			const result = data.results[0]
+			console.log(`[Main] Found album: "${result.collectionName}" by "${result.artistName}"`)
+
+			// Get higher resolution image (600x600)
+			const artworkUrl = result.artworkUrl100.replace('100x100bb', '600x600bb')
+			console.log(`[Main] Fetching artwork from: ${artworkUrl}`)
+
+			const imageResponse = await fetch(artworkUrl)
+			if (!imageResponse.ok) {
+				console.error(`[Main] Failed to fetch image: ${imageResponse.statusText}`)
+				return null
+			}
+
+			const arrayBuffer = await imageResponse.arrayBuffer()
+			const buffer = Buffer.from(arrayBuffer)
+			const base64 = `data:image/jpeg;base64,${buffer.toString('base64')}`
+			console.log(`[Main] Image converted to base64. Length: ${base64.length}`)
+
+			// Update in database
+			// We need to update all songs that belong to this album and artist
+			console.log('[Main] Updating database...')
+			const update = db.prepare('UPDATE library SET cover = ? WHERE artist = ? AND album = ?')
+			const info = update.run(base64, artist, album)
+			console.log(`[Main] Database updated. Changes: ${info.changes}`)
+
+			return base64
+		} else {
+			console.warn('[Main] No results found in iTunes')
+		}
+		return null
+	} catch (err) {
+		console.error('[Main] Error fetching cover:', err)
+		return null
+	}
 })
 
 ipcMain.handle('load-queue', async () => {

@@ -42,7 +42,7 @@ function groupAlbums(songs: Song[]): Album[] {
 }
 
 function App() {
-	const { folderPath, songs, handleSelectFolder, lastUpdated, handleRescanFolder } = useSongs()
+	const { folderPath, songs, handleSelectFolder, lastUpdated, handleRescanFolder, setSongs } = useSongs()
 	const [search, setSearch] = useState('')
 	const [activeTab, setActiveTab] = useState<'albums' | 'songs'>('albums')
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -103,6 +103,7 @@ function App() {
 			setCurrentIndex(0)
 			cleanQueueHistory()
 			audio.handlePlay(queue[0].path)
+			return
 		} else {
 			audio.handleStop()
 		}
@@ -115,6 +116,25 @@ function App() {
 	const handleSetQueue = (songs: Array<any>) => {
 		setQueue(songs)
 		setCurrentIndex(0)
+	}
+
+	const handleUpdateAlbumCover = (albumName: string, artistName: string, newCover: string) => {
+		console.log(`[App] Updating cover for Album="${albumName}", Artist="${artistName}"`)
+		let updatedCount = 0
+		const updatedSongs = songs.map((song) => {
+			if (song.album === albumName && song.artist === artistName) {
+				updatedCount++
+				return { ...song, cover: newCover }
+			}
+			return song
+		})
+		console.log(`[App] Updated ${updatedCount} songs. Triggering setSongs...`)
+		// This will trigger useSongs -> saveLibrary
+		// We can cast to any if setSongs expects SetStateAction
+		// But setSongs comes from useState<Song[]>, so passing Song[] is fine.
+		// However, setSongs is from useSongs hook.
+		// @ts-ignore
+		setSongs(updatedSongs)
 	}
 
 	return (
@@ -146,7 +166,7 @@ function App() {
 
 					{/* TAB CONTENT */}
 					<div className="library__body">
-						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} />}
+						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} />}
 						{activeTab === 'songs' && <SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} folderPath={folderPath} />}
 					</div>
 				</div>
