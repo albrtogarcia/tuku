@@ -7,33 +7,38 @@ $queue: clamp(128px, 25vh, 300px);
 	min-width: 640px;
 	margin: 0 auto;
 	padding: 0.5rem;
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: $player $queue 1fr;
 	gap: 0.5rem;
 	height: 100dvh;
+	overflow: hidden;
 
 	&>* {
 		border: 1px solid rgba(0, 0, 0, 0.25);
 		padding: 0.5rem;
 		position: relative;
+		overflow: hidden;
 	}
 
-	&__player {
-		min-height: $player;
-		flex: 1 0 $player;
-	}
+	&__player {}
 
-	&__queue {
-		min-height: $queue;
-		flex: 1 0 $queue;
-	}
+	&__queue {}
 
 	&__library {
-		flex-grow: 1;
+		max-height: 100%;
+		overflow: hidden;
+		display: grid;
+		grid-template-rows: auto 1fr;
+
+		.library__body {
+			overflow: hidden;
+			overflow-y: auto;
+		}
 	}
 }
 
-.library-header {
+.library__header {
 	display: flex;
 	align-items: flex-end;
 	justify-content: space-between;
@@ -42,7 +47,7 @@ $queue: clamp(128px, 25vh, 300px);
 }
 
 // Library tabs styles
-.library-tabs {
+.tabs {
 	display: flex;
 	flex: 1;
 	gap: 0;
@@ -51,7 +56,7 @@ $queue: clamp(128px, 25vh, 300px);
 	&__button {
 		background: none;
 		border: none;
-		padding: 0.25rem 1.5rem 0.75rem;
+		padding: 0.66rem 1.5rem 0.33rem;
 		color: rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -69,9 +74,4 @@ $queue: clamp(128px, 25vh, 300px);
 			border-bottom-color: var(--accent);
 		}
 	}
-}
-
-.library-content {
-	flex: 1;
-	overflow: hidden;
 }
