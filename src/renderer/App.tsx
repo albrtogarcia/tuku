@@ -215,14 +215,18 @@ function App() {
 
 	return (
 		<div className="container">
+
+			{/* PLAYER */}
 			<div className="container__player">
-				{/* PLAYER - Always show with empty state if needed */}
 				<Player audio={audio} songs={songs} onOpenSettings={() => setIsSettingsOpen(true)} />
 			</div>
+
+			{/* QUEUE */}
 			<div className="container__queue">
-				{/* QUEUE - Always show with empty state if needed */}
 				<Queue audio={audio} />
 			</div>
+
+			{/* LIBRARY */}
 			<div className="container__library">
 				<div className="library">
 					<div className="library__header">
@@ -247,6 +251,7 @@ function App() {
 					</div>
 				</div>
 			</div>
+
 			{/* Audio player (hidden) */}
 			<audio
 				ref={audio.audioRef}

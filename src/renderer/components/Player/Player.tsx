@@ -83,8 +83,10 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 	}
 
 	return (
-		<>
-			<div className="player">
+		<div className="player">
+
+			<div className="player__media">
+				{/* COVER */}
 				{currentSong.cover ? (
 					<img className="player__cover" src={currentSong.cover} alt="cover" />
 				) : (
@@ -92,6 +94,10 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 						<MusicNotesIcon size={48} weight="fill" />
 					</div>
 				)}
+			</div>
+
+			<div className="player__data">
+				{/* CURRENT SONG INFO */}
 				<div className="player__info">
 					<h4 className="song__title">{currentSong.title || ''}</h4>
 					<p className="song__metadata">
@@ -123,10 +129,11 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 						<span>{formatTime(duration)}</span>
 					</div>
 				</div>
-			</div>
 
-			<Controls audio={audio} onOpenSettings={onOpenSettings} />
-		</>
+				{/* CONTROLS */}
+				<Controls audio={audio} onOpenSettings={onOpenSettings} />
+			</div>
+		</div>
 	)
 }
 

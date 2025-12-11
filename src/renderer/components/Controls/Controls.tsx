@@ -54,31 +54,23 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 
 	return (
 		<div className="controls">
-			<div className="controls__settings">
-				{/* <div className="btn-holder">
-					<button className="btn" onClick={onOpenSettings} title="Settings">
-						<SlidersIcon size={20} />
-					</button>
-				</div> */}
-			</div>
-
 			<div className="controls__playback">
 				<div className="btn-holder">
 					<button className={`btn btn--secondary${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
-						<ShuffleIcon size={20} weight="fill" />
+						<ShuffleIcon size={18} weight="fill" />
 					</button>
 				</div>
 
 				<div className="btn-holder">
 					<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
-						<RewindIcon size={20} weight="fill" />
+						<RewindIcon size={18} weight="fill" />
 					</button>
 				</div>
 
 				<div className="btn-holder btn-holder--big">
 					{isPlaying && currentIndex !== -1 ? (
 						<button className="btn btn--lg active" onClick={handlePause} title="Pause">
-							<PauseIcon size={28} weight="fill" />
+							<PauseIcon size={24} weight="fill" />
 						</button>
 					) : (
 						<button
@@ -91,20 +83,20 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 							title="Play"
 							disabled={currentIndex === -1}
 						>
-							<PlayIcon size={28} weight="fill" />
+							<PlayIcon size={24} weight="fill" />
 						</button>
 					)}
 				</div>
 
 				<div className="btn-holder">
 					<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
-						<FastForwardIcon size={20} weight="fill" />
+						<FastForwardIcon size={18} weight="fill" />
 					</button>
 				</div>
 
 				<div className="btn-holder">
 					<button className={`btn btn--secondary${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title="Repeat queue">
-						<RepeatIcon size={20} weight="fill" />
+						<RepeatIcon size={18} weight="fill" />
 					</button>
 				</div>
 			</div>
