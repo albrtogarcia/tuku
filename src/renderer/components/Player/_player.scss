@@ -121,6 +121,7 @@
 			left: 0;
 			height: 4px;
 			background: var(--accent);
+			box-shadow: 0 0 1px var(--accent), 0 0 4px var(--accent);
 			border-radius: 2px;
 			width: var(--progress-fill, 0%);
 			pointer-events: none;
@@ -217,3 +218,6 @@
 		opacity: 0.5;
 	}
 }
+
+// Progress bar styles
+// https://codepen.io/brundolf/pen/YWEgLJ?editors=1100

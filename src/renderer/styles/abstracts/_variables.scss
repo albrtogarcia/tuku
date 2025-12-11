@@ -85,6 +85,8 @@
 	--inputBg: #f0f0f5;
 	--textColor: #222;
 	--textMuted: #6b7280;
+
+	--glow: 0 0 1px var(--accent), 0 0 4px var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {

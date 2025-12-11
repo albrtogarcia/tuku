@@ -74,6 +74,10 @@
 			box-shadow: inset 0 1px 5px #000000e2;
 			filter: brightness(.9);
 			translate: 0 .5px;
+
+			svg path {
+				filter: drop-shadow(var(--glow));
+			}
 		}
 
 		&:hover {
