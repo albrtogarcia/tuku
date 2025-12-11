@@ -24,7 +24,7 @@ $queue: 25vh;
 	}
 
 	&__queue {
-		min-height: $queue;
+		height: $queue;
 		flex: 0 0 $queue;
 
 		&::after {
@@ -44,6 +44,17 @@ $queue: 25vh;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+
+		&::after {
+			content: '';
+			height: 3rem;
+			background: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent);
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			pointer-events: none;
+		}
 	}
 }
 
@@ -51,14 +62,23 @@ $queue: 25vh;
 	max-height: 100%;
 	overflow: hidden;
 
-}
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.5rem;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+	}
 
-.library__header {
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
-	gap: 1rem;
-	margin-bottom: 1rem;
+	&__body {
+		flex: 1;
+		min-height: 0;
+		height: 100%;
+		padding: 0.5rem;
+		margin: 0;
+		overflow-y: auto;
+	}
 }
 
 // Library tabs styles
@@ -66,18 +86,16 @@ $queue: 25vh;
 	display: flex;
 	flex: 1;
 	gap: 0;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
 	&__button {
 		background: none;
 		border: none;
-		padding: 0.66rem 1.5rem 0.33rem;
+		padding: 0.25rem 1.5rem;
 		color: rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 		transition: all 0.2s ease;
 		font-size: 0.9rem;
 		font-weight: 500;
-		border-bottom: 2px solid transparent;
 
 		&:hover {
 			color: rgba(255, 255, 255, 0.9);
@@ -89,12 +107,4 @@ $queue: 25vh;
 			border-bottom-color: var(--accent);
 		}
 	}
-}
-
-.library-content {
-	flex: 1;
-	min-height: 0;
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
 }

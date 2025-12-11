@@ -10,17 +10,23 @@
 .songs-table {
 	width: 100%;
 	border-collapse: collapse;
+	table-layout: fixed;
 
 	thead {
 		position: sticky;
 		top: 0;
 		z-index: 1;
-		background-color: var(--bgPrimary);
 	}
 
 	&__row {
 		cursor: pointer;
 		transition: background-color 0.2s ease;
+
+		td {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow: hidden;
+		}
 
 		&:hover {
 			background-color: rgba(255, 255, 255, 0.05);
@@ -35,6 +41,25 @@
 		text-transform: uppercase;
 		border-bottom: 1px solid var(--border);
 		opacity: 0.5;
+		font-weight: 300;
+
+		&:nth-child(1) {
+			width: 25%;
+		}
+
+		&:nth-child(2) {
+			width: 25%;
+		}
+
+		&:nth-child(4) {
+			width: 8%;
+			text-align: right;
+		}
+
+		&:nth-child(5) {
+			width: 8%;
+			text-align: right;
+		}
 	}
 
 	.sortable-indicator {

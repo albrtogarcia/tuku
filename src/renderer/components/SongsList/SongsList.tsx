@@ -16,7 +16,7 @@ const columns: SongsTableColumn[] = [
 	{ key: 'title', label: 'Title', sortable: true },
 	{ key: 'artist', label: 'Artist', sortable: true },
 	{ key: 'album', label: 'Album', sortable: true },
-	{ key: 'duration', label: 'Duration', sortable: true },
+	{ key: 'duration', label: 'Time', sortable: true },
 	{ key: 'year', label: 'Year', sortable: true },
 	{ key: 'genre', label: 'Genre', sortable: true },
 ]
