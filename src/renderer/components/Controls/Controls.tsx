@@ -12,29 +12,14 @@ interface ControlsProps {
 const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle } = usePlayerStore()
 	const { volume, setVolume, handlePause, isPlaying, handlePlay } = audio
-	const volumeWheelRef = useRef<HTMLDivElement>(null)
-
 	// Calculate rotation angle (-120 to 120 degrees based on volume 0-1)
 	const rotationAngle = volume * 240 - 120
 
-	// Use useEffect to register non-passive wheel event listener
-	useEffect(() => {
-		const element = volumeWheelRef.current
-		if (element) {
-			const handleVolumeWheel = (e: WheelEvent) => {
-				e.preventDefault()
-				// Debug log to verify the wheel event is attached and firing
-				console.log('volume knob wheel', { deltaY: e.deltaY })
-				const delta = e.deltaY < 0 ? 0.05 : -0.05
-				setVolume((v) => Math.max(0, Math.min(1, v + delta)))
-			}
-
-			element.addEventListener('wheel', handleVolumeWheel, { passive: false })
-			return () => {
-				element.removeEventListener('wheel', handleVolumeWheel)
-			}
-		}
-	}, [setVolume])
+	const handleVolumeWheel = (e: React.WheelEvent) => {
+		// e.preventDefault()
+		const delta = e.deltaY < 0 ? 0.05 : -0.05
+		setVolume((v) => Math.max(0, Math.min(1, v + delta)))
+	}
 
 	const playPrev = () => {
 		if (currentIndex > 0) {
@@ -103,7 +88,7 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 
 			<div className="controls__volume">
 				<div className="knob__container" title={`Volume: ${Math.round(volume * 100)}%`}>
-					<div className="knob__outer" ref={volumeWheelRef}>
+					<div className="knob__outer" onWheel={handleVolumeWheel}>
 						<div className="knob__shadow"></div>
 						<div className="knob__inner">
 							<div className="knob__indicator" style={{ transform: `rotate(${rotationAngle}deg)` }}></div>

@@ -251,6 +251,15 @@ function App() {
 					</div>
 				</div>
 			</div>
+			{/* Settings Modal */}
+			<Settings
+				isOpen={isSettingsOpen}
+				onClose={() => setIsSettingsOpen(false)}
+				folderPath={folderPath}
+				lastUpdated={lastUpdated}
+				onSelectFolder={handleSelectFolder}
+				onRescanFolder={handleRescanFolder}
+			/>
 
 			{/* Audio player (hidden) */}
 			<audio
