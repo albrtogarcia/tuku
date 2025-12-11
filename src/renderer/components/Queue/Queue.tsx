@@ -4,6 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { formatTime } from '@/utils'
 import './_queue.scss'
 
 interface QueueProps {
@@ -32,7 +33,9 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubl
 		<li ref={setNodeRef} style={style} className={`queue__item${isPlaying ? ' playing' : ''}${isPlayed ? ' played' : ''}${isDragging ? ' dragging' : ''}`}>
 			<div {...attributes} {...listeners} className="queue__item-content" onDoubleClick={() => onDoubleClick(index)}>
 				<span>{song.title}</span>
-				<small>({song.artist})</small>
+				<small>{song.artist}</small>
+				<small>{song.album}</small>
+				<small>{formatTime(song.duration)}</small>
 			</div>
 			<button className="btn btn--ghost" onClick={() => onRemove(index)} title="Remove from queue">
 				<XIcon size={16} weight="bold" />
@@ -118,7 +121,7 @@ const Queue = ({ audio }: QueueProps) => {
 				</h2>
 				{queue.length != 0 && (
 					<button className="btn" onClick={clearQueue} title="Clear queue">
-						<TrashIcon size={16} weight="fill" />
+						Clear
 					</button>
 				)}
 			</header>

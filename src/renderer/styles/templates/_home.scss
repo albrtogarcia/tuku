@@ -26,6 +26,17 @@ $queue: 25vh;
 	&__queue {
 		min-height: $queue;
 		flex: 0 0 $queue;
+
+		&::after {
+			content: '';
+			height: 3rem;
+			background: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent);
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			pointer-events: none;
+		}
 	}
 
 	&__library {
