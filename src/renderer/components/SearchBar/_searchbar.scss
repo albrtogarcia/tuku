@@ -1,9 +1,10 @@
 .search {
 	input {
-		background: rgba(0, 0, 0, 0.25);
+		background: rgba(0, 0, 0, 0.15);
 		color: var(--textColor);
-		border: 1px solid var(--border);
-		border-radius: 0.25rem;
+		border-style: solid;
+		border-width: 0 0 0 1px;
+		border-color: var(--border);
 		width: 100%;
 		min-width: 20rem;
 		padding: 0.5rem 0.75rem;
