@@ -19,7 +19,10 @@
 	&__playback {
 		display: flex;
 		align-items: center;
+		justify-content: center;
+		flex: 1;
 		gap: 0.5rem;
+		width: 100%;
 
 		.btn--lg {
 			border-radius: 50%;
