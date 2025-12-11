@@ -1,19 +1,19 @@
 @use '../abstracts' as *;
 
-$player: 200px;
-$queue: clamp(128px, 25vh, 300px);
+$player: 220px;
+$queue: 25vh;
 
 .container {
 	min-width: 640px;
 	padding: 0.5rem;
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: $player $queue 1fr;
 	gap: 0.5rem;
 	height: 100vh;
 
 	&>* {
 		border: 1px solid rgba(0, 0, 0, 0.25);
-		padding: 0.5rem;
 		position: relative;
 		overflow: hidden;
 	}
@@ -36,7 +36,13 @@ $queue: clamp(128px, 25vh, 300px);
 	}
 }
 
-.library-header {
+.library {
+	max-height: 100%;
+	overflow: hidden;
+
+}
+
+.library__header {
 	display: flex;
 	align-items: flex-end;
 	justify-content: space-between;
@@ -45,7 +51,7 @@ $queue: clamp(128px, 25vh, 300px);
 }
 
 // Library tabs styles
-.library-tabs {
+.tabs {
 	display: flex;
 	flex: 1;
 	gap: 0;
@@ -54,7 +60,7 @@ $queue: clamp(128px, 25vh, 300px);
 	&__button {
 		background: none;
 		border: none;
-		padding: 0.25rem 1.5rem 0.75rem;
+		padding: 0.66rem 1.5rem 0.33rem;
 		color: rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 		transition: all 0.2s ease;

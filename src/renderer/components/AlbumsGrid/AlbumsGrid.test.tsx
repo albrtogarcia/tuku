@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '@testing-library/jest-dom'
 import AlbumsGrid from './AlbumsGrid'
@@ -20,6 +20,11 @@ vi.mock('@phosphor-icons/react', () => ({
 	PlusIcon: ({ size, weight }: any) => (
 		<div data-testid="plus-icon" data-size={size} data-weight={weight}>
 			PlusIcon
+		</div>
+	),
+	DownloadSimple: ({ size, weight, className }: any) => (
+		<div data-testid="download-icon" data-size={size} data-weight={weight} className={className}>
+			DownloadSimple
 		</div>
 	),
 }))
@@ -85,8 +90,10 @@ describe('AlbumsGrid Component', () => {
 	}
 
 	const mockSetQueue = vi.fn()
+	const mockOnUpdateCover = vi.fn()
 
 	const createMockAudio = () => ({
+
 		audioRef: { current: null },
 		audioUrl: null,
 		isPlaying: false,
@@ -113,13 +120,13 @@ describe('AlbumsGrid Component', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		;(usePlayerStore as any).mockReturnValue(mockPlayerStore)
+			; (usePlayerStore as any).mockReturnValue(mockPlayerStore)
 	})
 
 	describe('Rendering', () => {
 		it('should render empty state when no albums provided', () => {
 			const mockAudio = createMockAudio()
-			const { container } = render(<AlbumsGrid albums={[]} setQueue={mockSetQueue} audio={mockAudio} />)
+			const { container } = render(<AlbumsGrid albums={[]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const albumsGrid = container.querySelector('.albums-grid')
 			expect(albumsGrid).toBeInTheDocument()
@@ -129,7 +136,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should render albums grid when albums are provided', () => {
 			const mockAudio = createMockAudio()
-			const { container } = render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} />)
+			const { container } = render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const albumsGrid = container.querySelector('.albums-grid')
 			expect(albumsGrid).toBeInTheDocument()
@@ -145,7 +152,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should display album with cover image', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const coverImage = screen.getByAltText('Abbey Road by The Beatles')
 			expect(coverImage).toBeInTheDocument()
@@ -155,7 +162,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should display default cover when no cover is available', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should show default cover with music notes icon
 			expect(screen.getByTestId('music-notes-icon')).toBeInTheDocument()
@@ -169,7 +176,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should handle album without artist', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[2]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[2]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should show album cover image since this album has a cover (no artist, so just title)
 			expect(screen.getByAltText('Unknown Album')).toBeInTheDocument()
@@ -179,7 +186,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should render add to queue button for each album', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const addToQueueButtons = screen.getAllByTitle('Add to Queue')
 			expect(addToQueueButtons).toHaveLength(mockAlbums.length)
@@ -197,7 +204,7 @@ describe('AlbumsGrid Component', () => {
 	describe('Album Interactions', () => {
 		it('should set queue and play first song when clicking album', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Click on the album card (there are 2 buttons: album card and add to queue)
 			const albumCards = screen.getAllByRole('button')
@@ -210,7 +217,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should add album to queue when clicking add to queue button', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const addToQueueButton = screen.getByTitle('Add to Queue')
 			fireEvent.click(addToQueueButton)
@@ -224,7 +231,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should prevent event propagation when clicking add to queue', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const addToQueueButton = screen.getByTitle('Add to Queue')
 			const clickEvent = new MouseEvent('click', { bubbles: true })
@@ -237,7 +244,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should handle keyboard interaction with album cards', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const albumCards = screen.getAllByRole('button')
 			const albumCard = albumCards.find((card) => card.getAttribute('tabIndex') === '0')
@@ -248,6 +255,33 @@ describe('AlbumsGrid Component', () => {
 			fireEvent.keyDown(albumCard!, { key: 'Enter', code: 'Enter' })
 			// Note: We're not testing the actual key press handling as it's not implemented in the component
 			// but we verify the element is focusable
+		})
+
+		it('should fetch cover and update when clicking fetch button', async () => {
+			const mockAudio = createMockAudio()
+			const mockFetch = vi.fn().mockResolvedValue('data:image/jpeg;base64,fake')
+			// @ts-ignore
+			window.electronAPI = { ...window.electronAPI, fetchAlbumCover: mockFetch }
+
+			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
+
+			// Find fetch button by title
+			const fetchButton = screen.getByTitle('Fetch Cover from iTunes')
+			expect(fetchButton).toBeInTheDocument()
+
+			// Click it
+			fireEvent.click(fetchButton)
+
+			// Expect loading state? We can't easily check for loading class without finding the button again or using waitFor
+			// But we can wait for fetch to be called
+			await waitFor(() => {
+				expect(mockFetch).toHaveBeenCalledWith('Queen', 'A Night at the Opera')
+			})
+
+			// And then onUpdateCover
+			await waitFor(() => {
+				expect(mockOnUpdateCover).toHaveBeenCalledWith('A Night at the Opera', 'Queen', 'data:image/jpeg;base64,fake')
+			})
 		})
 	})
 
@@ -262,7 +296,7 @@ describe('AlbumsGrid Component', () => {
 			}
 
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[albumWithoutSongs]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[albumWithoutSongs]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should render the album
 			expect(screen.getByText('Empty Album')).toBeInTheDocument()
@@ -288,7 +322,7 @@ describe('AlbumsGrid Component', () => {
 			}
 
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[albumWithUndefinedSongs]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[albumWithUndefinedSongs]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should render the album
 			expect(screen.getByText('Undefined Songs Album')).toBeInTheDocument()
@@ -321,7 +355,7 @@ describe('AlbumsGrid Component', () => {
 			}
 
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[albumWithoutTitle]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[albumWithoutTitle]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should show "Unknown Album" as fallback
 			expect(screen.getByText('Unknown Album')).toBeInTheDocument()
@@ -344,7 +378,7 @@ describe('AlbumsGrid Component', () => {
 			}
 
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[albumWithoutId]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[albumWithoutId]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should still render correctly
 			expect(screen.getByText('No ID Album')).toBeInTheDocument()
@@ -355,7 +389,7 @@ describe('AlbumsGrid Component', () => {
 	describe('Multiple Albums', () => {
 		it('should render multiple albums correctly', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Should render covers for albums that have them with proper alt text
 			expect(screen.getByAltText('Abbey Road by The Beatles')).toBeInTheDocument()
@@ -373,7 +407,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should handle clicking different albums', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Get all album cards (exclude add to queue buttons)
 			const albumCards = screen.getAllByRole('button').filter((card) => card.getAttribute('tabIndex') === '0')
@@ -398,7 +432,7 @@ describe('AlbumsGrid Component', () => {
 	describe('Accessibility', () => {
 		it('should have proper ARIA attributes', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			// Check that the music notes icon has proper aria-label
 			const musicIcon = screen.getByRole('img', { name: 'No cover' })
@@ -407,7 +441,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should have proper alt text for album covers', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const coverImage = screen.getByAltText('Abbey Road by The Beatles')
 			expect(coverImage).toBeInTheDocument()
@@ -415,7 +449,7 @@ describe('AlbumsGrid Component', () => {
 
 		it('should have focusable album cards', () => {
 			const mockAudio = createMockAudio()
-			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} />)
+			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} />)
 
 			const albumCards = screen.getAllByRole('button')
 			// Filter out the add to queue buttons

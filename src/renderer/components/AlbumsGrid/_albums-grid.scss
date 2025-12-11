@@ -1,7 +1,7 @@
 .albums-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-	gap: 1rem;
+	gap: 0.5rem;
 }
 
 .album-card {
@@ -11,29 +11,25 @@
 
 	&:hover {
 		transform: translateY(-2px);
-
-		.btn {
-			opacity: 1;
-			visibility: visible;
-		}
 	}
+}
 
-	.btn {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		border-radius: 50%;
-		padding: 0.25rem;
-		background-color: var(--bgPrimary);
-		opacity: 0;
-		visibility: hidden;
-		z-index: 2;
+.spinner {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	border-top-color: var(--accent);
+	animation: spin 1s ease-in-out infinite;
+	transform: translate(-50%, -50%);
+}
 
-		&:hover {
-			background: var(--accent);
-			color: white;
-			transform: scale(1.1);
-		}
+@keyframes spin {
+	to {
+		transform: translate(-50%, -50%) rotate(360deg);
 	}
 }
 
@@ -47,7 +43,6 @@
 	align-items: center;
 	justify-content: flex-start;
 	gap: 0.5rem;
-	font-size: 32px;
 	object-fit: cover;
 
 	&.default {
@@ -61,4 +56,40 @@
 	font-size: 0.75rem;
 	text-align: center;
 	color: var(--textMuted);
+}
+
+.albums-grid--empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 2rem;
+	color: var(--textMuted);
+	gap: 1rem;
+	min-height: 200px;
+
+	p {
+		font-size: 1.1rem;
+	}
+}
+
+.btn-primary {
+	background-color: var(--accent);
+	color: white;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	border-radius: 4px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s ease, transform 0.1s ease;
+
+	&:hover {
+		background-color: color-mix(in srgb, var(--accent), white 10%);
+		transform: translateY(-1px);
+	}
+
+	&:active {
+		transform: translateY(1px);
+	}
 }

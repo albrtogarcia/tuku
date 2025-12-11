@@ -55,11 +55,11 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	return (
 		<div className="controls">
 			<div className="controls__settings">
-				<div className="btn-holder">
+				{/* <div className="btn-holder">
 					<button className="btn" onClick={onOpenSettings} title="Settings">
 						<SlidersIcon size={20} />
 					</button>
-				</div>
+				</div> */}
 			</div>
 
 			<div className="controls__playback">
