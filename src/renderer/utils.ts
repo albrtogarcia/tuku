@@ -1,4 +1,5 @@
 import { Song } from '../types/song'
+import { Album } from '../types/album'
 
 export function formatTime(sec: number) {
 	const m = Math.floor(sec / 60)
@@ -15,4 +16,9 @@ export function filterSongs(songs: Song[], search: string): Song[] {
 			song.album.toLowerCase().includes(q) ||
 			song.genre.toLowerCase().includes(q),
 	)
+}
+
+export function filterAlbums(albums: Album[], search: string): Album[] {
+	const q = search.toLowerCase()
+	return albums.filter((album) => album.title.toLowerCase().includes(q) || album.artist.toLowerCase().includes(q))
 }

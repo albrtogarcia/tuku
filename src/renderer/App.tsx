@@ -8,19 +8,13 @@ import AlbumsGrid from './components/AlbumsGrid/AlbumsGrid'
 import Settings from './components/Settings/Settings'
 import { useAudioPlayer } from './hooks/useAudioPlayer'
 import { useSongs } from './hooks/useSongs'
-import { formatTime, filterSongs } from './utils'
+import { formatTime, filterSongs, filterAlbums } from './utils'
 import { usePlayerStore } from './store/player'
 
 import { Song } from '../types/song'
+import { Album } from '../types/album'
 
-interface Album {
-	id: string
-	title: string
-	artist: string
-	cover: string
-	year: number
-	songs: Song[]
-}
+
 
 function groupAlbums(songs: Song[]): Album[] {
 	const albumsMap = new Map<string, Album>()
@@ -207,8 +201,11 @@ function App() {
 	}, [currentIndex, queue, audio.handleResume, audio.handlePause, handleNext, handlePrevious])
 
 
-	const filteredSongs = filterSongs(songs, search)
-	const albums = groupAlbums(songs)
+	const filteredSongs = activeTab === 'songs' ? filterSongs(songs, search) : songs
+	const allAlbums = groupAlbums(songs)
+	const albums = activeTab === 'albums' ? filterAlbums(allAlbums, search) : allAlbums
+
+	const searchPlaceholder = activeTab === 'albums' ? 'Search albums or artists...' : 'Search songs, albums or artists...'
 
 	// Function to set queue and start playing
 	const handleSetQueue = (songs: Array<any>) => {
@@ -264,7 +261,7 @@ function App() {
 						</div>
 
 						{/* SEARCH */}
-						<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+						<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder={searchPlaceholder} />
 					</div>
 
 					{/* TAB CONTENT */}
