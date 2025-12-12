@@ -83,6 +83,22 @@ $queue: 25vh;
 		padding: 0.5rem;
 		margin: 0;
 		overflow-y: auto;
+
+		&>* {
+			animation: fadeIn 0.3s ease-out;
+		}
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }
 

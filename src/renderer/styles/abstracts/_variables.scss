@@ -75,12 +75,10 @@
 	--synth-body: linear-gradient(to bottom in oklab, hsl(248deg 11% 15%), hsl(248deg 11% 10%));
 
 	// legacy
-	--primary: #ada9ff;
-	--primaryDark: #8a85c3;
 	--accent: #efc442;
 	--accentDark: #d89641;
 	--bg: #f7f7fa;
-	--bgPrimary: #f0f0f5;
+	--bgPrimary: #222;
 	--border: rgba(0, 0, 0, 0.25);
 	--inputBg: #f0f0f5;
 	--textColor: #222;
@@ -91,12 +89,10 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--primary: #5457e0;
-		--primaryDark: #3730a3;
 		--accent: #efc442;
 		--accentDark: #d89641;
 		--bg: #1E1E2E;
-		--bgPrimary: #313244;
+		--bgPrimary: #22212A;
 		--border: rgba(0, 0, 0, 0.25);
 		--inputBg: #27272a;
 		--textColor: #d2d2d2;

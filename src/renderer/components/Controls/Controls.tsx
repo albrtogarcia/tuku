@@ -10,8 +10,20 @@ interface ControlsProps {
 }
 
 const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
-	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffle, setShuffle } = usePlayerStore()
-	const { volume, setVolume, handlePause, isPlaying, handlePlay } = audio
+	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffleQueue, isPlaying, setIsPlaying } = usePlayerStore()
+	const { volume, setVolume, handlePause: audioHandlePause, handlePlay: audioHandlePlay } = audio
+
+	const handlePlayPause = () => {
+		if (isPlaying) {
+			setIsPlaying(false)
+			audioHandlePause()
+		} else {
+			setIsPlaying(true)
+			if (queue[currentIndex]) {
+				audioHandlePlay(queue[currentIndex].path)
+			}
+		}
+	}
 	// Calculate rotation angle (-120 to 120 degrees based on volume 0-1)
 	const rotationAngle = volume * 240 - 120
 
@@ -25,7 +37,8 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 		if (currentIndex > 0) {
 			setCurrentIndex(currentIndex - 1)
 			cleanQueueHistory()
-			handlePlay(queue[currentIndex - 1].path)
+			setIsPlaying(true)
+			audioHandlePlay(queue[currentIndex - 1].path)
 		}
 	}
 
@@ -33,7 +46,8 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 		if (currentIndex + 1 < queue.length) {
 			setCurrentIndex(currentIndex + 1)
 			cleanQueueHistory()
-			handlePlay(queue[currentIndex + 1].path)
+			setIsPlaying(true)
+			audioHandlePlay(queue[currentIndex + 1].path)
 		}
 	}
 
@@ -41,7 +55,7 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 		<div className="controls">
 			<div className="controls__playback">
 				<div className="btn-holder">
-					<button className={`btn btn--secondary${shuffle ? ' active' : ''}`} onClick={() => setShuffle(!shuffle)} title="Shuffle queue">
+					<button className="btn btn--secondary" onClick={() => shuffleQueue()} title="Shuffle queue">
 						<ShuffleIcon size={18} weight="fill" />
 					</button>
 				</div>
@@ -54,17 +68,13 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 
 				<div className="btn-holder btn-holder--big">
 					{isPlaying && currentIndex !== -1 ? (
-						<button className="btn btn--lg active" onClick={handlePause} title="Pause">
+						<button className="btn btn--lg active" onClick={handlePlayPause} title="Pause">
 							<PauseIcon size={24} weight="fill" />
 						</button>
 					) : (
 						<button
 							className="btn btn--lg"
-							onClick={() => {
-								if (queue[currentIndex]) {
-									handlePlay(queue[currentIndex].path)
-								}
-							}}
+							onClick={handlePlayPause}
 							title="Play"
 							disabled={currentIndex === -1}
 						>

@@ -22,7 +22,7 @@ interface SortableQueueItemProps {
 }
 
 function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubleClick }: SortableQueueItemProps) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: song.path })
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `${song.path}-${index}` })
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
@@ -96,8 +96,8 @@ const Queue = ({ audio }: QueueProps) => {
 		const { active, over } = event
 
 		if (active.id !== over?.id) {
-			const activeIndex = queue.findIndex((song) => song.path === active.id)
-			const overIndex = queue.findIndex((song) => song.path === over?.id)
+			const activeIndex = queue.findIndex((_, idx) => `${queue[idx].path}-${idx}` === active.id)
+			const overIndex = queue.findIndex((_, idx) => `${queue[idx].path}-${idx}` === over?.id)
 
 			const newQueue = arrayMove(queue, activeIndex, overIndex)
 			setQueue(newQueue)
@@ -126,7 +126,7 @@ const Queue = ({ audio }: QueueProps) => {
 				)}
 			</header>
 			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-				<SortableContext items={queue.map((song) => song.path)} strategy={verticalListSortingStrategy}>
+				<SortableContext items={queue.map((song, idx) => `${song.path}-${idx}`)} strategy={verticalListSortingStrategy}>
 					<ol className="queue__list">
 						{queue.length === 0 ? (
 							<li className="queue__empty">
@@ -138,7 +138,7 @@ const Queue = ({ audio }: QueueProps) => {
 						) : (
 							queue.map((song, idx) => (
 								<SortableQueueItem
-									key={song.path}
+									key={`${song.path}-${idx}`}
 									song={song}
 									index={idx}
 									isPlaying={idx === currentIndex}

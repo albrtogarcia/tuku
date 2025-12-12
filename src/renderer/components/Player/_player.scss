@@ -8,6 +8,7 @@
 
 	// Empty state styles
 	&--empty {
+		display: flex;
 		justify-content: center;
 		align-items: center;
 		min-height: 120px;
@@ -74,21 +75,6 @@
 
 		&::-webkit-slider-thumb {
 			display: none;
-			// -webkit-appearance: none;
-			// appearance: none;
-			// width: 8px;
-			// height: 8px;
-			// background: var(--accent);
-			// border-radius: 50%;
-			// cursor: pointer;
-			// border: none;
-			// transition: transform 0.1s ease;
-			// position: relative;
-			// z-index: 2;
-
-			// &:hover {
-			// 	transform: scale(1.2);
-			// }
 		}
 
 		// Firefox
@@ -102,19 +88,6 @@
 
 		&::-moz-range-thumb {
 			display: none;
-			// width: 8px;
-			// height: 8px;
-			// background: var(--accent);
-			// border-radius: 50%;
-			// cursor: pointer;
-			// border: none;
-			// transition: transform 0.1s ease;
-			// position: relative;
-			// z-index: 2;
-
-			// &:hover {
-			// 	transform: scale(1.2);
-			// }
 		}
 
 		// Progress fill using CSS custom property
@@ -181,6 +154,7 @@
 		justify-content: center;
 		font-size: 32px;
 		object-fit: cover;
+		object-position: center;
 		aspect-ratio: 1;
 
 		&.default {

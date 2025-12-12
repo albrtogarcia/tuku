@@ -50,8 +50,6 @@ const SongsList = ({ songs, audio, addToQueue, folderPath }: SongsListProps) => 
 	const handleSongDoubleClick = (song: Song) => {
 		// Use playNow to handle adding to queue and setting as current
 		playNow(song)
-		// Start audio playback
-		audio.handlePlay(song.path)
 	}
 
 	// Handle right click: add to queue

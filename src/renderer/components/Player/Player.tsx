@@ -23,8 +23,7 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 		const randomSong = songs[randomIndex]
 
 		setQueue([randomSong])
-		setCurrentIndex(0)
-		handlePlay(randomSong.path)
+		setCurrentIndex(0) // This now triggers auto-play via App.tsx effect (updates playingPath)
 	}
 
 	// If there's no song in queue but something is playing, search in library

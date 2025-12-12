@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 
 export function useAudioPlayer() {
 	const audioRef = useRef<HTMLAudioElement>(null)
@@ -30,7 +30,7 @@ export function useAudioPlayer() {
 		setCurrentTime(time)
 	}
 
-	const handlePlay = async (songPath: string) => {
+	const handlePlay = useCallback(async (songPath: string) => {
 		const buffer = await window.electronAPI.getAudioBuffer(songPath)
 		if (buffer) {
 			if (audioUrl) setPrevAudioUrl(audioUrl) // Save previous for cleanup later
@@ -41,7 +41,7 @@ export function useAudioPlayer() {
 			setPendingPlay(true)
 			setIsPlaying(true)
 		}
-	}
+	}, [audioUrl])
 
 	// Cleanup previous audioUrl only after new one is in use
 	useEffect(() => {
@@ -58,26 +58,26 @@ export function useAudioPlayer() {
 		}
 	}, [volume])
 
-	const handlePause = () => {
+	const handlePause = useCallback(() => {
 		audioRef.current?.pause()
 		setIsPlaying(false)
-	}
+	}, [])
 
-	const handleResume = () => {
+	const handleResume = useCallback(() => {
 		audioRef.current?.play()
 		setIsPlaying(true)
-	}
+	}, [])
 
-	const handleCanPlay = () => {
+	const handleCanPlay = useCallback(() => {
 		if (pendingPlay && audioRef.current && audioRef.current.readyState >= 3) {
 			audioRef.current.play().catch((error) => {
 				setIsPlaying(false)
 			})
 			setPendingPlay(false)
 		}
-	}
+	}, [pendingPlay])
 
-	const handleStop = () => {
+	const handleStop = useCallback(() => {
 		audioRef.current?.pause()
 		if (audioRef.current) audioRef.current.currentTime = 0
 		setPlayingPath(null)
@@ -86,7 +86,7 @@ export function useAudioPlayer() {
 			setAudioUrl(null)
 		}
 		setIsPlaying(false)
-	}
+	}, [audioUrl])
 
 	return {
 		audioRef,

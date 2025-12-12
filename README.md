@@ -62,14 +62,14 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [ ] Afinar UI general
 - [ ] Tabs en queue con Next y History
 - [ ] Funcionalidad buscador por tabs
-- [ ] Botón eliminar canción de cola
+- [x] Botón eliminar canción de cola
 - [ ] Corregir tests
 - [ ] Adoptar solo una forma de cargar portadas de álbum
 - [ ] Componente de notificaciones
-- [ ] Testear controles de reproducción
-- [ ] Componente header de sección
-- [ ] Corregir altura de grid de álbumes
-- [ ] Responsive
+- [x] Testear controles de reproducción
+- [x] Componente header de sección
+- [x] Corregir altura de grid de álbumes
+- [x] Responsive
 - [ ] Normalizar nivel de audio?
 
 ### 🚧 Fase 2: Alpha

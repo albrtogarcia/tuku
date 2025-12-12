@@ -8,15 +8,15 @@ interface PlayerState {
 	isPlaying: boolean
 	playingPath: string | null
 	repeat: boolean
-	shuffle: boolean
 	setQueue: (queue: Song[]) => void
 	setCurrentIndex: (idx: number) => void
 	setIsPlaying: (playing: boolean) => void
 	setPlayingPath: (path: string | null) => void
 	setRepeat: (repeat: boolean) => void
-	setShuffle: (shuffle: boolean) => void
+	shuffleQueue: () => void
 	addToQueue: (song: Song) => void
 	addAlbumToQueue: (songs: Song[]) => void
+	playAlbumImmediately: (songs: Song[]) => void
 	playNow: (song: Song) => void
 	clearQueue: () => void
 	removeFromQueue: (index: number) => void
@@ -33,7 +33,6 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	isPlaying: false,
 	playingPath: null,
 	repeat: false,
-	shuffle: false,
 	setQueue: (queue) => {
 		set({ queue })
 		// Auto-save when queue changes
@@ -41,7 +40,8 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		saveQueueToStorage()
 	},
 	setCurrentIndex: (idx) => {
-		set({ currentIndex: idx })
+		const { queue } = get()
+		set({ currentIndex: idx, playingPath: queue[idx]?.path || null })
 		// Auto-save when index changes
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
@@ -49,7 +49,27 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	setIsPlaying: (isPlaying) => set({ isPlaying }),
 	setPlayingPath: (path) => set({ playingPath: path }),
 	setRepeat: (repeat) => set({ repeat }),
-	setShuffle: (shuffle) => set({ shuffle }),
+	shuffleQueue: () => {
+		const { queue, currentIndex } = get()
+		if (queue.length <= 1) return
+
+		// Keep played songs order (0 to currentIndex)
+		// Shuffle upcoming songs (currentIndex + 1 to end)
+		const past = queue.slice(0, currentIndex + 1)
+		const future = queue.slice(currentIndex + 1)
+
+		// Fisher-Yates shuffle for future
+		for (let i = future.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[future[i], future[j]] = [future[j], future[i]]
+		}
+
+		const newQueue = [...past, ...future]
+		set({ queue: newQueue })
+		// Auto-save
+		const { saveQueueToStorage } = get()
+		saveQueueToStorage()
+	},
 	addToQueue: (song) => {
 		const { queue, currentIndex } = get()
 		// Check if song is already in queue
@@ -80,6 +100,28 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
+	playAlbumImmediately: (songs) => {
+		const { queue } = get()
+		// Filter out duplicates to avoid mess (optional, but consistent with other methods)
+		const uniqueSongs = songs.filter((song) => !queue.find((q) => q.path === song.path))
+
+		// If we want to strictly "move" them continuously to top, we might need more complex logic.
+		// But "add to front" usually means Prepend.
+		// If songs are ALREADY in queue, we might duplicate them if we don't filter?
+		// The requirement is "add to start and play".
+		// Let's assume we prepend them.
+
+		const newQueue = [...songs, ...queue]
+		set({
+			queue: newQueue,
+			currentIndex: 0,
+			playingPath: songs[0]?.path || null,
+			isPlaying: true
+		})
+
+		const { saveQueueToStorage } = get()
+		saveQueueToStorage()
+	},
 	playNow: (song) => {
 		const { queue } = get()
 		// Check if song is already in queue
@@ -88,17 +130,23 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 			// Song exists in queue, just set it as current
 			set({ currentIndex: existingIndex, playingPath: song.path, isPlaying: true })
 		} else {
-			// Song not in queue, add it and play
-			const newQueue = [...queue, song]
-			set({ queue: newQueue, currentIndex: newQueue.length - 1, playingPath: song.path, isPlaying: true })
+			// Song not in queue, add it to the BEGINNING and play
+			const newQueue = [song, ...queue]
+			set({ queue: newQueue, currentIndex: 0, playingPath: song.path, isPlaying: true })
 		}
 		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
 	clearQueue: () => {
-		set({ queue: [], currentIndex: -1 })
-		// Don't set isPlaying: false or playingPath: null to allow current song to continue playing
+		const { queue, currentIndex } = get()
+		if (currentIndex !== -1 && queue[currentIndex]) {
+			// Keep current playing song, remove everything else
+			set({ queue: [queue[currentIndex]], currentIndex: 0 })
+		} else {
+			// No song playing, clear all
+			set({ queue: [], currentIndex: -1 })
+		}
 		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
@@ -187,7 +235,7 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 					playingPath: queueWithMetadata[currentIndex]?.path || null,
 				})
 			}
-		} catch (error) {}
+		} catch (error) { }
 	},
 	saveQueueToStorage: async () => {
 		try {

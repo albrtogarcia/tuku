@@ -69,7 +69,8 @@
 		background-image: var(--button-background);
 		box-shadow: var(--button-shadow);
 
-		&.active {
+		&.active,
+		&:active {
 			color: var(--accent);
 			box-shadow: inset 0 1px 5px #000000e2;
 			filter: brightness(.9);

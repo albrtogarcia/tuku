@@ -14,7 +14,7 @@ interface AlbumsGridProps {
 }
 
 const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover, onOpenSettings, onShowNotification }) => {
-	const { addAlbumToQueue } = usePlayerStore()
+	const { addAlbumToQueue, playAlbumImmediately } = usePlayerStore()
 	const [loadingCovers, setLoadingCovers] = useState<Set<string>>(new Set())
 	const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; album: any | null }>({
 		isOpen: false,
@@ -111,7 +111,11 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		return [
 			{
 				label: 'Play Album',
-				action: () => handleAlbumClick(album),
+				action: () => {
+					if (album.songs && album.songs.length > 0) {
+						playAlbumImmediately(album.songs)
+					}
+				},
 			},
 			{
 				label: 'Add to Queue',
@@ -154,7 +158,6 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 					<div
 						className="album-card"
 						key={albumId}
-						onClick={() => handleAlbumClick(album)}
 						onContextMenu={(e) => handleContextMenu(e, album)}
 						tabIndex={0}
 						role="button"

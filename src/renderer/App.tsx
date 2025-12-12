@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './styles/app.scss'
 import Queue from './components/Queue/Queue'
 import Player from './components/Player/Player'
@@ -83,13 +83,12 @@ function App() {
 		clearQueue,
 		setCurrentIndex,
 		cleanQueueHistory,
+		setIsPlaying,
 		repeat,
-		shuffle,
 		setQueue,
 		loadQueueFromStorage,
 	} = usePlayerStore()
 
-	// Load queue from storage when app starts
 	// Load queue from storage when app starts
 	useEffect(() => {
 		loadQueueFromStorage()
@@ -101,43 +100,67 @@ function App() {
 		})
 	}, [loadQueueFromStorage])
 
-	function getNextShuffleIndex() {
-		if (queue.length <= 1) return currentIndex
-		const remaining = queue.map((_, idx) => idx).filter((idx) => idx !== currentIndex && idx > currentIndex)
-		if (remaining.length === 0) return -1
-		const randomIdx = remaining[Math.floor(Math.random() * remaining.length)]
-		return randomIdx
-	}
+	// Sync Store -> Audio Player
+	const { handlePlay, handleResume, handlePause, playingPath: audioPlayingPath } = audio
+	const lastPlayedIndex = useRef<number | null>(null)
 
-	const handleNext = () => {
-		if (shuffle) {
-			const nextIdx = getNextShuffleIndex()
-			if (nextIdx !== -1) {
-				setCurrentIndex(nextIdx)
-				cleanQueueHistory()
-				audio.handlePlay(queue[nextIdx].path)
-				return
-			} else if (repeat && queue.length > 0) {
-				setCurrentIndex(0)
-				cleanQueueHistory()
-				audio.handlePlay(queue[0].path)
-				return
+	useEffect(() => {
+		const song = queue[currentIndex]
+		if (!song) return
+
+		// Initialize ref on first run if null (to avoid re-triggering current song on reload if unwanted,
+		// though we usually want to sync state. But let's check basic logic:
+		// If index changed => we MUST load/play that song.
+
+		if (lastPlayedIndex.current !== currentIndex) {
+			lastPlayedIndex.current = currentIndex
+			// Index changed. If we are supposed to be playing, play.
+			if (isPlaying) {
+				console.log(`[App] Index changed to ${currentIndex}. Playing ${song.path}`)
+				handlePlay(song.path)
 			} else {
-				audio.handleStop()
-				return
+				// If we changed track but are paused, we might want to load it?
+				// For now, let's assume we expect handlePlay to be called when we resume or if interaction drove this.
+			}
+		} else {
+			// Index is SAME. Check play status.
+			if (isPlaying && !audio.isPlaying) {
+				// Store = Play, Audio = Pause. -> Resume.
+				console.log('[App] Resuming playback')
+				// Check if we have the correct path loaded just in case (e.g. startup)
+				if (audioPlayingPath === song.path) {
+					handleResume()
+				} else {
+					handlePlay(song.path)
+				}
+			} else if (!isPlaying && audio.isPlaying) {
+				// Store = Pause, Audio = Play -> Pause.
+				console.log('[App] Pausing playback')
+				handlePause()
+			}
+
+			// Safety check: specific case where path mismatch happens but index same?
+			// (e.g. externally replaced queue item?)
+			if (isPlaying && audioPlayingPath !== song.path) {
+				console.log('[App] Path mismatch fix. Playing', song.path)
+				handlePlay(song.path)
 			}
 		}
+	}, [currentIndex, isPlaying, audio.isPlaying, audioPlayingPath, queue, handlePlay, handleResume, handlePause])
+
+	const handleNext = () => {
 		if (currentIndex + 1 < queue.length) {
 			setCurrentIndex(currentIndex + 1)
+			setIsPlaying(true)
 			cleanQueueHistory()
-			audio.handlePlay(queue[currentIndex + 1].path)
 		} else if (repeat && queue.length > 0) {
 			setCurrentIndex(0)
+			setIsPlaying(true)
 			cleanQueueHistory()
-			audio.handlePlay(queue[0].path)
 			return
 		} else {
 			audio.handleStop()
+			setIsPlaying(false)
 		}
 	}
 
@@ -150,7 +173,7 @@ function App() {
 
 		if (currentIndex > 0) {
 			setCurrentIndex(currentIndex - 1)
-			audio.handlePlay(queue[currentIndex - 1].path)
+			setIsPlaying(true)
 		} else {
 			audio.setCurrentTime(0)
 		}
@@ -268,8 +291,14 @@ function App() {
 				style={{ display: 'none' }}
 				onEnded={handleSongEnd}
 				onCanPlay={audio.handleCanPlay}
-				onPlay={() => audio.setIsPlaying(true)}
-				onPause={() => audio.setIsPlaying(false)}
+				onPlay={() => {
+					audio.setIsPlaying(true)
+					setIsPlaying(true)
+				}}
+				onPause={() => {
+					audio.setIsPlaying(false)
+					setIsPlaying(false)
+				}}
 				onTimeUpdate={() => audio.setCurrentTimeOnly(audio.audioRef.current?.currentTime || 0)}
 				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
 			/>
