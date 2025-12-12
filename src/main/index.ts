@@ -122,48 +122,48 @@ function createAppMenu(win: BrowserWindow) {
 		// App Menu (macOS only)
 		...(isMac
 			? [
-					{
-						label: app.name,
-						submenu: [
-							{ role: 'about' },
-							{ type: 'separator' },
-							{
-								label: 'Settings',
-								accelerator: 'CmdOrCtrl+,',
-								click: () => {
-									win.webContents.send('open-settings')
-								},
+				{
+					label: app.name,
+					submenu: [
+						{ role: 'about' },
+						{ type: 'separator' },
+						{
+							label: 'Settings',
+							accelerator: 'CmdOrCtrl+,',
+							click: () => {
+								win.webContents.send('open-settings')
 							},
-							{ type: 'separator' },
-							{ role: 'services' },
-							{ type: 'separator' },
-							{ role: 'hide' },
-							{ role: 'hideOthers' },
-							{ role: 'unhide' },
-							{ type: 'separator' },
-							{ role: 'quit' },
-						],
-					},
-			  ]
+						},
+						{ type: 'separator' },
+						{ role: 'services' },
+						{ type: 'separator' },
+						{ role: 'hide' },
+						{ role: 'hideOthers' },
+						{ role: 'unhide' },
+						{ type: 'separator' },
+						{ role: 'quit' },
+					],
+				},
+			]
 			: []),
 		// File Menu (Windows/Linux)
 		...(!isMac
 			? [
-					{
-						label: 'File',
-						submenu: [
-							{
-								label: 'Settings',
-								accelerator: 'CmdOrCtrl+,',
-								click: () => {
-									win.webContents.send('open-settings')
-								},
+				{
+					label: 'File',
+					submenu: [
+						{
+							label: 'Settings',
+							accelerator: 'CmdOrCtrl+,',
+							click: () => {
+								win.webContents.send('open-settings')
 							},
-							{ type: 'separator' },
-							{ role: 'quit' },
-						],
-					},
-			  ]
+						},
+						{ type: 'separator' },
+						{ role: 'quit' },
+					],
+				},
+			]
 			: []),
 		// View Menu
 		{
@@ -171,7 +171,15 @@ function createAppMenu(win: BrowserWindow) {
 			submenu: [
 				{ role: 'reload' },
 				{ role: 'forceReload' },
-				{ role: 'toggleDevTools' },
+				{
+					label: 'Toggle Developer Tools',
+					accelerator: 'CmdOrCtrl+Option+I',
+					click: (_menuItem, window) => {
+						if (window && window instanceof BrowserWindow) {
+							window.webContents.toggleDevTools()
+						}
+					},
+				},
 				{ type: 'separator' },
 				{ role: 'resetZoom' },
 				{ role: 'zoomIn' },
@@ -346,16 +354,16 @@ ipcMain.handle('save-queue', async (_event, queue, currentIndex) => {
 ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string, albumPath?: string) => {
 	console.log(`[Main] fetch-album-cover called for: Artist="${artist}", Album="${album}"`)
 	try {
-        // Find album path if not provided
-        if (!albumPath) {
-            const song = db.prepare('SELECT path FROM library WHERE artist = ? AND album = ? LIMIT 1').get(artist, album) as { path: string } | undefined
-            if (song) {
-                albumPath = path.dirname(song.path)
-            } else {
-                console.error('[Main] Could not find album path in DB')
-                return null
-            }
-        }
+		// Find album path if not provided
+		if (!albumPath) {
+			const song = db.prepare('SELECT path FROM library WHERE artist = ? AND album = ? LIMIT 1').get(artist, album) as { path: string } | undefined
+			if (song) {
+				albumPath = path.dirname(song.path)
+			} else {
+				console.error('[Main] Could not find album path in DB')
+				return null
+			}
+		}
 
 		const query = encodeURIComponent(`${artist} ${album}`)
 		const url = `https://itunes.apple.com/search?term=${query}&entity=album&limit=1`
@@ -384,12 +392,12 @@ ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string
 			const arrayBuffer = await imageResponse.arrayBuffer()
 			const buffer = Buffer.from(arrayBuffer)
 
-            // Write to cover.jpg in album folder
-            const coverPath = path.join(albumPath, 'cover.jpg')
-            console.log(`[Main] Writing cover to: ${coverPath}`)
-            await fsPromises.writeFile(coverPath, buffer)
+			// Write to cover.jpg in album folder
+			const coverPath = path.join(albumPath, 'cover.jpg')
+			console.log(`[Main] Writing cover to: ${coverPath}`)
+			await fsPromises.writeFile(coverPath, buffer)
 
-            const mediaUrl = `media://${coverPath}`
+			const mediaUrl = `media://${coverPath}`
 
 			// Update in database
 			console.log('[Main] Updating database...')
@@ -422,15 +430,15 @@ ipcMain.handle('open-in-finder', async (_event, path) => {
 
 ipcMain.handle('delete-album', async (_event, albumPath) => {
 	try {
-        console.log(`[Main] Deleting album at: ${albumPath}`)
+		console.log(`[Main] Deleting album at: ${albumPath}`)
 		await shell.trashItem(albumPath)
 
 		// Delete from DB: remove all songs that start with this path
-        // We use LIKE with % to match all files in the directory
-        console.log('[Main] Removing from database...')
+		// We use LIKE with % to match all files in the directory
+		console.log('[Main] Removing from database...')
 		const deleteStmt = db.prepare('DELETE FROM library WHERE path LIKE ?')
 		const info = deleteStmt.run(`${albumPath}%`)
-        console.log(`[Main] Deleted ${info.changes} songs from library`)
+		console.log(`[Main] Deleted ${info.changes} songs from library`)
 		return true
 	} catch (error) {
 		console.error('[Main] Error deleting album:', error)

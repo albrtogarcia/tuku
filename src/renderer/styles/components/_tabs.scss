@@ -1,0 +1,36 @@
+@use '../abstracts' as *;
+
+.tabs {
+	display: flex;
+	flex: 1;
+	gap: 0;
+
+	&__button {
+		background: transparent;
+		color: var(--textColor);
+		border-width: 1px;
+		border-style: solid;
+		border-color: transparent;
+		padding: 0.5rem 2rem;
+		transition: all 0.2s ease-in-out;
+		line-height: 1;
+		gap: 0.5rem;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: var(--x-small);
+		text-transform: uppercase;
+		height: 2.25rem;
+
+		&:hover {
+			color: rgba(255, 255, 255, 0.9);
+			background-color: rgba(255, 255, 255, 0.05);
+		}
+
+		&.active {
+			color: var(--accent);
+			border-bottom-color: var(--accent);
+		}
+	}
+}

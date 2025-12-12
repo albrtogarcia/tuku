@@ -2,6 +2,10 @@
 	display: grid;
 	grid-template-columns: 218px 1fr;
 
+	@media (max-width: 960px) {
+		grid-template-columns: 128px 1fr;
+	}
+
 	// Empty state styles
 	&--empty {
 		justify-content: center;

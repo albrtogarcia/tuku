@@ -3,7 +3,6 @@
 .queue {
 	display: grid;
 	grid-template-rows: auto 1fr;
-	gap: 0.5rem;
 	overflow: hidden;
 	max-height: 100%;
 
@@ -32,10 +31,13 @@
 
 	&__title {
 		margin: 0;
-		font-size: 0.75rem;
 		letter-spacing: 0.05rem;
-		font-weight: 300;
+		font-size: .7rem;
+		font-weight: 400;
+		line-height: 1.4;
+		color: var(--textMuted);
 		text-transform: uppercase;
+
 	}
 
 	&__list {
@@ -43,21 +45,24 @@
 		padding: 0 0.5rem 0 0;
 		margin: 0;
 		overflow-y: auto;
+	}
 
-		li {
-			display: flex;
-			align-items: center;
+	&__item {
+		position: relative;
 
-			&.playing {
-				color: var(--accent);
-			}
+		&.playing {
+			color: var(--accent);
+		}
 
-			&.played {
-				opacity: 0.33;
-			}
+		&.played {
+			opacity: 0.33;
+		}
 
-			&:hover {
-				background-color: var(--bgPrimary);
+		&:hover {
+			background-color: var(--bgPrimary);
+
+			.btn {
+				opacity: 1;
 			}
 		}
 
@@ -65,14 +70,20 @@
 			margin-left: auto;
 			background-color: transparent;
 			opacity: 0.33;
+			position: absolute;
+			right: 0.5rem;
+			top: 50%;
+			transform: translateY(-50%);
+			opacity: 0;
+			cursor: pointer;
 		}
 	}
 
 	&__item-content {
 		cursor: grab;
-		flex: 1;
 		display: flex;
 		align-items: center;
+		width: 96%;
 		gap: 0.5rem;
 		transition: background-color 0.2s ease;
 		font-size: 0.85rem;
@@ -84,20 +95,24 @@
 
 		span {
 			font-weight: 300;
+			display: block;
 		}
 
 		&>* {
 			white-space: nowrap;
 			text-overflow: ellipsis;
 			overflow: hidden;
-			flex-basis: 25%;
+			flex: 0 1 25%;
+			max-width: 25%;
 
 			&:first-child {
-				flex-basis: 40%;
+				flex: 0 1 40%;
+				max-width: 40%;
 			}
 
 			&:last-child {
-				flex-basis: 10%;
+				flex: 0 1 10%;
+				max-width: 10%;
 				text-align: right;
 			}
 		}

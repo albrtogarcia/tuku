@@ -9,6 +9,7 @@ $queue: 25vh;
 	display: grid;
 	grid-template-columns: 1fr;
 	grid-template-rows: $player $queue 1fr;
+	grid-template-areas: "player" "queue" "library";
 	gap: 0.5rem;
 	height: 100vh;
 
@@ -19,11 +20,13 @@ $queue: 25vh;
 	}
 
 	&__player {
-		min-height: $player;
+		grid-area: player;
+		height: $player;
 		flex: 0 0 $player;
 	}
 
 	&__queue {
+		grid-area: queue;
 		height: $queue;
 		flex: 0 0 $queue;
 
@@ -40,6 +43,7 @@ $queue: 25vh;
 	}
 
 	&__library {
+		grid-area: library;
 		flex: 1;
 		display: flex;
 		flex-direction: column;
@@ -61,6 +65,8 @@ $queue: 25vh;
 .library {
 	max-height: 100%;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 
 	&__header {
 		display: flex;
@@ -80,30 +86,34 @@ $queue: 25vh;
 	}
 }
 
-// Library tabs styles
-.tabs {
-	display: flex;
-	flex: 1;
-	gap: 0;
+@media (min-width: 1280px) {
+	.container {
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: $player 1fr;
+		grid-template-areas: 'player library' 'queue library';
 
-	&__button {
-		background: none;
-		border: none;
-		padding: 0.25rem 1.5rem;
-		color: rgba(255, 255, 255, 0.7);
-		cursor: pointer;
-		transition: all 0.2s ease;
-		font-size: 0.9rem;
-		font-weight: 500;
+		&__player {}
 
-		&:hover {
-			color: rgba(255, 255, 255, 0.9);
-			background-color: rgba(255, 255, 255, 0.05);
+		&__queue {
+			height: 100%;
 		}
 
-		&.active {
-			color: var(--accent);
-			border-bottom-color: var(--accent);
+		&__library {}
+	}
+}
+
+@media (min-width: 960px) {
+	.container {
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: $player 1fr;
+		grid-template-areas: 'player library' 'queue library';
+
+		&__player {}
+
+		&__queue {
+			height: 100%;
 		}
+
+		&__library {}
 	}
 }

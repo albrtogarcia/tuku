@@ -75,8 +75,9 @@
 			filter: brightness(.9);
 			translate: 0 .5px;
 
-			svg path {
+			svg {
 				filter: drop-shadow(var(--glow));
+				filter: drop-shadow(3px 5px 2px rgba(var(--accent), 0.4));
 			}
 		}
 

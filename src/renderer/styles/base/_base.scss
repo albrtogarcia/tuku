@@ -17,13 +17,13 @@ body {
 
 html ::-webkit-scrollbar {
 	width: 2px;
-	background-color: #333;
+	background-color: var(--border);
 	-webkit-border-radius: 100px;
 }
 
 html ::-webkit-scrollbar-thumb:vertical,
 html ::-webkit-scrollbar-thumb:horizontal {
-	background-color: #aaa;
+	background-color: var(--accentDark);
 	-webkit-border-radius: 100px;
 }
 

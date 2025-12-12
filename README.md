@@ -56,6 +56,22 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [x] Base de datos persistente con SQLite
 - [x] Añadir portadas de álbum de iTunes
 
+#### 📐 Checklist de tareas pendientes MVP
+
+- [ ] UI de modal settings
+- [ ] Afinar UI general
+- [ ] Tabs en queue con Next y History
+- [ ] Funcionalidad buscador por tabs
+- [ ] Botón eliminar canción de cola
+- [ ] Corregir tests
+- [ ] Adoptar solo una forma de cargar portadas de álbum
+- [ ] Componente de notificaciones
+- [ ] Testear controles de reproducción
+- [ ] Componente header de sección
+- [ ] Corregir altura de grid de álbumes
+- [ ] Responsive
+- [ ] Normalizar nivel de audio?
+
 ### 🚧 Fase 2: Alpha
 
 - [ ] Playlists personalizadas
