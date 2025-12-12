@@ -124,16 +124,13 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	},
 	playNow: (song) => {
 		const { queue } = get()
-		// Check if song is already in queue
-		const existingIndex = queue.findIndex((q) => q.path === song.path)
-		if (existingIndex !== -1) {
-			// Song exists in queue, just set it as current
-			set({ currentIndex: existingIndex, playingPath: song.path, isPlaying: true })
-		} else {
-			// Song not in queue, add it to the BEGINNING and play
-			const newQueue = [song, ...queue]
-			set({ queue: newQueue, currentIndex: 0, playingPath: song.path, isPlaying: true })
-		}
+		// Remove existing instance if any
+		const filteredQueue = queue.filter((q) => q.path !== song.path)
+		// Add to beginning
+		const newQueue = [song, ...filteredQueue]
+
+		set({ queue: newQueue, currentIndex: 0, playingPath: song.path, isPlaying: true })
+
 		// Auto-save
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
