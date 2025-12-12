@@ -13,7 +13,7 @@
 }
 
 .settings {
-  background: var(--bg);
+  background: var(--bgPrimary);
   border: 1px solid var(--border);
   border-radius: 8px;
   width: 90%;
@@ -108,6 +108,17 @@
     font-size: 0.875rem;
     color: var(--textMuted);
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  }
+
+  &__theme-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+
+    .btn {
+      justify-content: center;
+      width: 100%;
+    }
   }
 
   .btn {

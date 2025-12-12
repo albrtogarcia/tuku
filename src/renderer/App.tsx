@@ -10,6 +10,7 @@ import { useAudioPlayer } from './hooks/useAudioPlayer'
 import { useSongs } from './hooks/useSongs'
 import { formatTime, filterSongs, filterAlbums } from './utils'
 import { usePlayerStore } from './store/player'
+import { useSettingsStore } from './store/settings'
 
 import { Song } from '../types/song'
 import { Album } from '../types/album'
@@ -48,6 +49,17 @@ function App() {
 		setNotification({ message, type })
 		setTimeout(() => setNotification(null), 3000)
 	}
+
+	const { theme } = useSettingsStore()
+
+	useEffect(() => {
+		const root = document.documentElement
+		if (theme === 'system') {
+			root.removeAttribute('data-theme')
+		} else {
+			root.setAttribute('data-theme', theme)
+		}
+	}, [theme])
 
 	useEffect(() => {
 		// Listen for scan events
@@ -205,7 +217,7 @@ function App() {
 	const allAlbums = groupAlbums(songs)
 	const albums = activeTab === 'albums' ? filterAlbums(allAlbums, search) : allAlbums
 
-	const searchPlaceholder = activeTab === 'albums' ? 'Search albums or artists...' : 'Search songs, albums or artists...'
+	const searchPlaceholder = activeTab === 'albums' ? 'Search albums or artists...' : 'Search songs, albums, artists, genre or year...'
 
 	// Function to set queue and start playing
 	const handleSetQueue = (songs: Array<any>) => {
@@ -279,6 +291,8 @@ function App() {
 				lastUpdated={lastUpdated}
 				onSelectFolder={handleSelectFolder}
 				onRescanFolder={handleRescanFolder}
+				theme={theme}
+				onSetTheme={useSettingsStore.getState().setTheme}
 			/>
 
 			{/* Audio player (hidden) */}

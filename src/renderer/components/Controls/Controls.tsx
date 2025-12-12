@@ -11,18 +11,10 @@ interface ControlsProps {
 
 const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffleQueue, isPlaying, setIsPlaying } = usePlayerStore()
-	const { volume, setVolume, handlePause: audioHandlePause, handlePlay: audioHandlePlay } = audio
+	const { volume, setVolume } = audio
 
 	const handlePlayPause = () => {
-		if (isPlaying) {
-			setIsPlaying(false)
-			audioHandlePause()
-		} else {
-			setIsPlaying(true)
-			if (queue[currentIndex]) {
-				audioHandlePlay(queue[currentIndex].path)
-			}
-		}
+		setIsPlaying(!isPlaying)
 	}
 	// Calculate rotation angle (-120 to 120 degrees based on volume 0-1)
 	const rotationAngle = volume * 240 - 120
@@ -38,7 +30,6 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 			setCurrentIndex(currentIndex - 1)
 			cleanQueueHistory()
 			setIsPlaying(true)
-			audioHandlePlay(queue[currentIndex - 1].path)
 		}
 	}
 
@@ -47,7 +38,6 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 			setCurrentIndex(currentIndex + 1)
 			cleanQueueHistory()
 			setIsPlaying(true)
-			audioHandlePlay(queue[currentIndex + 1].path)
 		}
 	}
 

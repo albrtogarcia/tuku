@@ -14,7 +14,8 @@ export function filterSongs(songs: Song[], search: string): Song[] {
 			song.title.toLowerCase().includes(q) ||
 			song.artist.toLowerCase().includes(q) ||
 			song.album.toLowerCase().includes(q) ||
-			song.genre.toLowerCase().includes(q),
+			song.genre.toLowerCase().includes(q) ||
+			(song.year && song.year.toString().includes(q)),
 	)
 }
 

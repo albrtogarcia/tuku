@@ -64,7 +64,7 @@
 		width: 100%;
 		height: 100%;
 		border-radius: 6px;
-		font-size: var(--x-small);
+		font-size: min(.75rem, 12px);
 		color: var(--element);
 		background-image: var(--button-background);
 		box-shadow: var(--button-shadow);
@@ -72,7 +72,7 @@
 		&.active,
 		&:active {
 			color: var(--accent);
-			box-shadow: inset 0 1px 5px #000000e2;
+			box-shadow: inset 0 1px 2px #00000066;
 			filter: brightness(.9);
 			translate: 0 .5px;
 

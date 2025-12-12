@@ -14,7 +14,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: var(--x-small);
+	font-size: min(.75rem, 12px);
 	text-transform: uppercase;
 
 	&:hover {

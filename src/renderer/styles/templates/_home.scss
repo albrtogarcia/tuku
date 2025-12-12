@@ -14,7 +14,7 @@ $queue: 25vh;
 	height: 100vh;
 
 	&>* {
-		border: 1px solid rgba(0, 0, 0, 0.25);
+		border: 1px solid var(--border);
 		position: relative;
 		overflow: hidden;
 	}
@@ -33,7 +33,7 @@ $queue: 25vh;
 		&::after {
 			content: '';
 			height: 3rem;
-			background: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent);
+			background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent);
 			position: absolute;
 			bottom: 0;
 			left: 0;
@@ -73,14 +73,13 @@ $queue: 25vh;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+		border-bottom: 1px solid var(--border);
 	}
 
 	&__body {
 		flex: 1;
 		min-height: 0;
 		height: 100%;
-		padding: 0.5rem;
 		margin: 0;
 		overflow-y: auto;
 
@@ -103,6 +102,8 @@ $queue: 25vh;
 }
 
 @media (min-width: 1280px) {
+	$player: 220px;
+
 	.container {
 		grid-template-columns: repeat(2, 1fr);
 		grid-template-rows: $player 1fr;

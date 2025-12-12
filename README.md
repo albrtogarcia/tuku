@@ -61,7 +61,7 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [ ] UI de modal settings
 - [ ] Afinar UI general
 - [ ] Tabs en queue con Next y History
-- [ ] Funcionalidad buscador por tabs
+- [x] Funcionalidad buscador por tabs
 - [x] Botón eliminar canción de cola
 - [ ] Corregir tests
 - [ ] Adoptar solo una forma de cargar portadas de álbum

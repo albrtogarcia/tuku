@@ -30,11 +30,7 @@
 		}
 
 		&:hover {
-			background-color: rgba(255, 255, 255, 0.05);
-		}
-
-		&:active {
-			background-color: rgba(255, 255, 255, 0.1);
+			background-color: rgba(0, 0, 0, 0.1);
 		}
 	}
 
@@ -42,6 +38,11 @@
 		text-transform: uppercase;
 		opacity: 0.5;
 		font-weight: 300;
+		cursor: pointer;
+
+		&:hover {
+			opacity: 1;
+		}
 
 		&:nth-child(1) {
 			width: 25%;
@@ -62,6 +63,11 @@
 		}
 	}
 
+	td:nth-child(4),
+	td:nth-child(5) {
+		text-align: right;
+	}
+
 	.sortable-indicator {
 		display: inline-block;
 		margin-inline: 0.25rem;
@@ -79,13 +85,5 @@
 		text-align: left;
 		white-space: nowrap;
 		font-size: 80%;
-
-		&:first-child {
-			padding-left: 0;
-		}
-
-		&:last-child {
-			padding-right: 0;
-		}
 	}
 }

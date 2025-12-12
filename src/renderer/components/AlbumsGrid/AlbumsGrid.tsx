@@ -23,6 +23,8 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		album: null,
 	})
 
+	const closeMenuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
 	if (albums.length === 0) {
 		return (
 			<div className="albums-grid--empty">
@@ -32,13 +34,6 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				</button>
 			</div>
 		)
-	}
-
-	const handleAlbumClick = (album: any) => {
-		if (album.songs && album.songs.length > 0) {
-			setQueue(album.songs)
-			audio.handlePlay(album.songs[0].path)
-		}
 	}
 
 	const handleContextMenu = (e: React.MouseEvent, album: any) => {
@@ -53,6 +48,20 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 	const handleCloseContextMenu = () => {
 		setContextMenu({ isOpen: false, x: 0, y: 0, album: null })
+	}
+
+	const scheduleCloseMenu = () => {
+		if (closeMenuTimeoutRef.current) clearTimeout(closeMenuTimeoutRef.current)
+		closeMenuTimeoutRef.current = setTimeout(() => {
+			handleCloseContextMenu()
+		}, 200) // 200ms grace period
+	}
+
+	const cancelCloseMenu = () => {
+		if (closeMenuTimeoutRef.current) {
+			clearTimeout(closeMenuTimeoutRef.current)
+			closeMenuTimeoutRef.current = null
+		}
 	}
 
 	const handleFetchCover = async (album: any) => {
@@ -159,8 +168,24 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 						className="album-card"
 						key={albumId}
 						onContextMenu={(e) => handleContextMenu(e, album)}
+						onMouseEnter={() => {
+							// If we re-enter the album card that is effectively "open", cancel closing
+							if (contextMenu.isOpen && contextMenu.album === album) {
+								cancelCloseMenu()
+							}
+						}}
+						onMouseLeave={() => {
+							if (contextMenu.isOpen && contextMenu.album === album) {
+								scheduleCloseMenu()
+							}
+						}}
 						tabIndex={0}
 						role="button"
+						onDoubleClick={() => {
+							if (album.songs && album.songs.length > 0) {
+								playAlbumImmediately(album.songs)
+							}
+						}}
 					>
 						{album.cover ? (
 							<img src={album.cover} alt={`${album.title}${album.artist ? ` by ${album.artist}` : ''}`} className="album-card__cover album__cover" />
@@ -173,7 +198,6 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 									<strong>{album.title || 'Unknown Album'}</strong>
 									{album.artist && <div className="album-card__artist">{album.artist}</div>}
 								</div>
-								{/* Spinner for loading state */}
 								{isLoading && <div className="spinner"></div>}
 							</div>
 						)}
@@ -187,6 +211,8 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 					y={contextMenu.y}
 					options={getMenuOptions()}
 					onClose={handleCloseContextMenu}
+					onMouseEnter={cancelCloseMenu}
+					onMouseLeave={scheduleCloseMenu}
 				/>
 			)}
 		</div>

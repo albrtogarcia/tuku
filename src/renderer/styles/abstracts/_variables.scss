@@ -1,102 +1,87 @@
 :root {
-	--spacing-01: .125rem;
-	--spacing-02: .25rem;
-	--spacing-03: .5rem;
-	--spacing-04: .75rem;
-	--spacing-05: 1rem;
-	--spacing-06: 1.5rem;
-	--spacing-07: 2rem;
-	--spacing-08: 2.5rem;
-	--spacing-09: 3rem;
-	--spacing-10: 4rem;
-	--spacing-11: 5rem;
-	--spacing-12: 6rem;
-	--spacing-13: 10rem;
-	--gap: var(--spacing-06);
-	--base-gap: 20px;
-	--button-padding: .4em .8em;
-	--box-padding: 1rem;
-	--space-after: 2rem;
-	--max-viewport: 65rem;
-	--font-brand: "Orbitron Variable", system-ui, sans-serif;
-	--letter-spacing: .3px;
-	--small: .833rem;
-	--x-small: min(.75rem, 12px);
-	--radius: 12px;
-	--radius-sm: 2px;
-	--border-color: hsl(0deg 0% 50% / 45%);
+	--black: hsla(240, 4%, 11%, 0.5);
 	--white: #fff;
-	--black: #111;
-	--text-muted: #cbcbcb;
-	--dimmed: #333;
+	--element: hsl(251, 9%, 23%);
+	--element-dim: hsla(247, 9%, 61%, 0.6);
+	--base-color: hsl(248, 5%, 30%);
+	--base-color-dim: hsla(247, 11%, 32%, 0.6);
+
+	--gradient-start: hsl(248deg 11% 95%);
+	--gradient-end: hsl(248deg 11% 88%);
+
+	--shadow-elevation-high: 0 2px 4px rgba(0, 0, 0, 0.15);
+	--shadow-elevation-medium: 0 1px 2px rgba(0, 0, 0, 0.15);
+	--shadow-elevation-low: 0 0.5px 1px rgba(0, 0, 0, 0.15);
+
+	--accent: #ca6f19;
+	--accentDark: #ca6f19;
+	--bg: linear-gradient(to bottom in oklab, var(--gradient-start), var(--gradient-end));
+	--bgPrimary: #E7E7EB;
+	--border: rgba(0, 0, 0, 0.1);
+	--inputBg: rgba(0, 0, 0, 0.05);
+	--textColor: #111;
+	--textMuted: #4a4e57;
+	--glow: 0 0 1px var(--accent), 0 0 4px var(--accent);
+
+	--button-background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+	--button-container: hsla(240, 26%, 11%, 0.4);
+	--button-rim: linear-gradient(to bottom, var(--black), var(--white));
+	--button-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), inset 0 -1px 1px rgba(0, 0, 0, 0.66), var(--shadow-elevation-high);
+
+	--knob-background: linear-gradient(hsl(248deg 11% 95%), hsl(248deg 11% 88%));
+	--knob-inner-background: linear-gradient(hsl(248deg 11% 95%), hsl(248deg 11% 85%));
+	--knob-inner-shadow: 0 -1px 0 1px hsl(0deg 0% 100%), 0 2px 2px hsl(0deg 0% 0% / 15%), var(--shadow-elevation-high);
+	--knob-shadow: 0 -1px 0 1px hsl(0, 0%, 100%), 0 2px 2px hsl(0deg 0% 0% / 15%);
+
 	--success: oklch(100% .4 150deg);
 	--error: oklch(100% .4 21deg);
 	--warning: rgb(255 165 0);
+}
 
+@mixin dark-theme {
+	--black: #111;
+	--white: #fff;
+	--element: hsl(248deg 11% 85%);
+	--element-dim: hsl(248deg 11% 70% / 60%);
+	--base-color: hsl(248deg 11% 85%);
+	--base-color-dim: hsl(248deg 11% 70% / 60%);
 
-	--active-button-text-color: color-mix(in oklch, var(--base-color) 25%, var(--element));
-	--active-button-text-shadow: 0 0 .5px color-mix(in oklch, var(--base-color) 55%, var(--element));
-	--bg: linear-gradient(to bottom in oklab, hsl(248deg 11% 25%), hsl(248deg 11% 1%));
-	--border: hsl(248deg 11% 35%);
-	--button-active-shadow: 0 1px 1px rgb(255 255 255 / 32.8%);
-	--button-active: linear-gradient(to bottom, hsl(30deg 2% 25%), hsl(0deg 0% 25%));
-	--button-background-color-active: hsl(248deg 11% 78%);
-	--button-background-color: hsl(248deg 11% 80%);
+	--shadow-elevation-high: 0 2px 4px rgba(0, 0, 0, 0.15);
+	--shadow-elevation-medium: 0 1px 2px rgba(0, 0, 0, 0.15);
+	--shadow-elevation-low: 0 0.5px 1px rgba(0, 0, 0, 0.15);
+
+	--accent: #efc442;
+	--accentDark: #d89641;
+	--bg: linear-gradient(to bottom in oklab, hsl(248deg 11% 15%), hsl(248deg 11% 10%));
+	--bgPrimary: #22212A;
+	--border: rgba(0, 0, 0, 0.25);
+	--inputBg: rgba(0, 0, 0, 0.15);
+	--textColor: #d2d2d2;
+	--textMuted: #9ca3af;
+	--glow: 0 0 1px var(--accent), 0 0 4px var(--accent);
+
 	--button-background: linear-gradient(to bottom, hsl(248deg 11% 15%), hsl(248deg 11% 15%));
 	--button-container: var(--black);
-	--button-dark-shadow-color: hsl(248deg 11% 5%);
-	--button-light-shadow-color: hsl(248deg 11% 95%);
 	--button-rim: linear-gradient(to bottom, var(--black), var(--white));
 	--button-shadow: inset 0 1px 1px rgb(255 255 255 / 32.8%), inset 0 -1px 1px rgb(0 0 0 / 83.3%), var(--shadow-elevation-high);
-	--element-dim: hsl(248deg 11% 70% / 60%);
-	--element: hsl(248deg 11% 85%);
-	--icon-element: linear-gradient(to bottom, hsl(0deg 0% 5%), #e3e0dc, hsl(0deg 0% 5%));
-	--icon-gradient-center: hsl(0deg 0% 59%);
-	--icon-gradient-top: hsl(260deg 5% 89%);
-	--inverse-button-background: linear-gradient(to bottom, hsl(0deg 0% 85%), hsl(248deg 11% 75%));
-	--inverse-element: var(--white);
+
 	--knob-background: linear-gradient(hsl(248deg 11% 20%), hsl(248deg 11% 12%));
-	--knob-indicator-background: var(--white);
 	--knob-inner-background: linear-gradient(hsl(248deg 11% 20%), hsl(248deg 11% 16%));
 	--knob-inner-shadow: 0 -1px 0 1px hsl(248deg 11% 35%), 0 2px 2px hsl(0deg 0% 0% / 35%), var(--shadow-elevation-high);
 	--knob-shadow: 0 -1px 0 1px hsl(248deg 11% 33%), 0 2px 2px hsl(0deg 0% 0% / 35%);
-	--manual-bg: hsl(247deg 12.4% 1.43%);
-	--manual-border: hsl(247deg 4.55% 18.6%);
-	--manual-element: hsl(246deg 4.43% 87.4%);
-	--manual-paper: hsl(247deg 5.2% 7.15%);
-	--paper: hsl(248deg 03% 15%);
-	--shadow-color: 0 2% 5%;
-	--shadow-elevation-high: 0px .5px .6px hsl(var(--shadow-color) / 34%), 0px 2.9px 3.3px -.4px hsl(var(--shadow-color) / 34%), 0px 5.5px 6.2px -.7px hsl(var(--shadow-color) / 34%), -.1px 9px 10.1px -1.1px hsl(var(--shadow-color) / 34%), -.1px 14.4px 16.2px -1.4px hsl(var(--shadow-color) / 34%), -.2px 22.5px 25.3px -1.8px hsl(var(--shadow-color) / 34%), -.2px 34.2px 38.5px -2.1px hsl(var(--shadow-color) / 34%), -.4px 50.4px 56.7px -2.5px hsl(var(--shadow-color) / 34%);
-	--shadow-md: .3px .5px .7px var(--shadow-color), .8px 1.6px 2px -.8px var(--shadow-color), 2.1px 4.1px 5.2px -1.7px var(--shadow-color), 5px 10px 12.6px -2.5px var(--shadow-color);
-	--shadow-sm: .3px .5px .7px var(--shadow-color), .4px .8px 1px -1.2px var(--shadow-color), 1px 2px 2.5px -2.5px var(--shadow-color);
-	--slider-border-color: rgb(83 83 83);
-	--slider-shadow-color: 40deg 2% 44%;
-	--slider-shadow: #00000068;
-	--synth-body: linear-gradient(to bottom in oklab, hsl(248deg 11% 15%), hsl(248deg 11% 10%));
 
-	// legacy
-	--accent: #efc442;
-	--accentDark: #d89641;
-	--bg: #f7f7fa;
-	--bgPrimary: #222;
-	--border: rgba(0, 0, 0, 0.25);
-	--inputBg: #f0f0f5;
-	--textColor: #222;
-	--textMuted: #6b7280;
+	--success: oklch(100% .4 150deg);
+	--error: oklch(100% .4 21deg);
+	--warning: rgb(255 165 0);
+}
 
-	--glow: 0 0 1px var(--accent), 0 0 4px var(--accent);
+[data-theme='dark'] {
+	@include dark-theme;
 }
 
 @media (prefers-color-scheme: dark) {
-	:root {
-		--accent: #efc442;
-		--accentDark: #d89641;
-		--bg: #1E1E2E;
-		--bgPrimary: #22212A;
-		--border: rgba(0, 0, 0, 0.25);
-		--inputBg: #27272a;
-		--textColor: #d2d2d2;
-		--textMuted: #9ca3af;
+	:root:not([data-theme='light']) {
+		@include dark-theme;
 	}
 }
 

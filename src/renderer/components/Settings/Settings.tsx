@@ -9,9 +9,11 @@ interface SettingsProps {
 	lastUpdated: string | null
 	onSelectFolder: () => void
 	onRescanFolder: () => void
+	theme: 'light' | 'dark' | 'system'
+	onSetTheme: (theme: 'light' | 'dark' | 'system') => void
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUpdated, onSelectFolder, onRescanFolder }) => {
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUpdated, onSelectFolder, onRescanFolder, theme, onSetTheme }) => {
 	if (!isOpen) return null
 
 	const formatDate = (dateString: string | null) => {
@@ -44,6 +46,33 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUp
 				</div>
 
 				<div className="settings__content">
+					<section className="settings__section">
+						<h3 className="settings__section-title">Appearance</h3>
+						<div className="settings__field">
+							<label className="settings__label">Theme</label>
+							<div className="settings__theme-options">
+								<button
+									className={`btn ${theme === 'light' ? 'btn--primary' : 'btn--secondary'}`}
+									onClick={() => onSetTheme('light')}
+								>
+									Light
+								</button>
+								<button
+									className={`btn ${theme === 'dark' ? 'btn--primary' : 'btn--secondary'}`}
+									onClick={() => onSetTheme('dark')}
+								>
+									Dark
+								</button>
+								<button
+									className={`btn ${theme === 'system' ? 'btn--primary' : 'btn--secondary'}`}
+									onClick={() => onSetTheme('system')}
+								>
+									System
+								</button>
+							</div>
+						</div>
+					</section>
+
 					<section className="settings__section">
 						<h3 className="settings__section-title">Music Library</h3>
 
