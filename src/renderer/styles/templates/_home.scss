@@ -67,6 +67,7 @@ $queue: 25vh;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	flex: 1;
 
 	&__header {
 		display: flex;
