@@ -309,7 +309,7 @@ function App() {
 					{/* TAB CONTENT */}
 					<div className="library__body">
 						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} onOpenSettings={() => setIsSettingsOpen(true)} onShowNotification={handleShowNotification} />}
-						{activeTab === 'songs' && <SongsList songs={filteredSongs} audio={audio} addToQueue={addToQueue} folderPath={folderPath} />}
+						{activeTab === 'songs' && <SongsList songs={filteredSongs} addToQueue={addToQueue} folderPath={folderPath} />}
 					</div>
 				</div>
 			</div>

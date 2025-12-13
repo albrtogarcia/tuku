@@ -1,5 +1,5 @@
 import { usePlayerStore } from '../../store/player'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import SongsTable, { SongsTableColumn } from '../SongsTable/SongsTable'
 import './_songslist.scss'
 
@@ -7,7 +7,6 @@ import { Song } from '../../../types/song'
 
 interface SongsListProps {
 	songs: Song[]
-	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 	addToQueue: (song: Song) => void
 	folderPath: string | null
 }
@@ -23,7 +22,7 @@ const columns: SongsTableColumn[] = [
 
 type SortKey = 'title' | 'artist' | 'album' | 'duration' | 'year' | 'genre'
 
-const SongsList = ({ songs, audio, addToQueue, folderPath }: SongsListProps) => {
+const SongsList = ({ songs, addToQueue, folderPath }: SongsListProps) => {
 	const { playNow } = usePlayerStore()
 	const [sortKey, setSortKey] = useState<SortKey>('title')
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
@@ -99,4 +98,4 @@ const SongsList = ({ songs, audio, addToQueue, folderPath }: SongsListProps) => 
 	)
 }
 
-export default SongsList
+export default memo(SongsList)
