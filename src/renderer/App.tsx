@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import './styles/app.scss'
 import Queue from './components/Queue/Queue'
 import Player from './components/Player/Player'
@@ -12,6 +12,7 @@ import { formatTime, filterSongs, filterAlbums } from './utils'
 import { usePlayerStore } from './store/player'
 import { useSettingsStore } from './store/settings'
 
+import { useDebounce } from './hooks/useDebounce'
 import { Song } from '../types/song'
 import { Album } from '../types/album'
 
@@ -39,6 +40,7 @@ function groupAlbums(songs: Song[]): Album[] {
 function App() {
 	const { folderPath, songs, handleSelectFolder, lastUpdated, handleRescanFolder, setSongs } = useSongs()
 	const [search, setSearch] = useState('')
+	const debouncedSearch = useDebounce(search, 300)
 	const [activeTab, setActiveTab] = useState<'albums' | 'songs'>('albums')
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 	const [isScanning, setIsScanning] = useState(false)
@@ -194,28 +196,56 @@ function App() {
 		if (!('mediaSession' in navigator)) return
 
 		const currentSong = queue[currentIndex]
+		let objectUrl: string | null = null
 
-		if (currentSong) {
-			navigator.mediaSession.metadata = new MediaMetadata({
-				title: currentSong.title || 'Unknown Title',
-				artist: currentSong.artist || 'Unknown Artist',
-				album: currentSong.album || 'Unknown Album',
-				artwork: currentSong.cover ? [{ src: currentSong.cover, sizes: '512x512', type: 'image/jpeg' }] : []
-			})
+		const updateMediaSession = async () => {
+			if (currentSong) {
+				let artwork: MediaImage[] = []
+				if (currentSong.cover) {
+					// Fetch and create blob URL to satisfy Chrome's scheme requirements
+					// and avoid passing huge base64 strings if we ever revert to that.
+					try {
+						const response = await fetch(currentSong.cover)
+						const blob = await response.blob()
+						objectUrl = URL.createObjectURL(blob)
+						artwork = [{ src: objectUrl, sizes: '512x512', type: 'image/jpeg' }]
+					} catch (e) {
+						// Fallback or ignore
+						console.warn('[App] Failed to load cover for MediaSession', e)
+					}
+				}
+
+				navigator.mediaSession.metadata = new MediaMetadata({
+					title: currentSong.title || 'Unknown Title',
+					artist: currentSong.artist || 'Unknown Artist',
+					album: currentSong.album || 'Unknown Album',
+					artwork: artwork
+				})
+			}
 		}
+
+		updateMediaSession()
 
 		navigator.mediaSession.setActionHandler('play', () => audio.handleResume())
 		navigator.mediaSession.setActionHandler('pause', () => audio.handlePause())
 		navigator.mediaSession.setActionHandler('previoustrack', handlePrevious)
 		navigator.mediaSession.setActionHandler('nexttrack', handleNext)
 
-		// Clear handlers on unmount? optional, but good practice if dependencies change often
+		return () => {
+			if (objectUrl) URL.revokeObjectURL(objectUrl)
+		}
 	}, [currentIndex, queue, audio.handleResume, audio.handlePause, handleNext, handlePrevious])
 
 
-	const filteredSongs = activeTab === 'songs' ? filterSongs(songs, search) : songs
-	const allAlbums = groupAlbums(songs)
-	const albums = activeTab === 'albums' ? filterAlbums(allAlbums, search) : allAlbums
+	const filteredSongs = useMemo(() => {
+		return activeTab === 'songs' ? filterSongs(songs, debouncedSearch) : songs
+	}, [activeTab, songs, debouncedSearch])
+
+	const allAlbums = useMemo(() => groupAlbums(songs), [songs])
+
+	const albums = useMemo(() => {
+		return activeTab === 'albums' ? filterAlbums(allAlbums, debouncedSearch) : allAlbums
+	}, [activeTab, allAlbums, debouncedSearch])
 
 	const searchPlaceholder = activeTab === 'albums' ? 'Search albums or artists...' : 'Search songs, albums, artists, genre or year...'
 

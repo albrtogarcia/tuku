@@ -230,6 +230,8 @@ async function getAllAudioFiles(dir: string): Promise<string[]> {
 	return files.flat()
 }
 
+import { shouldExtractCover, processCover } from './utils/coverUtils'
+
 ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 	try {
 		const audioFilePaths = await getAllAudioFiles(folderPath)
@@ -239,41 +241,36 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 		event.sender.send('scan-start', total)
 
 		const songs = []
+		const songsMetadata: any[] = []
 		let processed = 0
 
+		// First pass: Parse all files and gather metadata
+		// We need all metadata to decide on cover strategy (Mixed vs Single Album)
 		for (const filePath of audioFilePaths) {
 			try {
 				const metadata = await parseFile(filePath)
-				let cover = null
+				// Determine if local cover exists ALREADY (Priority 1)
+				let coverUrl: string | null = null
+				const dir = path.dirname(filePath)
+				const localCoverPath = path.join(dir, 'cover.jpg')
 
-				// 1. Check embedded art
-				if (metadata.common.picture && metadata.common.picture[0]) {
-					cover = `data:${metadata.common.picture[0].format};base64,${Buffer.from(metadata.common.picture[0].data).toString('base64')}`
+				try {
+					await fsPromises.access(localCoverPath)
+					coverUrl = `media://${localCoverPath}`
+				} catch {
+					// No local cover
 				}
 
-				// 2. Fallback to local cover.jpg
-				if (!cover) {
-					const dir = path.dirname(filePath)
-					const localCoverPath = path.join(dir, 'cover.jpg')
-					try {
-						await fsPromises.access(localCoverPath)
-						// If exists, use custom protocol
-						cover = `media://${localCoverPath}`
-					} catch (e) {
-						// File doesn't exist
-					}
-				}
-
-				songs.push({
-					path: filePath,
-					title: metadata.common.title || path.basename(filePath),
-					artist: metadata.common.artist || 'Unknown',
-					album: metadata.common.album || '',
-					duration: metadata.format.duration || 0,
-					cover: cover,
-					genre: Array.isArray(metadata.common.genre) ? metadata.common.genre.join(', ') : metadata.common.genre || '',
+				songsMetadata.push({
+					filePath,
+					metadata,
+					coverUrl, // Will be null if not found
+					dir // Keep dir to know where to save cover later
 				})
+
 			} catch (err) {
+				console.warn(`[Main] Failed to parse ${filePath}`, err)
+				// Add as unknown
 				songs.push({
 					path: filePath,
 					title: path.basename(filePath),
@@ -286,15 +283,64 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 			}
 
 			processed++
-			// Send progress every 10 files to avoid flooding IPC
 			if (processed % 10 === 0 || processed === total) {
 				event.sender.send('scan-progress', { current: processed, total })
+			}
+		}
+
+		// Analysis Phase: Determine if we should extract covers
+		// Group by directory (to handle subfolders correctly)
+		const songsByDir: Record<string, any[]> = {}
+		for (const item of songsMetadata) {
+			if (!songsByDir[item.dir]) songsByDir[item.dir] = []
+			songsByDir[item.dir].push(item)
+		}
+
+		for (const dir in songsByDir) {
+			const dirSongs = songsByDir[dir]
+			if (!dirSongs.length) continue
+
+			// specialized metadata for utils
+			const metaForUtils = dirSongs.map(s => s.metadata)
+
+			// Check if we already have a cover for this dir
+			const hasExistingCover = dirSongs.some(s => s.coverUrl)
+			let finalCoverUrl = hasExistingCover ? `media://${path.join(dir, 'cover.jpg')}` : null
+
+			// Strict Rule: If no cover exists, check if we should extract
+			if (!finalCoverUrl && shouldExtractCover(metaForUtils)) {
+				// Extract from first available picture
+				const candidate = metaForUtils.find(m => m.common.picture && m.common.picture.length > 0)
+				if (candidate && candidate.common.picture) {
+					const pic = candidate.common.picture[0]
+					if (pic) {
+						// Process (Resize & Save)
+						// Ensure we use the album name from the candidate or fallback
+						const albumName = candidate.common.album || 'Unknown Album'
+						finalCoverUrl = await processCover(Buffer.from(pic.data), dir, albumName)
+					}
+				}
+			}
+
+			// Assign final cover to all songs in this dir
+			for (const item of dirSongs) {
+				const { metadata, filePath } = item
+				songs.push({
+					path: filePath,
+					title: metadata.common.title || path.basename(filePath),
+					artist: metadata.common.artist || 'Unknown',
+					album: metadata.common.album || '',
+					duration: metadata.format.duration || 0,
+					cover: finalCoverUrl, // Use the unified cover (or null)
+					genre: Array.isArray(metadata.common.genre) ? metadata.common.genre.join(', ') : metadata.common.genre || '',
+				})
 			}
 		}
 
 		event.sender.send('scan-complete')
 		return songs
 	} catch (err) {
+		console.error('[Main] Scan error:', err)
 		event.sender.send('scan-complete')
 		return []
 	}

@@ -29,11 +29,9 @@ const SongsList = ({ songs, audio, addToQueue, folderPath }: SongsListProps) => 
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
 
 	const sortedSongs = useMemo(() => {
-		console.log(`[SongsList] Starting sort with Intl.Collator. Songs: ${songs.length}, Key: ${sortKey}, Asc: ${sortAsc}`)
-		const start = performance.now()
 		const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
 
-		const result = [...songs].sort((a, b) => {
+		return [...songs].sort((a, b) => {
 			const aValue = a[sortKey]
 			const bValue = b[sortKey]
 
@@ -50,10 +48,6 @@ const SongsList = ({ songs, audio, addToQueue, folderPath }: SongsListProps) => 
 			if (aValue > bValue) return sortAsc ? 1 : -1
 			return 0
 		})
-
-		const end = performance.now()
-		console.log(`[SongsList] Sort complete. Duration: ${(end - start).toFixed(2)}ms`)
-		return result
 	}, [songs, sortKey, sortAsc])
 
 	// Create lightweight version for table rendering (crucial for performance/memory)
