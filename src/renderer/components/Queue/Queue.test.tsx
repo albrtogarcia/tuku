@@ -69,6 +69,7 @@ describe('Queue Component', () => {
 		handleCanPlay: vi.fn(),
 		handleStop: vi.fn(),
 		setVolume: vi.fn(),
+		setIsPlaying: vi.fn(),
 		...overrides,
 	})
 
@@ -116,7 +117,7 @@ describe('Queue Component', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		;(usePlayerStore as any).mockReturnValue(mockPlayerStore)
+			; (usePlayerStore as any).mockReturnValue(mockPlayerStore)
 	})
 
 	describe('Empty State', () => {
@@ -125,7 +126,7 @@ describe('Queue Component', () => {
 				...mockPlayerStore,
 				queue: [],
 			}
-			;(usePlayerStore as any).mockReturnValue(emptyPlayerStore)
+				; (usePlayerStore as any).mockReturnValue(emptyPlayerStore)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -139,7 +140,7 @@ describe('Queue Component', () => {
 				...mockPlayerStore,
 				queue: [],
 			}
-			;(usePlayerStore as any).mockReturnValue(emptyPlayerStore)
+				; (usePlayerStore as any).mockReturnValue(emptyPlayerStore)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -153,7 +154,7 @@ describe('Queue Component', () => {
 				queue: [],
 				currentIndex: 0,
 			}
-			;(usePlayerStore as any).mockReturnValue(emptyPlayerStore)
+				; (usePlayerStore as any).mockReturnValue(emptyPlayerStore)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -169,11 +170,11 @@ describe('Queue Component', () => {
 			render(<Queue audio={mockAudio} />)
 
 			expect(screen.getByText('Test Song 1')).toBeInTheDocument()
-			expect(screen.getByText('(Test Artist 1)')).toBeInTheDocument()
+			expect(screen.getByText('Test Artist 1')).toBeInTheDocument()
 			expect(screen.getByText('Test Song 2')).toBeInTheDocument()
-			expect(screen.getByText('(Test Artist 2)')).toBeInTheDocument()
+			expect(screen.getByText('Test Artist 2')).toBeInTheDocument()
 			expect(screen.getByText('Test Song 3')).toBeInTheDocument()
-			expect(screen.getByText('(Test Artist 3)')).toBeInTheDocument()
+			expect(screen.getByText('Test Artist 3')).toBeInTheDocument()
 		})
 
 		it('should show correct remaining songs count', () => {
@@ -181,7 +182,7 @@ describe('Queue Component', () => {
 				...mockPlayerStore,
 				currentIndex: 1, // Currently playing song 2 (index 1)
 			}
-			;(usePlayerStore as any).mockReturnValue(storeWithCurrentIndex)
+				; (usePlayerStore as any).mockReturnValue(storeWithCurrentIndex)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -206,7 +207,7 @@ describe('Queue Component', () => {
 				...mockPlayerStore,
 				currentIndex: 2, // Currently playing song 3 (index 2)
 			}
-			;(usePlayerStore as any).mockReturnValue(storeWithCurrentIndex)
+				; (usePlayerStore as any).mockReturnValue(storeWithCurrentIndex)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -265,7 +266,7 @@ describe('Queue Component', () => {
 				queue: [mockSongs[0]], // Only one song
 				currentIndex: 0,
 			}
-			;(usePlayerStore as any).mockReturnValue(storeWithLastSong)
+				; (usePlayerStore as any).mockReturnValue(storeWithLastSong)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -334,7 +335,7 @@ describe('Queue Component', () => {
 				...mockPlayerStore,
 				currentIndex: 2, // Last song (index 2)
 			}
-			;(usePlayerStore as any).mockReturnValue(storeAtEnd)
+				; (usePlayerStore as any).mockReturnValue(storeAtEnd)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -348,7 +349,7 @@ describe('Queue Component', () => {
 				...mockPlayerStore,
 				currentIndex: 2, // Last song
 			}
-			;(usePlayerStore as any).mockReturnValue(storeAtEnd)
+				; (usePlayerStore as any).mockReturnValue(storeAtEnd)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)
@@ -366,7 +367,7 @@ describe('Queue Component', () => {
 				queue: [mockSongs[0]],
 				currentIndex: 0,
 			}
-			;(usePlayerStore as any).mockReturnValue(singleSongStore)
+				; (usePlayerStore as any).mockReturnValue(singleSongStore)
 
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} />)

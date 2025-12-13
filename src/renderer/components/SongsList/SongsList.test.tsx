@@ -108,14 +108,13 @@ describe('SongsList Component', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		;(usePlayerStore as any).mockReturnValue(mockPlayerStore)
-		;(formatTime as any).mockImplementation((seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`)
+			; (usePlayerStore as any).mockReturnValue(mockPlayerStore)
+			; (formatTime as any).mockImplementation((seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`)
 	})
 
 	describe('Empty State', () => {
 		it('should render empty state when no songs provided', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={[]} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={[]} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByText('No songs found.')).toBeInTheDocument()
 		})
@@ -123,16 +122,14 @@ describe('SongsList Component', () => {
 
 	describe('Songs Display', () => {
 		it('should render songs table when songs are provided', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByTestId('songs-table')).toBeInTheDocument()
 			expect(screen.getByTestId('songs-count')).toHaveTextContent('3')
 		})
 
 		it('should display all songs with correct information', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			// Check first song (sorted by title: "Bohemian Rhapsody")
 			expect(screen.getByTestId('song-title-0')).toHaveTextContent('Bohemian Rhapsody')
@@ -151,8 +148,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should render all sortable columns', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByTestId('sort-title')).toBeInTheDocument()
 			expect(screen.getByTestId('sort-artist')).toBeInTheDocument()
@@ -165,8 +161,7 @@ describe('SongsList Component', () => {
 
 	describe('Sorting Functionality', () => {
 		it('should sort by title in ascending order by default', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			// Default sort is by title ascending: "Bohemian Rhapsody", "Imagine", "Yesterday"
 			expect(screen.getByTestId('song-title-0')).toHaveTextContent('Bohemian Rhapsody')
@@ -175,8 +170,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should toggle sort direction when clicking same column', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			// Click title sort button to reverse order
 			const titleSortButton = screen.getByTestId('sort-title')
@@ -189,8 +183,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should sort by artist when clicking artist column', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const artistSortButton = screen.getByTestId('sort-artist')
 			fireEvent.click(artistSortButton)
@@ -202,8 +195,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should sort by year numerically', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const yearSortButton = screen.getByTestId('sort-year')
 			fireEvent.click(yearSortButton)
@@ -215,8 +207,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should sort by duration numerically', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const durationSortButton = screen.getByTestId('sort-duration')
 			fireEvent.click(durationSortButton)
@@ -229,9 +220,8 @@ describe('SongsList Component', () => {
 	})
 
 	describe('Song Interactions', () => {
-		it('should call playNow and handlePlay when double-clicking a song', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+		it('should call playNow when double-clicking a song', () => {
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const firstSong = screen.getByTestId('song-item-0')
 			fireEvent.doubleClick(firstSong)
@@ -239,12 +229,10 @@ describe('SongsList Component', () => {
 			// First song in sorted order is "Bohemian Rhapsody"
 			const expectedSong = mockSongs.find((song) => song.title === 'Bohemian Rhapsody')
 			expect(mockPlayerStore.playNow).toHaveBeenCalledWith(expectedSong)
-			expect(mockAudio.handlePlay).toHaveBeenCalledWith(expectedSong!.path)
 		})
 
 		it('should call addToQueue when right-clicking a song', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const firstSong = screen.getByTestId('song-item-0')
 			fireEvent.contextMenu(firstSong)
@@ -255,8 +243,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should prevent default context menu on right click', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const firstSong = screen.getByTestId('song-item-0')
 			const contextMenuEvent = new MouseEvent('contextmenu', { bubbles: true })
@@ -284,24 +271,21 @@ describe('SongsList Component', () => {
 				},
 			]
 
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={songsWithMissingData} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={songsWithMissingData} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByTestId('songs-table')).toBeInTheDocument()
 			expect(screen.getByTestId('song-title-0')).toHaveTextContent('Song with missing data')
 		})
 
 		it('should handle empty arrays gracefully in sorting', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={[]} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={[]} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByText('No songs found.')).toBeInTheDocument()
 		})
 
 		it('should handle single song', () => {
 			const singleSong = [mockSongs[0]]
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={singleSong} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={singleSong} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByTestId('songs-table')).toBeInTheDocument()
 			expect(screen.getByTestId('songs-count')).toHaveTextContent('1')
@@ -330,8 +314,7 @@ describe('SongsList Component', () => {
 				},
 			]
 
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={songsWithUndefined} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={songsWithUndefined} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			expect(screen.getByTestId('songs-table')).toBeInTheDocument()
 			expect(screen.getByTestId('songs-count')).toHaveTextContent('2')
@@ -346,8 +329,7 @@ describe('SongsList Component', () => {
 
 	describe('Integration', () => {
 		it('should pass correct props to SongsTable', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath="/music" />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			// Verify that SongsTable receives sorted songs
 			expect(screen.getByTestId('songs-table')).toBeInTheDocument()
@@ -363,8 +345,7 @@ describe('SongsList Component', () => {
 		})
 
 		it('should work with null folderPath', () => {
-			const mockAudio = createMockAudio()
-			render(<SongsList songs={mockSongs} audio={mockAudio} addToQueue={mockAddToQueue} folderPath={null} />)
+			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath={null} />)
 
 			expect(screen.getByTestId('songs-table')).toBeInTheDocument()
 			expect(screen.getByTestId('songs-count')).toHaveTextContent('3')
