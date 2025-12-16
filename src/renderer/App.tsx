@@ -258,21 +258,25 @@ function App() {
 	const { updateSongMetadata } = usePlayerStore()
 
 	const handleUpdateAlbumCover = (albumName: string, artistName: string, newCover: string) => {
+		const cacheBustedCover = `${newCover}${newCover.includes('?') ? '&' : '?'}t=${Date.now()}`
+
 		console.log(`[App] Updating cover for Album="${albumName}", Artist="${artistName}"`)
-		let updatedCount = 0
-		const updatedSongs = songs.map((song) => {
-			if (song.album === albumName && song.artist === artistName) {
-				updatedCount++
-				// Also update in queue if present
-				updateSongMetadata(song.path, { cover: newCover })
-				return { ...song, cover: newCover }
-			}
-			return song
+		const updatedPaths: string[] = []
+
+		setSongs((prevSongs) => {
+			const nextSongs = prevSongs.map((song) => {
+				if (song.album === albumName && song.artist === artistName) {
+					updatedPaths.push(song.path)
+					return { ...song, cover: cacheBustedCover }
+				}
+				return song
+			})
+			console.log(`[App] Updated ${updatedPaths.length} songs. Triggering setSongs...`)
+			return nextSongs
 		})
-		console.log(`[App] Updated ${updatedCount} songs. Triggering setSongs...`)
-		// This will trigger useSongs -> saveLibrary
-		// @ts-ignore
-		setSongs(updatedSongs)
+
+		// Also update queue/player metadata so the playing song refreshes its cover
+		updatedPaths.forEach((path) => updateSongMetadata(path, { cover: cacheBustedCover }))
 	}
 
 	return (

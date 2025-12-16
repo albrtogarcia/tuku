@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import type { Song } from '../../types/song'
 
+const sanitizeCover = (cover: string | null) => {
+	if (!cover) return cover
+	// Strip cache-busting params/fragments so DB keeps the canonical path
+	return cover.split(/[?#]/)[0]
+}
+
 export function useSongs() {
 	const [folderPath, setFolderPath] = useState<string | null>(null)
 	const [songs, setSongs] = useState<Song[]>([])
@@ -30,7 +36,12 @@ export function useSongs() {
 	useEffect(() => {
 		// Save the library every time it changes
 		if (songs.length > 0) {
-			window.electronAPI.saveLibrary(songs)
+			const songsToSave = songs.map((song) => ({
+				...song,
+				cover: sanitizeCover(song.cover),
+			}))
+
+			window.electronAPI.saveLibrary(songsToSave)
 		}
 	}, [songs])
 

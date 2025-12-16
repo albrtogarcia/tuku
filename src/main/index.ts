@@ -76,19 +76,24 @@ async function createWindow() {
 
 	// Register media protocol for serving local images
 	protocol.handle('media', (request) => {
-		const filePath = request.url.replace('media://', '')
-		// Decode URL in case it has spaces or other encoded chars
-		let decodedPath = decodeURIComponent(filePath)
-
-		// Ensure absolute path on macOS/Linux (fix for missing leading slash)
-		if ((process.platform === 'darwin' || process.platform === 'linux') && !decodedPath.startsWith('/')) {
-			decodedPath = '/' + decodedPath
-		}
-
 		console.log(`[Media Protocol] Request URL: ${request.url}`)
-		console.log(`[Media Protocol] Decoded path: ${decodedPath}`)
-
 		try {
+			const url = new URL(request.url)
+			const host = decodeURIComponent(url.hostname || '')
+			let decodedPath = decodeURIComponent(url.pathname || '')
+
+			// Rebuild drive letters on Windows (hostname carries the letter)
+			if (host) {
+				decodedPath = decodedPath ? `${host}:${decodedPath}` : `${host}:`
+			}
+
+			// Ensure absolute path on macOS/Linux (fix for missing leading slash)
+			if ((process.platform === 'darwin' || process.platform === 'linux') && !decodedPath.startsWith('/')) {
+				decodedPath = '/' + decodedPath
+			}
+
+			console.log(`[Media Protocol] Decoded path: ${decodedPath}`)
+
 			// Basic security check: ensure we are fetching images
 			const ext = path.extname(decodedPath).toLowerCase()
 			if (!['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
