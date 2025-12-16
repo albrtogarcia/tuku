@@ -9,6 +9,8 @@ import Settings from './components/Settings/Settings'
 import { useAudioPlayer } from './hooks/useAudioPlayer'
 import { useSongs } from './hooks/useSongs'
 import { formatTime, filterSongs, filterAlbums } from './utils'
+import Notification from './components/Notifications/Notification'
+import ScanProgress from './components/Notifications/ScanProgress'
 import { usePlayerStore } from './store/player'
 import { useSettingsStore } from './store/settings'
 
@@ -350,67 +352,16 @@ function App() {
 
 			{/* Scan Progress Bar */}
 			{isScanning && (
-				<div
-					style={{
-						position: 'fixed',
-						bottom: '20px',
-						left: '50%',
-						transform: 'translateX(-50%)',
-						backgroundColor: '#1e1e1e',
-						padding: '12px 24px',
-						borderRadius: '8px',
-						display: 'flex',
-						flexDirection: 'column',
-						gap: '8px',
-						boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-						zIndex: 1000,
-						border: '1px solid #333',
-						minWidth: '300px',
-					}}
-				>
-					<div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: '14px' }}>
-						<span>Scanning Library...</span>
-						<span>
-							{scanProgress.current} / {scanProgress.total}
-						</span>
-					</div>
-					<div style={{ width: '100%', height: '4px', backgroundColor: '#333', borderRadius: '2px', overflow: 'hidden' }}>
-						<div
-							style={{
-								width: `${(scanProgress.current / scanProgress.total) * 100}%`,
-								height: '100%',
-								backgroundColor: '#ff5722',
-								transition: 'width 0.2s ease',
-							}}
-						/>
-					</div>
-				</div>
+				<ScanProgress current={scanProgress.current} total={scanProgress.total} />
 			)}
 
 			{/* Notifications */}
 			{notification && (
-				<div
-					style={{
-						position: 'fixed',
-						bottom: '20px',
-						left: '50%',
-						transform: 'translateX(-50%)',
-						backgroundColor: notification.type === 'error' ? '#d32f2f' : '#1e1e1e',
-						padding: '12px 24px',
-						borderRadius: '8px',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '8px',
-						boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-						zIndex: 1000,
-						border: '1px solid #333',
-						minWidth: '300px',
-						justifyContent: 'center',
-						color: 'white'
-					}}
-				>
-					{notification.message}
-				</div>
+				<Notification
+					message={notification.message}
+					type={notification.type}
+					onClose={() => setNotification(null)}
+				/>
 			)}
 		</div>
 	)

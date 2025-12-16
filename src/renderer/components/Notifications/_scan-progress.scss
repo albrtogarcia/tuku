@@ -1,0 +1,47 @@
+.scan-progress {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px 24px;
+	border-radius: 8px;
+	min-width: 300px;
+	border: 1px solid #333;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	z-index: 1000;
+	background-color: #1e1e1e;
+	color: #fff;
+}
+
+.scan-progress__header {
+	display: flex;
+	justify-content: space-between;
+	font-size: 14px;
+}
+
+.scan-progress__bar {
+	width: 100%;
+	height: 6px;
+	border-radius: 3px;
+	overflow: hidden;
+	appearance: none;
+	border: none;
+	background-color: #333;
+}
+
+.scan-progress__bar::-webkit-progress-bar {
+	background-color: #333;
+}
+
+.scan-progress__bar::-webkit-progress-value {
+	background-color: #ff5722;
+	transition: width 0.2s ease;
+}
+
+.scan-progress__bar::-moz-progress-bar {
+	background-color: #ff5722;
+	transition: width 0.2s ease;
+}
