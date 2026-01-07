@@ -2,6 +2,7 @@ import { nativeImage } from 'electron'
 import fs from 'fs/promises'
 import path from 'path'
 import { IAudioMetadata } from 'music-metadata'
+import { pathToFileURL } from 'url'
 
 /**
  * Checks if a folder contains a consistent album or valid compilation.
@@ -50,7 +51,7 @@ export async function processCover(
 
     // Write file
     await fs.writeFile(filePath, jpegBuffer)
-    return `media://${filePath}`
+    return pathToFileURL(filePath).toString().replace('file:', 'media:')
   } catch (error) {
     console.error(`[CoverUtils] Error processing cover:`, error)
     return null

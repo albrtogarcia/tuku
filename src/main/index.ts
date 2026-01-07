@@ -82,12 +82,21 @@ async function createWindow() {
 			const host = decodeURIComponent(url.hostname || '')
 			let decodedPath = decodeURIComponent(url.pathname || '')
 
-			// Rebuild drive letters on Windows (hostname carries the letter)
-			if (host) {
-				decodedPath = decodedPath ? `${host}:${decodedPath}` : `${host}:`
+			// Rebuild path
+			if (process.platform === 'win32') {
+				// Windows: hostname carries the drive letter
+				if (host) {
+					decodedPath = decodedPath ? `${host}:${decodedPath}` : `${host}:`
+				}
+			} else {
+				// macOS/Linux: hostname might be the first part of the path (e.g. media://Volumes/...)
+				// If so, we need to prepend it
+				if (host) {
+					decodedPath = `/${host}${decodedPath}`
+				}
 			}
 
-			// Ensure absolute path on macOS/Linux (fix for missing leading slash)
+			// Ensure absolute path on macOS/Linux (fix for missing leading slash if host was empty)
 			if ((process.platform === 'darwin' || process.platform === 'linux') && !decodedPath.startsWith('/')) {
 				decodedPath = '/' + decodedPath
 			}
@@ -261,7 +270,7 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 
 				try {
 					await fsPromises.access(localCoverPath)
-					coverUrl = `media://${localCoverPath}`
+					coverUrl = pathToFileURL(localCoverPath).toString().replace('file:', 'media:')
 				} catch {
 					// No local cover
 				}
@@ -310,7 +319,7 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 
 			// Check if we already have a cover for this dir
 			const hasExistingCover = dirSongs.some(s => s.coverUrl)
-			let finalCoverUrl = hasExistingCover ? `media://${path.join(dir, 'cover.jpg')}` : null
+			let finalCoverUrl = hasExistingCover ? pathToFileURL(path.join(dir, 'cover.jpg')).toString().replace('file:', 'media:') : null
 
 			// Strict Rule: If no cover exists, check if we should extract
 			if (!finalCoverUrl && shouldExtractCover(metaForUtils)) {
@@ -448,7 +457,7 @@ ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string
 			console.log(`[Main] Writing cover to: ${coverPath}`)
 			await fsPromises.writeFile(coverPath, buffer)
 
-			const mediaUrl = `media://${coverPath}`
+			const mediaUrl = pathToFileURL(coverPath).toString().replace('file:', 'media:')
 
 			// Update in database
 			console.log('[Main] Updating database...')

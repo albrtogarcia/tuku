@@ -63,8 +63,8 @@ Crear una aplicación sencilla, rápida y personalizable para:
 - [ ] Tabs en queue con Next y History
 - [x] Funcionalidad buscador por tabs
 - [x] Botón eliminar canción de cola
-- [ ] Corregir tests
-- [ ] Adoptar solo una forma de cargar portadas de álbum
+- [x] Corregir tests
+- [x] Adoptar solo una forma de cargar portadas de álbum
 - [ ] Componente de notificaciones
 - [x] Testear controles de reproducción
 - [x] Componente header de sección
