@@ -3,7 +3,10 @@
 	"version": "0.1.5",
 	"description": "Reproductor de música local construido con Electron y React",
 	"main": "dist/main/index.js",
-	"author": "albrtogarcia",
+	"author": {
+		"name": "albrtogarcia",
+		"email": "malgardel@gmail.com"
+	},
 	"license": "MIT",
 	"scripts": {
 		"dev": "concurrently -k \"vite\" \"npm:dev:main\" \"npm:dev:electron\"",
