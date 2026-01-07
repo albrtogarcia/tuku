@@ -58,22 +58,23 @@ Crear una aplicación sencilla, rápida y personalizable para:
 
 #### 📐 Checklist de tareas pendientes MVP
 
-- [ ] UI de modal settings
-- [ ] Afinar UI general
-- [ ] Tabs en queue con Next y History
 - [x] Funcionalidad buscador por tabs
 - [x] Botón eliminar canción de cola
 - [x] Corregir tests
 - [x] Adoptar solo una forma de cargar portadas de álbum
-- [ ] Componente de notificaciones
 - [x] Testear controles de reproducción
 - [x] Componente header de sección
 - [x] Corregir altura de grid de álbumes
 - [x] Responsive
-- [ ] Normalizar nivel de audio?
+- [ ] UI de modal settings
+- [ ] Afinar UI general
+- [ ] Componente de notificaciones
+- [ ] Memory leak en reproducción
 
 ### 🚧 Fase 2: Alpha
 
+- [ ] Normalizar nivel de audio
+- [ ] Tabs en queue con Next y History
 - [ ] Playlists personalizadas
 - [ ] Historial de reproducción
 - [ ] Búsqueda y filtros
