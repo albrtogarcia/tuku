@@ -1,6 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 
-export function useAudioPlayer() {
+interface UseAudioPlayerOptions {
+	onError?: (error: { message: string; path: string }) => void
+}
+
+export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 	const audioRef = useRef<HTMLAudioElement>(null)
 	const [audioUrl, setAudioUrl] = useState<string | null>(null)
 	const [prevAudioUrl, setPrevAudioUrl] = useState<string | null>(null)
@@ -31,17 +35,32 @@ export function useAudioPlayer() {
 	}
 
 	const handlePlay = useCallback(async (songPath: string) => {
-		const buffer = await window.electronAPI.getAudioBuffer(songPath)
-		if (buffer) {
-			if (audioUrl) setPrevAudioUrl(audioUrl) // Save previous for cleanup later
-			const blob = new Blob([buffer])
-			const url = URL.createObjectURL(blob)
-			setAudioUrl(url)
-			setPlayingPath(songPath)
-			setPendingPlay(true)
-			setIsPlaying(true)
+		try {
+			const buffer = await window.electronAPI.getAudioBuffer(songPath)
+			if (buffer) {
+				if (audioUrl) setPrevAudioUrl(audioUrl) // Save previous for cleanup later
+				const blob = new Blob([buffer])
+				const url = URL.createObjectURL(blob)
+				setAudioUrl(url)
+				setPlayingPath(songPath)
+				setPendingPlay(true)
+				setIsPlaying(true)
+			} else {
+				// File could not be loaded (missing, moved, or permission error)
+				console.error(`[useAudioPlayer] Failed to load audio file: ${songPath}`)
+				options?.onError?.({
+					message: 'Failed to load audio file. The file may be missing or moved.',
+					path: songPath
+				})
+			}
+		} catch (error) {
+			console.error(`[useAudioPlayer] Error loading audio file: ${songPath}`, error)
+			options?.onError?.({
+				message: 'An error occurred while loading the audio file.',
+				path: songPath
+			})
 		}
-	}, [audioUrl])
+	}, [audioUrl, options])
 
 	// Cleanup previous audioUrl only after new one is in use
 	useEffect(() => {

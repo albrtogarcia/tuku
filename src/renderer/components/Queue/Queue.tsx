@@ -1,5 +1,5 @@
 import { usePlayerStore } from '../../store/player'
-import { TrashIcon, XIcon } from '@phosphor-icons/react'
+import { XIcon, WarningIcon } from '@phosphor-icons/react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
@@ -9,6 +9,7 @@ import './_queue.scss'
 
 interface QueueProps {
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
+	failedSongPaths: Set<string>
 }
 
 // Sortable Queue Item Component
@@ -17,11 +18,12 @@ interface SortableQueueItemProps {
 	index: number
 	isPlaying: boolean
 	isPlayed: boolean
+	hasFailed: boolean
 	onRemove: (idx: number) => void
 	onDoubleClick: (idx: number) => void
 }
 
-function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubleClick }: SortableQueueItemProps) {
+function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, onRemove, onDoubleClick }: SortableQueueItemProps) {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `${song.path}-${index}` })
 
 	const style = {
@@ -30,9 +32,16 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubl
 	}
 
 	return (
-		<li ref={setNodeRef} style={style} className={`queue__item${isPlaying ? ' playing' : ''}${isPlayed ? ' played' : ''}${isDragging ? ' dragging' : ''}`}>
+		<li
+			ref={setNodeRef}
+			style={style}
+			className={`queue__item${isPlaying ? ' playing' : ''}${isPlayed ? ' played' : ''}${isDragging ? ' dragging' : ''}${hasFailed ? ' failed' : ''}`}
+		>
 			<div {...attributes} {...listeners} className="queue__item-content" onDoubleClick={() => onDoubleClick(index)}>
-				<span>{song.title}</span>
+				<span>
+					{song.title}
+					{hasFailed && <WarningIcon size={12} weight="fill" className="queue__item-warning" />}
+				</span>
 				<small>{song.artist}</small>
 				<small>{song.album}</small>
 				<small>{formatTime(song.duration)}</small>
@@ -44,7 +53,7 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, onRemove, onDoubl
 	)
 }
 
-const Queue = ({ audio }: QueueProps) => {
+const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue } = usePlayerStore()
 	const { handlePause, handlePlay } = audio
 
@@ -143,6 +152,7 @@ const Queue = ({ audio }: QueueProps) => {
 									index={idx}
 									isPlaying={idx === currentIndex}
 									isPlayed={idx < currentIndex}
+									hasFailed={failedSongPaths.has(song.path)}
 									onRemove={handleRemoveFromQueue}
 									onDoubleClick={handleQueueItemDoubleClick}
 								/>

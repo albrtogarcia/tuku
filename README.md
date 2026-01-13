@@ -77,7 +77,7 @@ Create a simple, fast, and customizable application to:
 
 **Errors that cause crashes or data loss**
 
-- [ ] **Silent audio file loading failures** (`src/renderer/hooks/useAudioPlayer.ts:33-44`)
+- [x] **Silent audio file loading failures** (`src/renderer/hooks/useAudioPlayer.ts:33-44`)
   - Add error notification when a file cannot be loaded
   - Automatically skip to next song if loading fails
   - Log failed paths for debugging

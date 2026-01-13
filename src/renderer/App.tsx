@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import './styles/app.scss'
 import Queue from './components/Queue/Queue'
 import Player from './components/Player/Player'
@@ -17,8 +17,6 @@ import { useSettingsStore } from './store/settings'
 import { useDebounce } from './hooks/useDebounce'
 import { Song } from '../types/song'
 import { Album } from '../types/album'
-
-
 
 function groupAlbums(songs: Song[]): Album[] {
 	const albumsMap = new Map<string, Album>()
@@ -48,11 +46,15 @@ function App() {
 	const [isScanning, setIsScanning] = useState(false)
 	const [notification, setNotification] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
 	const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 })
+	const [failedSongPaths, setFailedSongPaths] = useState<Set<string>>(new Set())
 
-	const handleShowNotification = (message: string, type: 'error' | 'success' | 'info' = 'info') => {
+	const handleShowNotification = useCallback((message: string, type: 'error' | 'success' | 'info' = 'info') => {
 		setNotification({ message, type })
-		setTimeout(() => setNotification(null), 3000)
-	}
+		// Only auto-hide success and info notifications, keep errors visible
+		if (type !== 'error') {
+			setTimeout(() => setNotification(null), 3000)
+		}
+	}, [])
 
 	const { theme } = useSettingsStore()
 
@@ -82,8 +84,6 @@ function App() {
 		})
 	}, [])
 
-	const audio = useAudioPlayer()
-
 	const {
 		queue,
 		currentIndex,
@@ -98,6 +98,55 @@ function App() {
 		setQueue,
 		loadQueueFromStorage,
 	} = usePlayerStore()
+
+	// Audio player error handler - show notification and skip to next song
+	const handleAudioError = useCallback(
+		(error: { message: string; path: string }) => {
+			console.error('[App] Audio error:', error)
+
+			// Get current state from store to avoid stale closure values
+			const state = usePlayerStore.getState()
+			const idx = state.currentIndex
+			const queueLen = state.queue.length
+			const repeatMode = state.repeat
+			const failedSong = state.queue[idx]
+
+			// Track this failed song path
+			if (failedSong) {
+				setFailedSongPaths((prev) => new Set(prev).add(failedSong.path))
+			}
+
+			// Build detailed error message with song info
+			const songInfo = failedSong
+				? `${failedSong.artist || 'Unknown Artist'} - ${failedSong.title || 'Unknown Title'}`
+				: 'Unknown Song'
+			const detailedMessage = `Failed to load: ${songInfo}. The file may be missing or moved.`
+
+			console.log(`[App] Error handler - current index from store: ${idx}, queue length: ${queueLen}`)
+			console.log(`[App] Failed song: ${songInfo}`)
+
+			handleShowNotification(detailedMessage, 'error')
+
+			// Skip to next song immediately
+			if (idx + 1 < queueLen) {
+				console.log(`[App] Skipping to next song after error. Moving from index ${idx} to ${idx + 1}`)
+				state.setCurrentIndex(idx + 1)
+				state.setIsPlaying(true)
+				state.cleanQueueHistory()
+			} else if (repeatMode && queueLen > 0) {
+				console.log('[App] End of queue, restarting from beginning due to repeat')
+				state.setCurrentIndex(0)
+				state.setIsPlaying(true)
+				state.cleanQueueHistory()
+			} else {
+				console.log('[App] End of queue, stopping playback')
+				state.setIsPlaying(false)
+			}
+		},
+		[handleShowNotification],
+	)
+
+	const audio = useAudioPlayer({ onError: handleAudioError })
 
 	// Load queue from storage when app starts
 	useEffect(() => {
@@ -221,7 +270,7 @@ function App() {
 					title: currentSong.title || 'Unknown Title',
 					artist: currentSong.artist || 'Unknown Artist',
 					album: currentSong.album || 'Unknown Album',
-					artwork: artwork
+					artwork: artwork,
 				})
 			}
 		}
@@ -237,7 +286,6 @@ function App() {
 			if (objectUrl) URL.revokeObjectURL(objectUrl)
 		}
 	}, [currentIndex, queue, audio.handleResume, audio.handlePause, handleNext, handlePrevious])
-
 
 	const filteredSongs = useMemo(() => {
 		return activeTab === 'songs' ? filterSongs(songs, debouncedSearch) : songs
@@ -283,7 +331,6 @@ function App() {
 
 	return (
 		<div className="container">
-
 			{/* PLAYER */}
 			<div className="container__player">
 				<Player audio={audio} songs={songs} onOpenSettings={() => setIsSettingsOpen(true)} />
@@ -291,7 +338,7 @@ function App() {
 
 			{/* QUEUE */}
 			<div className="container__queue">
-				<Queue audio={audio} />
+				<Queue audio={audio} failedSongPaths={failedSongPaths} />
 			</div>
 
 			{/* LIBRARY */}
@@ -314,7 +361,16 @@ function App() {
 
 					{/* TAB CONTENT */}
 					<div className="library__body">
-						{activeTab === 'albums' && <AlbumsGrid albums={albums} setQueue={handleSetQueue} audio={audio} onUpdateCover={handleUpdateAlbumCover} onOpenSettings={() => setIsSettingsOpen(true)} onShowNotification={handleShowNotification} />}
+						{activeTab === 'albums' && (
+							<AlbumsGrid
+								albums={albums}
+								setQueue={handleSetQueue}
+								audio={audio}
+								onUpdateCover={handleUpdateAlbumCover}
+								onOpenSettings={() => setIsSettingsOpen(true)}
+								onShowNotification={handleShowNotification}
+							/>
+						)}
 						{activeTab === 'songs' && <SongsList songs={filteredSongs} addToQueue={addToQueue} folderPath={folderPath} />}
 					</div>
 				</div>
@@ -351,18 +407,10 @@ function App() {
 			/>
 
 			{/* Scan Progress Bar */}
-			{isScanning && (
-				<ScanProgress current={scanProgress.current} total={scanProgress.total} />
-			)}
+			{isScanning && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
 
 			{/* Notifications */}
-			{notification && (
-				<Notification
-					message={notification.message}
-					type={notification.type}
-					onClose={() => setNotification(null)}
-				/>
-			)}
+			{notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
 		</div>
 	)
 }
