@@ -86,9 +86,10 @@ Create a simple, fast, and customizable application to:
   - Race condition: array access after removing element
   - Reorder removal and playback logic
 
-- [ ] **Full page reload when deleting album** (`src/renderer/components/AlbumsGrid/AlbumsGrid.tsx:109`)
-  - `window.location.reload()` loses queue, position, and state
-  - Implement optimistic UI update instead of hard reload
+- [x] **Full page reload when deleting album** (`src/renderer/components/AlbumsGrid/AlbumsGrid.tsx:100-115`, `src/renderer/App.tsx:337-367`)
+  - Replaced `window.location.reload()` with optimistic UI update
+  - Songs removed from library state and queue without losing playback
+  - Properly adjusts current index and stops playback if queue becomes empty
 
 - [ ] **No file existence validation before playing** (`src/main/index.ts:363-370`)
   - Verify file exists before attempting to read it

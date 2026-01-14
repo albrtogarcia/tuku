@@ -334,6 +334,40 @@ function App() {
 		updatedPaths.forEach((path) => updateSongMetadata(path, { cover: cacheBustedCover }))
 	}
 
+	const handleAlbumDeleted = (albumPath: string) => {
+		console.log(`[App] Removing songs from album path: ${albumPath}`)
+
+		// First, identify which song paths belong to this album
+		const deletedPaths = songs.filter((song) => song.path.startsWith(albumPath)).map((song) => song.path)
+
+		// Remove songs that start with the album path from the songs state
+		setSongs((prevSongs) => {
+			const remainingSongs = prevSongs.filter((song) => !song.path.startsWith(albumPath))
+			console.log(`[App] Removed ${prevSongs.length - remainingSongs.length} songs from library`)
+			return remainingSongs
+		})
+
+		// Remove songs from queue that belong to the deleted album
+		if (deletedPaths.length > 0) {
+			const newQueue = queue.filter((song) => !deletedPaths.includes(song.path))
+			if (newQueue.length !== queue.length) {
+				console.log(`[App] Removed ${queue.length - newQueue.length} songs from queue`)
+				setQueue(newQueue)
+
+				// Adjust current index if needed
+				if (currentIndex >= newQueue.length) {
+					setCurrentIndex(Math.max(0, newQueue.length - 1))
+					if (newQueue.length === 0) {
+						audio.handleStop()
+						setIsPlaying(false)
+					}
+				}
+			}
+		}
+
+		handleShowNotification('Album deleted successfully', 'success')
+	}
+
 	return (
 		<div className="container">
 			{/* PLAYER */}
@@ -372,6 +406,7 @@ function App() {
 								setQueue={handleSetQueue}
 								audio={audio}
 								onUpdateCover={handleUpdateAlbumCover}
+								onAlbumDeleted={handleAlbumDeleted}
 								onOpenSettings={() => setIsSettingsOpen(true)}
 								onShowNotification={handleShowNotification}
 							/>

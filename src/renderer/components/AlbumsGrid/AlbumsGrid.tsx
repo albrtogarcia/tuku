@@ -9,11 +9,12 @@ interface AlbumsGridProps {
 	setQueue: (songs: any[]) => void
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
 	onUpdateCover: (albumName: string, artistName: string, newCover: string) => void
+	onAlbumDeleted: (albumPath: string) => void
 	onOpenSettings: () => void
 	onShowNotification?: (message: string, type: 'error' | 'success' | 'info') => void
 }
 
-const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover, onOpenSettings, onShowNotification }) => {
+const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover, onAlbumDeleted, onOpenSettings, onShowNotification }) => {
 	const { addAlbumToQueue, playAlbumImmediately } = usePlayerStore()
 	const [loadingCovers, setLoadingCovers] = useState<Set<string>>(new Set())
 	const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; album: any | null }>({
@@ -105,10 +106,10 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		if (confirm(`Are you sure you want to delete "${album.title}"?\nThis will move files to Trash.`)) {
 			const success = await window.electronAPI.deleteAlbum(albumPath)
 			if (success) {
-				// Force reload to update library state
-				window.location.reload()
+				// Update library state without reloading the page
+				onAlbumDeleted(albumPath)
 			} else {
-				alert('Failed to delete album.')
+				onShowNotification?.('Failed to delete album', 'error')
 			}
 		}
 	}
