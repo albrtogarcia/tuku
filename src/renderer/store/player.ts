@@ -220,8 +220,25 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 
 			const libraryMap = new Map(library.map((song) => [song.path, song]))
 
-			// Build the queue with complete metadata
-			const queueWithMetadata: Song[] = loaded.queue.map((path) => libraryMap.get(path)).filter((song): song is Song => song !== undefined)
+			// Build the queue with complete metadata, tracking which songs are missing
+			const queueWithMetadata: Song[] = []
+			const missingSongs: string[] = []
+
+			loaded.queue.forEach((path) => {
+				const song = libraryMap.get(path)
+				if (song) {
+					queueWithMetadata.push(song)
+				} else {
+					missingSongs.push(path)
+				}
+			})
+
+			// Notify if songs were removed from queue
+			if (missingSongs.length > 0) {
+				console.warn(`[Player Store] ${missingSongs.length} songs removed from queue (not found in library)`)
+				// Dispatch custom event that App.tsx can listen to
+				window.dispatchEvent(new CustomEvent('queue-songs-removed', { detail: missingSongs.length }))
+			}
 
 			if (queueWithMetadata.length > 0) {
 				const currentIndex = Math.max(0, Math.min(loaded.currentIndex, queueWithMetadata.length - 1))

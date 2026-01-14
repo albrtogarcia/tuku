@@ -521,6 +521,45 @@ ipcMain.handle('delete-album', async (_event, albumPath) => {
 	}
 })
 
+ipcMain.handle('cleanup-missing-files', async () => {
+	try {
+		console.log('[Main] Starting cleanup of missing files...')
+
+		// Get all songs from library
+		const allSongs = db.prepare('SELECT path FROM library').all() as { path: string }[]
+		console.log(`[Main] Checking ${allSongs.length} files...`)
+
+		// Check which files no longer exist
+		const missingPaths: string[] = []
+		for (const song of allSongs) {
+			if (!fs.existsSync(song.path)) {
+				missingPaths.push(song.path)
+			}
+		}
+
+		if (missingPaths.length === 0) {
+			console.log('[Main] No missing files found')
+			return { removed: 0 }
+		}
+
+		// Remove missing files from database
+		console.log(`[Main] Found ${missingPaths.length} missing files, removing from database...`)
+		const deleteStmt = db.prepare('DELETE FROM library WHERE path = ?')
+		const tx = db.transaction((paths: string[]) => {
+			for (const path of paths) {
+				deleteStmt.run(path)
+			}
+		})
+		tx(missingPaths)
+
+		console.log(`[Main] Cleanup complete. Removed ${missingPaths.length} missing files from library`)
+		return { removed: missingPaths.length }
+	} catch (error) {
+		console.error('[Main] Error during cleanup:', error)
+		return { removed: 0, error: String(error) }
+	}
+})
+
 app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {

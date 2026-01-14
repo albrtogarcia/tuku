@@ -18,4 +18,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	onScanComplete: (callback: () => void) => ipcRenderer.on('scan-complete', callback),
 	openInFinder: (path: string) => ipcRenderer.invoke('open-in-finder', path),
 	deleteAlbum: (path: string) => ipcRenderer.invoke('delete-album', path),
+	cleanupMissingFiles: (): Promise<{ removed: number; error?: string }> => ipcRenderer.invoke('cleanup-missing-files'),
 })

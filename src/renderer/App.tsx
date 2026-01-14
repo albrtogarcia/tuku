@@ -45,6 +45,7 @@ function App() {
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 	const [isScanning, setIsScanning] = useState(false)
 	const [notification, setNotification] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+	const [errorNotificationShown, setErrorNotificationShown] = useState(false)
 	const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 })
 	const [failedSongPaths, setFailedSongPaths] = useState<Set<string>>(new Set())
 
@@ -55,6 +56,27 @@ function App() {
 			setTimeout(() => setNotification(null), 3000)
 		}
 	}, [])
+
+	const handleCleanupMissingFiles = useCallback(async () => {
+		try {
+			const result = await window.electronAPI.cleanupMissingFiles()
+			if (result.error) {
+				handleShowNotification('Failed to cleanup missing files', 'error')
+			} else if (result.removed === 0) {
+				handleShowNotification('No missing files found', 'info')
+			} else {
+				handleShowNotification(`Removed ${result.removed} missing file${result.removed > 1 ? 's' : ''} from library`, 'success')
+				// Reload the library to reflect changes
+				const updatedLibrary = await window.electronAPI.loadLibrary()
+				setSongs(updatedLibrary)
+				// Clear failed song paths since we just cleaned up
+				setFailedSongPaths(new Set())
+			}
+		} catch (error) {
+			console.error('[App] Error cleaning up missing files:', error)
+			handleShowNotification('Failed to cleanup missing files', 'error')
+		}
+	}, [handleShowNotification, setSongs])
 
 	const { theme, volume: savedVolume, setVolume: saveVolume } = useSettingsStore()
 
@@ -99,10 +121,25 @@ function App() {
 		loadQueueFromStorage,
 	} = usePlayerStore()
 
+	// Track last error to prevent duplicate handling
+	const lastErrorRef = useRef<{ path: string; time: number } | null>(null)
+	const failureCountRef = useRef<{ count: number; startTime: number }>({ count: 0, startTime: Date.now() })
+
 	// Audio player error handler - show notification and skip to next song
 	const handleAudioError = useCallback(
 		(error: { message: string; path: string }) => {
 			console.error('[App] Audio error:', error)
+
+			// Prevent duplicate error handling for the same path within 1 second
+			const now = Date.now()
+			if (lastErrorRef.current && lastErrorRef.current.path === error.path) {
+				const timeSinceLastError = now - lastErrorRef.current.time
+				if (timeSinceLastError < 1000) {
+					console.log(`[App] Ignoring duplicate error for ${error.path} (${timeSinceLastError}ms ago)`)
+					return
+				}
+			}
+			lastErrorRef.current = { path: error.path, time: now }
 
 			// Get current state from store to avoid stale closure values
 			const state = usePlayerStore.getState()
@@ -116,16 +153,35 @@ function App() {
 				setFailedSongPaths((prev) => new Set(prev).add(failedSong.path))
 			}
 
+			// Track consecutive failures to detect mass file issues
+			if (now - failureCountRef.current.startTime < 10000) {
+				// Within 10-second window
+				failureCountRef.current.count++
+			} else {
+				// Reset window
+				failureCountRef.current = { count: 1, startTime: now }
+			}
+
 			// Build detailed error message with song info
-			const songInfo = failedSong
-				? `${failedSong.artist || 'Unknown Artist'} - ${failedSong.title || 'Unknown Title'}`
-				: 'Unknown Song'
-			const detailedMessage = `Failed to load: ${songInfo}. The file may be missing or moved.`
+			const songInfo = failedSong ? `${failedSong.artist || 'Unknown Artist'} - ${failedSong.title || 'Unknown Title'}` : 'Unknown Song'
 
 			console.log(`[App] Error handler - current index from store: ${idx}, queue length: ${queueLen}`)
 			console.log(`[App] Failed song: ${songInfo}`)
+			console.log(`[App] Failure count: ${failureCountRef.current.count} in current window`)
 
-			handleShowNotification(detailedMessage, 'error')
+			// Only show notification if one isn't already visible
+			// This prevents notification stacking when multiple songs fail rapidly
+			if (!errorNotificationShown) {
+				// If multiple failures detected, suggest going to Settings
+				if (failureCountRef.current.count >= 3) {
+					const detailedMessage = `Multiple songs failed to load. Files may be missing or moved. Check Settings to Rescan Library or Clean Up Missing Files.`
+					handleShowNotification(detailedMessage, 'error')
+				} else {
+					const detailedMessage = `Failed to load: ${songInfo}. The file may be missing or moved.`
+					handleShowNotification(detailedMessage, 'error')
+				}
+				setErrorNotificationShown(true)
+			}
 
 			// Skip to next song immediately
 			if (idx + 1 < queueLen) {
@@ -143,7 +199,7 @@ function App() {
 				state.setIsPlaying(false)
 			}
 		},
-		[handleShowNotification],
+		[handleShowNotification, errorNotificationShown],
 	)
 
 	const audio = useAudioPlayer({ onError: handleAudioError, initialVolume: savedVolume })
@@ -162,7 +218,18 @@ function App() {
 			console.log('[App] Received open-settings event from native menu')
 			setIsSettingsOpen(true)
 		})
-	}, [loadQueueFromStorage])
+
+		// Listen for queue songs removed event
+		const handleQueueSongsRemoved = (event: any) => {
+			const count = event.detail
+			handleShowNotification(`${count} song${count > 1 ? 's were' : ' was'} removed from queue (files not found in library)`, 'info')
+		}
+		window.addEventListener('queue-songs-removed', handleQueueSongsRemoved)
+
+		return () => {
+			window.removeEventListener('queue-songs-removed', handleQueueSongsRemoved)
+		}
+	}, [loadQueueFromStorage, handleShowNotification])
 
 	// Sync Store -> Audio Player
 	const { handlePlay, handleResume, handlePause, playingPath: audioPlayingPath } = audio
@@ -423,6 +490,7 @@ function App() {
 				lastUpdated={lastUpdated}
 				onSelectFolder={handleSelectFolder}
 				onRescanFolder={handleRescanFolder}
+				onCleanupMissingFiles={handleCleanupMissingFiles}
 				theme={theme}
 				onSetTheme={useSettingsStore.getState().setTheme}
 			/>
@@ -450,7 +518,16 @@ function App() {
 			{isScanning && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
 
 			{/* Notifications */}
-			{notification && <Notification message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
+			{notification && (
+				<Notification
+					message={notification.message}
+					type={notification.type}
+					onClose={() => {
+						setNotification(null)
+						setErrorNotificationShown(false)
+					}}
+				/>
+			)}
 		</div>
 	)
 }

@@ -97,10 +97,11 @@ Create a simple, fast, and customizable application to:
   - Works together with error handler to show user feedback and auto-skip
   - (Note: Core functionality already solved by "Silent audio file loading failures" fix)
 
-- [ ] **Queue reconstruction silently loses songs** (`src/renderer/store/player.ts:208-235`)
-  - If files were moved/deleted, they're removed from queue without notice
-  - Notify user if songs were removed
-  - Adjust currentIndex after filtering
+- [x] **Queue reconstruction silently loses songs** (`src/renderer/store/player.ts:208-256`, `src/renderer/App.tsx:186-199`)
+  - Now tracks missing songs during queue reconstruction
+  - Shows notification: "X songs were removed from queue (files not found in library)"
+  - Properly adjusts currentIndex after filtering
+  - Fixed notification stacking issue (only one error notification shown at a time)
 
 #### 🟠 Priority 1: High (affect performance and experience)
 

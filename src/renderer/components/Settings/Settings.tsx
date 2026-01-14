@@ -1,5 +1,5 @@
 import React from 'react'
-import { FolderOpenIcon, ArrowClockwiseIcon, XIcon } from '@phosphor-icons/react'
+import { FolderOpenIcon, ArrowClockwiseIcon, XIcon, TrashIcon } from '@phosphor-icons/react'
 import './_settings.scss'
 
 interface SettingsProps {
@@ -9,11 +9,12 @@ interface SettingsProps {
 	lastUpdated: string | null
 	onSelectFolder: () => void
 	onRescanFolder: () => void
+	onCleanupMissingFiles: () => void
 	theme: 'light' | 'dark' | 'system'
 	onSetTheme: (theme: 'light' | 'dark' | 'system') => void
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUpdated, onSelectFolder, onRescanFolder, theme, onSetTheme }) => {
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUpdated, onSelectFolder, onRescanFolder, onCleanupMissingFiles, theme, onSetTheme }) => {
 	if (!isOpen) return null
 
 	const formatDate = (dateString: string | null) => {
@@ -101,6 +102,17 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUp
 								<button className="btn btn--secondary" onClick={onRescanFolder} disabled={!folderPath} title="Rescan current folder">
 									<ArrowClockwiseIcon size={16} />
 									Rescan
+								</button>
+							</div>
+						</div>
+
+						<div className="settings__field">
+							<label className="settings__label">Maintenance</label>
+							<div className="settings__info-row">
+								<span className="settings__maintenance-info">Remove missing files from library</span>
+								<button className="btn btn--secondary" onClick={onCleanupMissingFiles} disabled={!folderPath} title="Remove songs that no longer exist">
+									<TrashIcon size={16} />
+									Clean Up Missing Files
 								</button>
 							</div>
 						</div>
