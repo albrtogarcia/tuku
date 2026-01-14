@@ -56,7 +56,7 @@ function App() {
 		}
 	}, [])
 
-	const { theme } = useSettingsStore()
+	const { theme, volume: savedVolume, setVolume: saveVolume } = useSettingsStore()
 
 	useEffect(() => {
 		const root = document.documentElement
@@ -146,7 +146,12 @@ function App() {
 		[handleShowNotification],
 	)
 
-	const audio = useAudioPlayer({ onError: handleAudioError })
+	const audio = useAudioPlayer({ onError: handleAudioError, initialVolume: savedVolume })
+
+	// Save volume to settings when it changes
+	useEffect(() => {
+		saveVolume(audio.volume)
+	}, [audio.volume, saveVolume])
 
 	// Load queue from storage when app starts
 	useEffect(() => {

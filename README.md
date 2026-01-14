@@ -161,9 +161,9 @@ Create a simple, fast, and customizable application to:
   - Cache timestamp not saved to DB
   - On app restart, old cached covers are shown
 
-- [ ] **Volume doesn't persist between restarts** (`src/renderer/hooks/useAudioPlayer.ts`)
-  - Volume resets to 0.5 on restart
-  - Save volume in settings store
+- [x] **Volume doesn't persist between restarts** (`src/renderer/hooks/useAudioPlayer.ts`, `src/renderer/store/settings.ts`)
+  - Changed default volume from 50% to 25%
+  - Volume now saves to settings store and persists across restarts
 
 - [ ] **Silent cover loading failures** (`src/renderer/App.tsx:209-217`)
   - `fetch` can return 404 without throwing error

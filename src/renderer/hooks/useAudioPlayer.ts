@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 
 interface UseAudioPlayerOptions {
 	onError?: (error: { message: string; path: string }) => void
+	initialVolume?: number
 }
 
 export function useAudioPlayer(options?: UseAudioPlayerOptions) {
@@ -13,7 +14,7 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 	const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [playingPath, setPlayingPath] = useState<string | null>(null)
-	const [volume, setVolume] = useState(0.5)
+	const [volume, setVolume] = useState(options?.initialVolume ?? 0.25)
 
 	// Enhanced setCurrentTime that also updates the audio element (for user interactions)
 	const setCurrentTimeWithSeek = (time: number) => {
