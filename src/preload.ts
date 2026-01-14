@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	saveQueue: (queue: Song[], currentIndex: number) => ipcRenderer.invoke('save-queue', queue, currentIndex),
 	loadQueue: (): Promise<{ queue: string[]; currentIndex: number }> => ipcRenderer.invoke('load-queue'),
 	fetchAlbumCover: (artist: string, album: string): Promise<string | null> => ipcRenderer.invoke('fetch-album-cover', artist, album),
+	uploadAlbumCover: (artist: string, album: string, fileBuffer: ArrayBuffer): Promise<string | null> => ipcRenderer.invoke('upload-album-cover', artist, album, fileBuffer),
 	onOpenSettings: (callback: () => void) => ipcRenderer.on('open-settings', callback),
 	onScanStart: (callback: (total: number) => void) => ipcRenderer.on('scan-start', (_event, total) => callback(total)),
 	onScanProgress: (callback: (progress: { current: number; total: number }) => void) => ipcRenderer.on('scan-progress', (_event, progress) => callback(progress)),

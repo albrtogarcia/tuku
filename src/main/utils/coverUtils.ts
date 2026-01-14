@@ -1,46 +1,134 @@
 import { nativeImage } from 'electron'
-import fs from 'fs/promises'
+import fs from 'fs'
+import fsPromises from 'fs/promises'
 import path from 'path'
-import { IAudioMetadata } from 'music-metadata'
+import os from 'os'
 import { pathToFileURL } from 'url'
 
+const COVERS_DIR = path.join(os.homedir(), '.tuku', 'covers')
+
 /**
- * Checks if a folder contains a consistent album or valid compilation.
- * Returns true if we should auto-extract a cover.
- *
- * Rules:
- * 1. Consistent Album: All files share the same Album tag.
- * 2. Compilation: ID3 tags explicitly say "Compilation" (handled by music-metadata common.isCompilation?)
- *    OR Album Artist is "Various Artists".
- * 3. Mixed/Messy: Different Album tags and no aggregation logic -> Return FALSE.
+ * Sanitizes a string for use in filenames.
+ * Removes/replaces characters that are invalid on various filesystems.
  */
-export function shouldExtractCover(songsMetadata: IAudioMetadata[]): boolean {
-  if (songsMetadata.length === 0) return false
-
-  // Get unique albums
-  const albums = new Set(songsMetadata.map(m => m.common.album).filter(Boolean))
-
-  if (albums.size === 1) {
-    return true // Explicitly one album
-  }
-
-  // If multiple albums, check for "Compilation" flag or specific conditions
-  // For strict "Messy Folder" rule: if multiple albums, assume messy/custom unless explicitly compilation
-  // Simplest approach per user rule: "Carpetas Custom... NO hacemos nada".
-  // So if unique albums > 1, we skip.
-  return false
+function sanitizeForFilename(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[/\\:*?"<>|]/g, '') // Remove invalid chars
+    .replace(/\s+/g, '-')          // Spaces to hyphens
+    .replace(/-+/g, '-')           // Collapse multiple hyphens
+    .replace(/^-|-$/g, '')         // Remove leading/trailing hyphens
+    .substring(0, 100)             // Limit length
 }
 
+export interface AlbumIdentity {
+  artist?: string
+  album?: string
+  albumArtist?: string
+  isCompilation?: boolean
+}
+
+/**
+ * Generates a unique, human-readable album identifier.
+ * For compilations/various artists, uses "various-artists" as the artist portion.
+ * Format: artist_album.jpg
+ */
+export function getAlbumId(identity: AlbumIdentity): string {
+  const { artist, album, albumArtist, isCompilation } = identity
+
+  // Determine if this is a compilation
+  const isVariousArtists =
+    isCompilation === true ||
+    albumArtist?.toLowerCase().includes('various') ||
+    albumArtist?.toLowerCase() === 'va'
+
+  // For compilations, use "various-artists" instead of individual artist
+  const artistPart = isVariousArtists
+    ? 'various-artists'
+    : sanitizeForFilename(artist || 'unknown-artist')
+
+  const albumPart = sanitizeForFilename(album || 'unknown-album')
+
+  // Fallback to ensure we always have a valid filename
+  if (!artistPart && !albumPart) {
+    return 'unknown_unknown'
+  }
+
+  return `${artistPart || 'unknown'}_${albumPart || 'unknown'}`
+}
+
+/**
+ * Returns the full path where a cover should be stored for a given album ID.
+ */
+export function getCoverPath(albumId: string): string {
+  return path.join(COVERS_DIR, `${albumId}.jpg`)
+}
+
+/**
+ * Ensures the covers directory exists. Call this on app startup.
+ */
+export function ensureCoversDir(): void {
+  if (!fs.existsSync(COVERS_DIR)) {
+    fs.mkdirSync(COVERS_DIR, { recursive: true })
+  }
+}
+
+/**
+ * Checks if a cover already exists for the given album ID.
+ */
+export function coverExists(albumId: string): boolean {
+  return fs.existsSync(getCoverPath(albumId))
+}
+
+/**
+ * Gets the media:// URL for an existing cover, or null if it doesn't exist.
+ */
+export function getCoverUrl(albumId: string): string | null {
+  const coverPath = getCoverPath(albumId)
+  if (fs.existsSync(coverPath)) {
+    return pathToFileURL(coverPath).toString().replace('file:', 'media:')
+  }
+  return null
+}
+
+/**
+ * Common cover image filenames to look for in album folders.
+ */
+const COVER_FILENAMES = [
+  'cover.jpg', 'cover.jpeg', 'cover.png',
+  'folder.jpg', 'folder.jpeg', 'folder.png',
+  'front.jpg', 'front.jpeg', 'front.png',
+  'artwork.jpg', 'artwork.jpeg', 'artwork.png',
+  'album.jpg', 'album.jpeg', 'album.png',
+]
+
+/**
+ * Looks for an existing cover image file in the given directory.
+ * Returns the full path if found, null otherwise.
+ */
+export function findFolderCover(folderPath: string): string | null {
+  for (const filename of COVER_FILENAMES) {
+    const coverPath = path.join(folderPath, filename)
+    if (fs.existsSync(coverPath)) {
+      return coverPath
+    }
+  }
+  return null
+}
+
+/**
+ * Processes and saves an album cover image.
+ * Resizes to 600x600 and saves as JPEG to the centralized covers directory.
+ */
 export async function processCover(
   buffer: Buffer,
-  folderPath: string,
-  albumName: string
+  albumId: string
 ): Promise<string | null> {
   try {
-    const fileName = 'cover.jpg' // Per strict rule: only cover.jpg for consistent albums
-    const filePath = path.join(folderPath, fileName)
+    const filePath = getCoverPath(albumId)
 
-    console.log(`[CoverUtils] Processing cover for ${albumName} -> ${filePath}`)
+    console.log(`[CoverUtils] Processing cover for album ${albumId} -> ${filePath}`)
 
     // Resize using Electron nativeImage (fast, no extra deps)
     const image = nativeImage.createFromBuffer(buffer)
@@ -49,8 +137,11 @@ export async function processCover(
     const resized = image.resize({ width: 600, height: 600, quality: 'best' })
     const jpegBuffer = resized.toJPEG(80)
 
+    // Ensure directory exists
+    ensureCoversDir()
+
     // Write file
-    await fs.writeFile(filePath, jpegBuffer)
+    await fsPromises.writeFile(filePath, jpegBuffer)
     return pathToFileURL(filePath).toString().replace('file:', 'media:')
   } catch (error) {
     console.error(`[CoverUtils] Error processing cover:`, error)

@@ -17,6 +17,7 @@ interface AlbumsGridProps {
 const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover, onAlbumDeleted, onOpenSettings, onShowNotification }) => {
 	const { addAlbumToQueue, playAlbumImmediately } = usePlayerStore()
 	const [loadingCovers, setLoadingCovers] = useState<Set<string>>(new Set())
+	const [dragOverAlbumId, setDragOverAlbumId] = useState<string | null>(null)
 	const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; album: any | null }>({
 		isOpen: false,
 		x: 0,
@@ -114,6 +115,47 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		}
 	}
 
+	const handleDrop = async (e: React.DragEvent, album: any) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setDragOverAlbumId(null)
+
+		const files = e.dataTransfer.files
+		if (files.length === 0) return
+
+		const file = files[0]
+		const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+
+		if (!validTypes.includes(file.type)) {
+			onShowNotification?.('Please drop an image file (JPG, PNG, WebP, or GIF)', 'error')
+			return
+		}
+
+		const albumId = album.id || `${album.title}-${album.artist}`
+		setLoadingCovers(prev => new Set(prev).add(albumId))
+
+		try {
+			const arrayBuffer = await file.arrayBuffer()
+			const cover = await window.electronAPI.uploadAlbumCover(album.artist, album.title, arrayBuffer)
+
+			if (cover) {
+				onUpdateCover(album.title, album.artist, cover)
+				onShowNotification?.(`Cover updated for "${album.title}"`, 'success')
+			} else {
+				onShowNotification?.('Failed to save cover', 'error')
+			}
+		} catch (error) {
+			console.error('[Renderer] Failed to upload cover', error)
+			onShowNotification?.('Failed to upload cover', 'error')
+		} finally {
+			setLoadingCovers(prev => {
+				const next = new Set(prev)
+				next.delete(albumId)
+				return next
+			})
+		}
+	}
+
 	const getMenuOptions = (): ContextMenuOption[] => {
 		const { album } = contextMenu
 		if (!album) return []
@@ -166,7 +208,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 				return (
 					<div
-						className="album-card"
+						className={`album-card${dragOverAlbumId === albumId ? ' album-card--drag-over' : ''}`}
 						key={albumId}
 						onContextMenu={(e) => handleContextMenu(e, album)}
 						onMouseEnter={() => {
@@ -180,6 +222,12 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 								scheduleCloseMenu()
 							}
 						}}
+						onDragOver={(e) => {
+							e.preventDefault()
+							setDragOverAlbumId(albumId)
+						}}
+						onDragLeave={() => setDragOverAlbumId(null)}
+						onDrop={(e) => handleDrop(e, album)}
 						tabIndex={0}
 						role="button"
 						onDoubleClick={() => {

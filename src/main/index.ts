@@ -24,6 +24,13 @@ const userDataPath = path.join(os.homedir(), '.tuku')
 if (!fs.existsSync(userDataPath)) {
 	fs.mkdirSync(userDataPath)
 }
+
+// Ensure covers directory exists
+const coversPath = path.join(userDataPath, 'covers')
+if (!fs.existsSync(coversPath)) {
+	fs.mkdirSync(coversPath, { recursive: true })
+}
+
 const dbPath = path.join(userDataPath, 'database.sqlite')
 const db = new Database(dbPath)
 
@@ -244,7 +251,7 @@ async function getAllAudioFiles(dir: string): Promise<string[]> {
 	return files.flat()
 }
 
-import { shouldExtractCover, processCover } from './utils/coverUtils'
+import { getAlbumId, getCoverPath, getCoverUrl, processCover, ensureCoversDir, findFolderCover } from './utils/coverUtils'
 
 ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 	try {
@@ -254,37 +261,21 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 		// Notify start
 		event.sender.send('scan-start', total)
 
-		const songs = []
+		const songs: any[] = []
 		const songsMetadata: any[] = []
 		let processed = 0
 
 		// First pass: Parse all files and gather metadata
-		// We need all metadata to decide on cover strategy (Mixed vs Single Album)
 		for (const filePath of audioFilePaths) {
 			try {
 				const metadata = await parseFile(filePath)
-				// Determine if local cover exists ALREADY (Priority 1)
-				let coverUrl: string | null = null
-				const dir = path.dirname(filePath)
-				const localCoverPath = path.join(dir, 'cover.jpg')
-
-				try {
-					await fsPromises.access(localCoverPath)
-					coverUrl = pathToFileURL(localCoverPath).toString().replace('file:', 'media:')
-				} catch {
-					// No local cover
-				}
-
 				songsMetadata.push({
 					filePath,
 					metadata,
-					coverUrl, // Will be null if not found
-					dir // Keep dir to know where to save cover later
 				})
-
 			} catch (err) {
 				console.warn(`[Main] Failed to parse ${filePath}`, err)
-				// Add as unknown
+				// Add as unknown song (no album association)
 				songs.push({
 					path: filePath,
 					title: path.basename(filePath),
@@ -302,42 +293,61 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 			}
 		}
 
-		// Analysis Phase: Determine if we should extract covers
-		// Group by directory (to handle subfolders correctly)
-		const songsByDir: Record<string, any[]> = {}
+		// Group songs by album (considering compilations)
+		const songsByAlbum = new Map<string, { items: any[], metadata: any[] }>()
+
 		for (const item of songsMetadata) {
-			if (!songsByDir[item.dir]) songsByDir[item.dir] = []
-			songsByDir[item.dir].push(item)
+			const { common } = item.metadata
+			const albumId = getAlbumId({
+				artist: common.artist,
+				album: common.album,
+				albumArtist: common.albumartist,
+				isCompilation: common.compilation,
+			})
+
+			if (!songsByAlbum.has(albumId)) {
+				songsByAlbum.set(albumId, { items: [], metadata: [] })
+			}
+			songsByAlbum.get(albumId)!.items.push(item)
+			songsByAlbum.get(albumId)!.metadata.push(item.metadata)
 		}
 
-		for (const dir in songsByDir) {
-			const dirSongs = songsByDir[dir]
-			if (!dirSongs.length) continue
+		// Process each album: extract cover if needed, assign to songs
+		for (const [albumId, data] of songsByAlbum) {
+			// 1. Check if we already have a cover for this album in central storage
+			let coverUrl = getCoverUrl(albumId)
 
-			// specialized metadata for utils
-			const metaForUtils = dirSongs.map(s => s.metadata)
+			// 2. Look for cover image file in the album folder
+			if (!coverUrl) {
+				// Get unique directories for this album's songs
+				const albumDirs = new Set(data.items.map((item: any) => path.dirname(item.filePath)))
 
-			// Check if we already have a cover for this dir
-			const hasExistingCover = dirSongs.some(s => s.coverUrl)
-			let finalCoverUrl = hasExistingCover ? pathToFileURL(path.join(dir, 'cover.jpg')).toString().replace('file:', 'media:') : null
-
-			// Strict Rule: If no cover exists, check if we should extract
-			if (!finalCoverUrl && shouldExtractCover(metaForUtils)) {
-				// Extract from first available picture
-				const candidate = metaForUtils.find(m => m.common.picture && m.common.picture.length > 0)
-				if (candidate && candidate.common.picture) {
-					const pic = candidate.common.picture[0]
-					if (pic) {
-						// Process (Resize & Save)
-						// Ensure we use the album name from the candidate or fallback
-						const albumName = candidate.common.album || 'Unknown Album'
-						finalCoverUrl = await processCover(Buffer.from(pic.data), dir, albumName)
+				for (const dir of albumDirs) {
+					const folderCover = findFolderCover(dir)
+					if (folderCover) {
+						console.log(`[Main] Found folder cover: ${folderCover}`)
+						const buffer = await fsPromises.readFile(folderCover)
+						coverUrl = await processCover(buffer, albumId)
+						if (coverUrl) break
 					}
 				}
 			}
 
-			// Assign final cover to all songs in this dir
-			for (const item of dirSongs) {
+			// 3. Fall back to embedded art in audio file metadata
+			if (!coverUrl) {
+				const songWithArt = data.metadata.find(
+					(m: any) => m.common.picture && m.common.picture.length > 0
+				)
+				if (songWithArt && songWithArt.common.picture) {
+					const pic = songWithArt.common.picture[0]
+					if (pic) {
+						coverUrl = await processCover(Buffer.from(pic.data), albumId)
+					}
+				}
+			}
+
+			// Assign cover to all songs in this album
+			for (const item of data.items) {
 				const { metadata, filePath } = item
 				songs.push({
 					path: filePath,
@@ -345,7 +355,7 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 					artist: metadata.common.artist || 'Unknown',
 					album: metadata.common.album || '',
 					duration: metadata.format.duration || 0,
-					cover: finalCoverUrl, // Use the unified cover (or null)
+					cover: coverUrl,
 					genre: Array.isArray(metadata.common.genre) ? metadata.common.genre.join(', ') : metadata.common.genre || '',
 				})
 			}
@@ -426,20 +436,9 @@ ipcMain.handle('save-queue', async (_event, queue, currentIndex) => {
 
 // Methods for cover retrieval
 // Methods for cover retrieval
-ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string, albumPath?: string) => {
+ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string) => {
 	console.log(`[Main] fetch-album-cover called for: Artist="${artist}", Album="${album}"`)
 	try {
-		// Find album path if not provided
-		if (!albumPath) {
-			const song = db.prepare('SELECT path FROM library WHERE artist = ? AND album = ? LIMIT 1').get(artist, album) as { path: string } | undefined
-			if (song) {
-				albumPath = path.dirname(song.path)
-			} else {
-				console.error('[Main] Could not find album path in DB')
-				return null
-			}
-		}
-
 		const query = encodeURIComponent(`${artist} ${album}`)
 		const url = `https://itunes.apple.com/search?term=${query}&entity=album&limit=1`
 		console.log(`[Main] Querying iTunes API: ${url}`)
@@ -467,8 +466,9 @@ ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string
 			const arrayBuffer = await imageResponse.arrayBuffer()
 			const buffer = Buffer.from(arrayBuffer)
 
-			// Write to cover.jpg in album folder
-			const coverPath = path.join(albumPath, 'cover.jpg')
+			// Save to centralized covers directory using album ID
+			const albumId = getAlbumId({ artist, album })
+			const coverPath = getCoverPath(albumId)
 			console.log(`[Main] Writing cover to: ${coverPath}`)
 			await fsPromises.writeFile(coverPath, buffer)
 
@@ -487,6 +487,26 @@ ipcMain.handle('fetch-album-cover', async (_event, artist: string, album: string
 		return null
 	} catch (err) {
 		console.error('[Main] Error fetching cover:', err)
+		return null
+	}
+})
+
+ipcMain.handle('upload-album-cover', async (_event, artist: string, album: string, fileBuffer: ArrayBuffer) => {
+	console.log(`[Main] upload-album-cover called for: Artist="${artist}", Album="${album}"`)
+	try {
+		const buffer = Buffer.from(fileBuffer)
+		const albumId = getAlbumId({ artist, album })
+		const coverUrl = await processCover(buffer, albumId)
+
+		if (coverUrl) {
+			const update = db.prepare('UPDATE library SET cover = ? WHERE artist = ? AND album = ?')
+			const info = update.run(coverUrl, artist, album)
+			console.log(`[Main] Database updated. Changes: ${info.changes}`)
+			return coverUrl
+		}
+		return null
+	} catch (err) {
+		console.error('[Main] Error uploading cover:', err)
 		return null
 	}
 })

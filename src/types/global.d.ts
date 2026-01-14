@@ -11,6 +11,7 @@ interface ElectronAPI {
 	saveQueue: (queue: Song[], currentIndex: number) => Promise<boolean>
 	loadQueue: () => Promise<{ queue: string[]; currentIndex: number }>
 	fetchAlbumCover: (artist: string, album: string) => Promise<string | null>
+	uploadAlbumCover: (artist: string, album: string, fileBuffer: ArrayBuffer) => Promise<string | null>
 	onOpenSettings: (callback: () => void) => void
 	onScanStart: (callback: (total: number) => void) => void
 	onScanProgress: (callback: (progress: { current: number; total: number }) => void) => void
