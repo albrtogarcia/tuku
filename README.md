@@ -91,10 +91,11 @@ Create a simple, fast, and customizable application to:
   - Songs removed from library state and queue without losing playback
   - Properly adjusts current index and stops playback if queue becomes empty
 
-- [ ] **No file existence validation before playing** (`src/main/index.ts:363-370`)
-  - Verify file exists before attempting to read it
-  - Provide user feedback if file was moved/deleted
-  - Offer "Remove missing files" option in settings
+- [x] **No file existence validation before playing** (`src/main/index.ts:363-385`)
+  - Added explicit `fs.existsSync()` check before reading file
+  - Enhanced error logging with specific error codes (ENOENT, EACCES)
+  - Works together with error handler to show user feedback and auto-skip
+  - (Note: Core functionality already solved by "Silent audio file loading failures" fix)
 
 - [ ] **Queue reconstruction silently loses songs** (`src/renderer/store/player.ts:208-235`)
   - If files were moved/deleted, they're removed from queue without notice

@@ -362,9 +362,24 @@ ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 
 ipcMain.handle('get-audio-buffer', async (_event, filePath: string) => {
 	try {
+		// Explicit file existence check before attempting to read
+		const fileExists = fs.existsSync(filePath)
+		if (!fileExists) {
+			console.error(`[Main] File does not exist: ${filePath}`)
+			return null
+		}
+
 		const buffer = await fsPromises.readFile(filePath)
 		return buffer
-	} catch (err) {
+	} catch (err: any) {
+		// Log specific error for debugging
+		if (err.code === 'ENOENT') {
+			console.error(`[Main] File not found: ${filePath}`)
+		} else if (err.code === 'EACCES') {
+			console.error(`[Main] Permission denied: ${filePath}`)
+		} else {
+			console.error(`[Main] Error reading file ${filePath}:`, err.message)
+		}
 		return null
 	}
 })
