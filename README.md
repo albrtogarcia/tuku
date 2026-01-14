@@ -82,7 +82,7 @@ Create a simple, fast, and customizable application to:
   - Automatically skip to next song if loading fails
   - Log failed paths for debugging
 
-- [ ] **Crash when removing current song from queue** (`src/renderer/components/Queue/Queue.tsx:64`)
+- [x] **Crash when removing current song from queue** (`src/renderer/components/Queue/Queue.tsx:67-84`)
   - Race condition: array access after removing element
   - Reorder removal and playback logic
 

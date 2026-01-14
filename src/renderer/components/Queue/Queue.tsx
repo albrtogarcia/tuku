@@ -68,9 +68,11 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 		if (idx === currentIndex) {
 			// If there's a next song, play it
 			if (idx < queue.length - 1) {
-				setCurrentIndex(idx) // the index of the next song after removing
+				// Save reference to next song BEFORE removing current
+				const nextSong = queue[idx + 1]
 				removeFromQueue(idx)
-				handlePlay(queue[idx + 1].path)
+				setCurrentIndex(idx) // the index of the next song after removing
+				handlePlay(nextSong.path)
 			} else {
 				// If no more songs, stop everything
 				removeFromQueue(idx)
