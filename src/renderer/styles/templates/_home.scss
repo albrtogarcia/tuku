@@ -6,12 +6,25 @@ $queue: 25vh;
 .container {
 	min-width: 640px;
 	padding: 0.5rem;
+	padding-top: 2.5rem; // Space for macOS traffic lights
 	display: grid;
 	grid-template-columns: 1fr;
 	grid-template-rows: $player $queue 1fr;
 	grid-template-areas: "player" "queue" "library";
 	gap: 0.5rem;
 	height: 100vh;
+	position: relative;
+
+	// Draggable title bar region
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 2.5rem;
+		-webkit-app-region: drag;
+	}
 
 	&>* {
 		border: 1px solid var(--border);

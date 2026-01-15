@@ -74,6 +74,8 @@ async function createWindow() {
 		height: screenHeight,
 		minWidth: 640,
 		minHeight: 600,
+		titleBarStyle: 'hiddenInset',
+		backgroundColor: '#1D1C23',
 		webPreferences: {
 			preload: path.join(__dirname, '../preload.js'),
 			contextIsolation: true,
