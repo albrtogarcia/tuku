@@ -204,6 +204,10 @@ function App() {
 
 	const audio = useAudioPlayer({ onError: handleAudioError, initialVolume: savedVolume })
 
+	// Ref to track current time without causing re-renders
+	const currentTimeRef = useRef(audio.currentTime)
+	currentTimeRef.current = audio.currentTime
+
 	// Save volume to settings when it changes
 	useEffect(() => {
 		saveVolume(audio.volume)
@@ -279,7 +283,7 @@ function App() {
 		}
 	}, [currentIndex, isPlaying, audio.isPlaying, audioPlayingPath, queue, handlePlay, handleResume, handlePause])
 
-	const handleNext = () => {
+	const handleNext = useCallback(() => {
 		if (currentIndex + 1 < queue.length) {
 			setCurrentIndex(currentIndex + 1)
 			setIsPlaying(true)
@@ -293,11 +297,11 @@ function App() {
 			audio.handleStop()
 			setIsPlaying(false)
 		}
-	}
+	}, [currentIndex, queue.length, repeat, audio.handleStop, cleanQueueHistory])
 
-	const handlePrevious = () => {
+	const handlePrevious = useCallback(() => {
 		// If > 3 seconds in, restart song
-		if (audio.currentTime > 3) {
+		if (currentTimeRef.current > 3) {
 			audio.setCurrentTime(0)
 			return
 		}
@@ -308,56 +312,65 @@ function App() {
 		} else {
 			audio.setCurrentTime(0)
 		}
-	}
+	}, [audio.setCurrentTime, currentIndex])
 
 	const handleSongEnd = () => {
 		handleNext()
 	}
 
-	// Media Session API Support
+	// Refs for MediaSession action handlers (stable references)
+	const handleNextRef = useRef(handleNext)
+	const handlePreviousRef = useRef(handlePrevious)
+	handleNextRef.current = handleNext
+	handlePreviousRef.current = handlePrevious
+
+	// Media Session API - set up action handlers once
 	useEffect(() => {
 		if (!('mediaSession' in navigator)) return
 
-		const currentSong = queue[currentIndex]
-		let objectUrl: string | null = null
-
-		const updateMediaSession = async () => {
-			if (currentSong) {
-				let artwork: MediaImage[] = []
-				if (currentSong.cover) {
-					// Fetch and create blob URL to satisfy Chrome's scheme requirements
-					// and avoid passing huge base64 strings if we ever revert to that.
-					try {
-						const response = await fetch(currentSong.cover)
-						const blob = await response.blob()
-						objectUrl = URL.createObjectURL(blob)
-						artwork = [{ src: objectUrl, sizes: '512x512', type: 'image/jpeg' }]
-					} catch (e) {
-						// Fallback or ignore
-						console.warn('[App] Failed to load cover for MediaSession', e)
-					}
-				}
-
-				navigator.mediaSession.metadata = new MediaMetadata({
-					title: currentSong.title || 'Unknown Title',
-					artist: currentSong.artist || 'Unknown Artist',
-					album: currentSong.album || 'Unknown Album',
-					artwork: artwork,
-				})
-			}
-		}
-
-		updateMediaSession()
-
 		navigator.mediaSession.setActionHandler('play', () => audio.handleResume())
 		navigator.mediaSession.setActionHandler('pause', () => audio.handlePause())
-		navigator.mediaSession.setActionHandler('previoustrack', handlePrevious)
-		navigator.mediaSession.setActionHandler('nexttrack', handleNext)
+		navigator.mediaSession.setActionHandler('previoustrack', () => handlePreviousRef.current())
+		navigator.mediaSession.setActionHandler('nexttrack', () => handleNextRef.current())
+	}, [audio.handleResume, audio.handlePause])
+
+	// Media Session API - update metadata only when song changes
+	const currentSong = queue[currentIndex]
+	const currentSongPath = currentSong?.path
+	const currentSongCover = currentSong?.cover
+
+	useEffect(() => {
+		if (!('mediaSession' in navigator) || !currentSong) return
+
+		let objectUrl: string | null = null
+
+		const updateMetadata = async () => {
+			let artwork: MediaImage[] = []
+			if (currentSongCover) {
+				try {
+					const response = await fetch(currentSongCover)
+					const blob = await response.blob()
+					objectUrl = URL.createObjectURL(blob)
+					artwork = [{ src: objectUrl, sizes: '512x512', type: 'image/jpeg' }]
+				} catch (e) {
+					console.warn('[App] Failed to load cover for MediaSession', e)
+				}
+			}
+
+			navigator.mediaSession.metadata = new MediaMetadata({
+				title: currentSong.title || 'Unknown Title',
+				artist: currentSong.artist || 'Unknown Artist',
+				album: currentSong.album || 'Unknown Album',
+				artwork: artwork,
+			})
+		}
+
+		updateMetadata()
 
 		return () => {
 			if (objectUrl) URL.revokeObjectURL(objectUrl)
 		}
-	}, [currentIndex, queue, audio.handleResume, audio.handlePause, handleNext, handlePrevious])
+	}, [currentSongPath, currentSongCover, currentSong])
 
 	const filteredSongs = useMemo(() => {
 		return activeTab === 'songs' ? filterSongs(songs, debouncedSearch) : songs

@@ -1,8 +1,21 @@
+import React, { memo } from 'react'
 import { MusicNotesIcon, Shuffle } from '@phosphor-icons/react/dist/ssr'
 import { usePlayerStore } from '../../store/player'
 import { formatTime } from '../../utils'
 import Controls from '../Controls/Controls'
 import './_player.scss'
+
+// Memoized cover component - only re-renders when cover URL changes
+const AlbumCover = memo(({ cover }: { cover: string | null }) => {
+	if (cover) {
+		return <img className="player__cover" src={cover} alt="cover" />
+	}
+	return (
+		<div className="player__cover default">
+			<MusicNotesIcon size={48} weight="fill" />
+		</div>
+	)
+})
 
 interface PlayerProps {
 	audio: ReturnType<typeof import('../../hooks/useAudioPlayer').useAudioPlayer>
@@ -85,14 +98,7 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 		<div className="player">
 
 			<div className="player__media">
-				{/* COVER */}
-				{currentSong.cover ? (
-					<img className="player__cover" src={currentSong.cover} alt="cover" />
-				) : (
-					<div className="player__cover default">
-						<MusicNotesIcon size={48} weight="fill" />
-					</div>
-				)}
+				<AlbumCover cover={currentSong.cover} />
 			</div>
 
 			<div className="player__data">

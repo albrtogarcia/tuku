@@ -71,7 +71,7 @@ Create a simple, fast, and customizable application to:
 - [ ] Polish general UI
 - [ ] Settings modal UI
 - [ ] Notifications component
-- [ ] Memory leak in playback
+- [x] Memory leak in playback
 
 #### 🔴 Priority 0: Critical (must fix before release)
 
