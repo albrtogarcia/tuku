@@ -541,6 +541,22 @@ ipcMain.handle('delete-album', async (_event, albumPath) => {
 	}
 })
 
+ipcMain.handle('delete-song', async (_event, songPath: string) => {
+	try {
+		console.log(`[Main] Deleting song at: ${songPath}`)
+		await shell.trashItem(songPath)
+
+		console.log('[Main] Removing from database...')
+		const deleteStmt = db.prepare('DELETE FROM library WHERE path = ?')
+		const info = deleteStmt.run(songPath)
+		console.log(`[Main] Deleted ${info.changes} song from library`)
+		return true
+	} catch (error) {
+		console.error('[Main] Error deleting song:', error)
+		return false
+	}
+})
+
 ipcMain.handle('cleanup-missing-files', async () => {
 	try {
 		console.log('[Main] Starting cleanup of missing files...')

@@ -18,6 +18,8 @@ interface ElectronAPI {
 	onScanComplete: (callback: () => void) => void
 	openInFinder: (path: string) => Promise<void>
 	deleteAlbum: (path: string) => Promise<boolean>
+	deleteSong: (path: string) => Promise<boolean>
+	cleanupMissingFiles: () => Promise<{ removed: number; error?: string }>
 }
 
 declare global {

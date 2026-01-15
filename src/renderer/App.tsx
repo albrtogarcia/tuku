@@ -449,6 +449,33 @@ function App() {
 		handleShowNotification('Album deleted successfully', 'success')
 	}
 
+	const handleSongDeleted = (songPath: string) => {
+		console.log(`[App] Removing song: ${songPath}`)
+
+		// Remove song from songs state
+		setSongs((prevSongs) => prevSongs.filter((song) => song.path !== songPath))
+
+		// Remove song from queue if present
+		const newQueue = queue.filter((song) => song.path !== songPath)
+		if (newQueue.length !== queue.length) {
+			console.log(`[App] Removed song from queue`)
+			setQueue(newQueue)
+
+			// Adjust current index if needed
+			const deletedIndex = queue.findIndex((song) => song.path === songPath)
+			if (deletedIndex !== -1 && deletedIndex < currentIndex) {
+				setCurrentIndex(currentIndex - 1)
+			} else if (deletedIndex === currentIndex) {
+				if (newQueue.length === 0) {
+					audio.handleStop()
+					setIsPlaying(false)
+				} else if (currentIndex >= newQueue.length) {
+					setCurrentIndex(newQueue.length - 1)
+				}
+			}
+		}
+	}
+
 	return (
 		<div className="container">
 			{/* PLAYER */}
@@ -492,7 +519,15 @@ function App() {
 								onShowNotification={handleShowNotification}
 							/>
 						)}
-						{activeTab === 'songs' && <SongsList songs={filteredSongs} addToQueue={addToQueue} folderPath={folderPath} />}
+						{activeTab === 'songs' && (
+							<SongsList
+								songs={filteredSongs}
+								addToQueue={addToQueue}
+								folderPath={folderPath}
+								onSongDeleted={handleSongDeleted}
+								onShowNotification={handleShowNotification}
+							/>
+						)}
 					</div>
 				</div>
 			</div>

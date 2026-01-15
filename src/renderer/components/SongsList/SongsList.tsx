@@ -1,6 +1,7 @@
 import { usePlayerStore } from '../../store/player'
 import { useState, useMemo, memo } from 'react'
 import SongsTable, { SongsTableColumn } from '../SongsTable/SongsTable'
+import ContextMenu, { ContextMenuOption } from '../ContextMenu/ContextMenu'
 import './_songslist.scss'
 
 import { Song } from '../../../types/song'
@@ -9,6 +10,8 @@ interface SongsListProps {
 	songs: Song[]
 	addToQueue: (song: Song) => void
 	folderPath: string | null
+	onSongDeleted?: (songPath: string) => void
+	onShowNotification?: (message: string, type: 'error' | 'success' | 'info') => void
 }
 
 const columns: SongsTableColumn[] = [
@@ -22,10 +25,16 @@ const columns: SongsTableColumn[] = [
 
 type SortKey = 'title' | 'artist' | 'album' | 'duration' | 'year' | 'genre'
 
-const SongsList = ({ songs, addToQueue, folderPath }: SongsListProps) => {
+const SongsList = ({ songs, addToQueue, folderPath, onSongDeleted, onShowNotification }: SongsListProps) => {
 	const { playNow } = usePlayerStore()
 	const [sortKey, setSortKey] = useState<SortKey>('title')
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
+	const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; song: Song | null }>({
+		isOpen: false,
+		x: 0,
+		y: 0,
+		song: null,
+	})
 
 	const sortedSongs = useMemo(() => {
 		const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
@@ -70,11 +79,59 @@ const SongsList = ({ songs, addToQueue, folderPath }: SongsListProps) => {
 		if (fullSong) playNow(fullSong)
 	}
 
-	// Handle right click: find full song and add to queue
+	// Handle right click: open context menu
 	const handleSongRightClick = (partialSong: any, event: React.MouseEvent) => {
 		event.preventDefault()
 		const fullSong = songs.find(s => s.path === partialSong.path)
-		if (fullSong) addToQueue(fullSong)
+		if (fullSong) {
+			setContextMenu({
+				isOpen: true,
+				x: event.clientX,
+				y: event.clientY,
+				song: fullSong,
+			})
+		}
+	}
+
+	const handleCloseContextMenu = () => {
+		setContextMenu({ isOpen: false, x: 0, y: 0, song: null })
+	}
+
+	const handleDeleteSong = async (song: Song) => {
+		if (confirm(`Are you sure you want to delete "${song.title}"?\nThis will move the file to Trash.`)) {
+			const success = await window.electronAPI.deleteSong(song.path)
+			if (success) {
+				onSongDeleted?.(song.path)
+				onShowNotification?.(`"${song.title}" deleted`, 'success')
+			} else {
+				onShowNotification?.('Failed to delete song', 'error')
+			}
+		}
+	}
+
+	const getMenuOptions = (): ContextMenuOption[] => {
+		const { song } = contextMenu
+		if (!song) return []
+
+		return [
+			{
+				label: 'Play Song',
+				action: () => playNow(song),
+			},
+			{
+				label: 'Add to Queue',
+				action: () => addToQueue(song),
+			},
+			{
+				label: 'Show in Finder',
+				action: () => window.electronAPI.openInFinder(song.path),
+			},
+			{
+				label: 'Delete Song',
+				action: () => handleDeleteSong(song),
+				danger: true,
+			},
+		]
 	}
 
 	return (
@@ -92,6 +149,15 @@ const SongsList = ({ songs, addToQueue, folderPath }: SongsListProps) => {
 					onSort={handleSort}
 					onDoubleClick={handleSongDoubleClick}
 					onRightClick={handleSongRightClick}
+				/>
+			)}
+
+			{contextMenu.isOpen && (
+				<ContextMenu
+					x={contextMenu.x}
+					y={contextMenu.y}
+					options={getMenuOptions()}
+					onClose={handleCloseContextMenu}
 				/>
 			)}
 		</section>
