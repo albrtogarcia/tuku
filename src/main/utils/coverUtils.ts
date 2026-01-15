@@ -9,14 +9,16 @@ const COVERS_DIR = path.join(os.homedir(), '.tuku', 'covers')
 
 /**
  * Sanitizes a string for use in filenames.
- * Removes/replaces characters that are invalid on various filesystems.
+ * Normalizes accented characters and only allows a-z, 0-9, hyphens, and underscores.
  */
 function sanitizeForFilename(str: string): string {
   return str
     .toLowerCase()
     .trim()
-    .replace(/[/\\:*?"<>|]/g, '') // Remove invalid chars
+    .normalize('NFD')              // Decompose accented chars (á → a + combining accent)
+    .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritical marks
     .replace(/\s+/g, '-')          // Spaces to hyphens
+    .replace(/[^a-z0-9_-]/g, '')   // Keep only a-z, 0-9, underscores, and hyphens
     .replace(/-+/g, '-')           // Collapse multiple hyphens
     .replace(/^-|-$/g, '')         // Remove leading/trailing hyphens
     .substring(0, 100)             // Limit length
