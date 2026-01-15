@@ -82,9 +82,10 @@ $queue: 25vh;
 		min-height: 0;
 		height: 100%;
 		margin: 0;
-		overflow-y: auto;
+		overflow: hidden; // Let Virtuoso handle scrolling
 
 		&>* {
+			height: 100%;
 			animation: fadeIn 0.3s ease-out;
 		}
 	}

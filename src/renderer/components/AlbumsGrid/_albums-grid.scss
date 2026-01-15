@@ -1,14 +1,22 @@
+// Virtuoso scroller container
+[data-testid="virtuoso-scroller"] {
+	height: 100% !important;
+}
+
 .albums-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
 	gap: 0.5rem;
 	max-width: 100%;
-	overflow: hidden;
 	padding: 0.5rem;
 
 	@media (max-width: 960px) and (max-height: 600px) {
 		grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
 	}
+}
+
+.albums-grid__item {
+	// Virtuoso item wrapper - let content define size
 }
 
 .album-card {

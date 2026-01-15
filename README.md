@@ -107,7 +107,7 @@ Create a simple, fast, and customizable application to:
 
 **Performance and data loss issues**
 
-- [ ] **Album grid without virtualization** (`src/renderer/components/AlbumsGrid/AlbumsGrid.tsx`)
+- [x] **Album grid without virtualization** (`src/renderer/components/AlbumsGrid/AlbumsGrid.tsx`)
   - With 1000+ albums the UI freezes
   - Implement virtualization (react-window or manual scrolling)
 
