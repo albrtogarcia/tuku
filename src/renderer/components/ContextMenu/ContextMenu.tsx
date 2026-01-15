@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import './_context-menu.scss'
 
 export interface ContextMenuOption {
@@ -55,7 +56,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, options, onClose, onMou
     }
   }, [onClose])
 
-  return (
+  return createPortal(
     <div
       className="context-menu"
       ref={menuRef}
@@ -79,7 +80,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, options, onClose, onMou
           {option.label}
         </button>
       ))}
-    </div>
+    </div>,
+    document.body
   )
 }
 

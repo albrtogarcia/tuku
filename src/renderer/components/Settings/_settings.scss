@@ -121,6 +121,43 @@
     }
   }
 
+  &__scan-progress {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  &__scan-progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--textMuted);
+    margin-bottom: 0.25rem;
+  }
+
+  &__scan-progress-bar {
+    width: 100%;
+    height: 4px;
+    appearance: none;
+    border: none;
+    border-radius: 2px;
+    background: var(--border);
+
+    &::-webkit-progress-bar {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    &::-webkit-progress-value {
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    &::-moz-progress-bar {
+      background: var(--accent);
+      border-radius: 2px;
+    }
+  }
+
   .btn {
     &--close {
       padding: 0.5rem;

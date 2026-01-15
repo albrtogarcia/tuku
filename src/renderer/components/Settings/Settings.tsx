@@ -12,9 +12,11 @@ interface SettingsProps {
 	onCleanupMissingFiles: () => void
 	theme: 'light' | 'dark' | 'system'
 	onSetTheme: (theme: 'light' | 'dark' | 'system') => void
+	isScanning?: boolean
+	scanProgress?: { current: number; total: number }
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUpdated, onSelectFolder, onRescanFolder, onCleanupMissingFiles, theme, onSetTheme }) => {
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUpdated, onSelectFolder, onRescanFolder, onCleanupMissingFiles, theme, onSetTheme, isScanning, scanProgress }) => {
 	if (!isOpen) return null
 
 	const formatDate = (dateString: string | null) => {
@@ -99,10 +101,24 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, folderPath, lastUp
 							<label className="settings__label">Last Updated</label>
 							<div className="settings__info-row">
 								<span className="settings__last-updated">{formatDate(lastUpdated)}</span>
-								<button className="btn btn--secondary" onClick={onRescanFolder} disabled={!folderPath} title="Rescan current folder">
-									<ArrowClockwiseIcon size={16} />
-									Rescan
-								</button>
+								{isScanning && scanProgress ? (
+									<div className="settings__scan-progress">
+										<div className="settings__scan-progress-header">
+											<span>Scanning...</span>
+											<span>{scanProgress.current} / {scanProgress.total}</span>
+										</div>
+										<progress
+											className="settings__scan-progress-bar"
+											value={scanProgress.current}
+											max={scanProgress.total > 0 ? scanProgress.total : 1}
+										/>
+									</div>
+								) : (
+									<button className="btn btn--secondary" onClick={onRescanFolder} disabled={!folderPath} title="Rescan current folder">
+										<ArrowClockwiseIcon size={16} />
+										Rescan
+									</button>
+								)}
 							</div>
 						</div>
 

@@ -44,17 +44,6 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 	const closeMenuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
-	if (albums.length === 0) {
-		return (
-			<div className="albums-grid--empty">
-				<p>No albums found in your library.</p>
-				<button className="btn-primary" onClick={onOpenSettings}>
-					Configure Library
-				</button>
-			</div>
-		)
-	}
-
 	const handleContextMenu = (e: React.MouseEvent, album: any) => {
 		e.preventDefault()
 		setContextMenu({
@@ -260,6 +249,17 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 			</div>
 		)
 	}, [albums, loadingCovers, dragOverAlbumId, contextMenu, playAlbumImmediately])
+
+	if (albums.length === 0) {
+		return (
+			<div className="albums-grid--empty">
+				<p>No albums found in your library.</p>
+				<button className="btn-primary" onClick={onOpenSettings}>
+					Configure Library
+				</button>
+			</div>
+		)
+	}
 
 	return (
 		<>

@@ -103,6 +103,7 @@ function App() {
 		window.electronAPI.onScanComplete(() => {
 			setIsScanning(false)
 			setScanProgress({ current: 0, total: 0 })
+			setIsSettingsOpen(false)
 		})
 	}, [])
 
@@ -506,6 +507,8 @@ function App() {
 				onCleanupMissingFiles={handleCleanupMissingFiles}
 				theme={theme}
 				onSetTheme={useSettingsStore.getState().setTheme}
+				isScanning={isScanning}
+				scanProgress={scanProgress}
 			/>
 
 			{/* Audio player (hidden) */}
@@ -527,8 +530,8 @@ function App() {
 				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
 			/>
 
-			{/* Scan Progress Bar */}
-			{isScanning && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
+			{/* Scan Progress Bar (only show when Settings is closed) */}
+			{isScanning && !isSettingsOpen && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
 
 			{/* Notifications */}
 			{notification && (
