@@ -7,6 +7,11 @@ import { promisify } from 'util'
 import { parseFile } from 'music-metadata'
 import Database from 'better-sqlite3'
 import os from 'os'
+import enMenu from '../i18n/locales/en/menu.json'
+import esMenu from '../i18n/locales/es/menu.json'
+
+const menuTranslations: Record<string, typeof enMenu> = { en: enMenu, es: esMenu }
+let currentLocale = 'en'
 
 // Register privileged schemes must be done before app is ready
 protocol.registerSchemesAsPrivileged([
@@ -134,12 +139,17 @@ async function createWindow() {
 		await win.loadFile(path.join(__dirname, '../../dist/index.html'))
 	}
 
+	// Detect initial locale from OS
+	const osLocale = app.getLocale().substring(0, 2)
+	currentLocale = osLocale === 'es' ? 'es' : 'en'
+
 	createAppMenu(win)
 }
 
 function createAppMenu(win: BrowserWindow) {
 	app.setName('Tuku')
 	const isMac = process.platform === 'darwin'
+	const t = menuTranslations[currentLocale] || menuTranslations.en
 
 	const template: Electron.MenuItemConstructorOptions[] = [
 		// App Menu (macOS only)
@@ -151,7 +161,7 @@ function createAppMenu(win: BrowserWindow) {
 						{ role: 'about' },
 						{ type: 'separator' },
 						{
-							label: 'Settings',
+							label: t.settings,
 							accelerator: 'CmdOrCtrl+,',
 							click: () => {
 								win.webContents.send('open-settings')
@@ -173,10 +183,10 @@ function createAppMenu(win: BrowserWindow) {
 		...(!isMac
 			? [
 				{
-					label: 'File',
+					label: t.file,
 					submenu: [
 						{
-							label: 'Settings',
+							label: t.settings,
 							accelerator: 'CmdOrCtrl+,',
 							click: () => {
 								win.webContents.send('open-settings')
@@ -190,12 +200,12 @@ function createAppMenu(win: BrowserWindow) {
 			: []),
 		// View Menu
 		{
-			label: 'View',
+			label: t.view,
 			submenu: [
 				{ role: 'reload' },
 				{ role: 'forceReload' },
 				{
-					label: 'Toggle Developer Tools',
+					label: t.toggleDevTools,
 					accelerator: 'CmdOrCtrl+Option+I',
 					click: (_menuItem, window) => {
 						if (window && window instanceof BrowserWindow) {
@@ -213,7 +223,7 @@ function createAppMenu(win: BrowserWindow) {
 		},
 		// Window Menu
 		{
-			label: 'Window',
+			label: t.window,
 			submenu: [
 				{ role: 'minimize' },
 				{ role: 'zoom' },
@@ -596,6 +606,12 @@ ipcMain.handle('cleanup-missing-files', async () => {
 		console.error('[Main] Error during cleanup:', error)
 		return { removed: 0, error: String(error) }
 	}
+})
+
+ipcMain.handle('set-language', (_event, lang: string) => {
+	currentLocale = lang === 'es' ? 'es' : 'en'
+	const win = BrowserWindow.getAllWindows()[0]
+	if (win) createAppMenu(win)
 })
 
 app.whenReady().then(createWindow)

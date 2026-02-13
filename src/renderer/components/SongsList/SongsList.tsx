@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { usePlayerStore } from '../../store/player'
 import { useState, useMemo, memo } from 'react'
 import SongsTable, { SongsTableColumn } from '../SongsTable/SongsTable'
@@ -14,19 +15,20 @@ interface SongsListProps {
 	onShowNotification?: (message: string, type: 'error' | 'success' | 'info') => void
 }
 
-const columns: SongsTableColumn[] = [
-	{ key: 'title', label: 'Title', sortable: true },
-	{ key: 'artist', label: 'Artist', sortable: true },
-	{ key: 'album', label: 'Album', sortable: true },
-	{ key: 'duration', label: 'Time', sortable: true },
-	{ key: 'year', label: 'Year', sortable: true },
-	{ key: 'genre', label: 'Genre', sortable: true },
-]
-
 type SortKey = 'title' | 'artist' | 'album' | 'duration' | 'year' | 'genre'
 
 const SongsList = ({ songs, addToQueue, folderPath, onSongDeleted, onShowNotification }: SongsListProps) => {
+	const { t } = useTranslation()
 	const { playNow } = usePlayerStore()
+
+	const columns: SongsTableColumn[] = useMemo(() => [
+		{ key: 'title', label: t('songs.title'), sortable: true },
+		{ key: 'artist', label: t('songs.artist'), sortable: true },
+		{ key: 'album', label: t('songs.album'), sortable: true },
+		{ key: 'duration', label: t('songs.time'), sortable: true },
+		{ key: 'year', label: t('songs.year'), sortable: true },
+		{ key: 'genre', label: t('songs.genre'), sortable: true },
+	], [t])
 	const [sortKey, setSortKey] = useState<SortKey>('title')
 	const [sortAsc, setSortAsc] = useState<boolean>(true)
 	const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; song: Song | null }>({
@@ -98,13 +100,13 @@ const SongsList = ({ songs, addToQueue, folderPath, onSongDeleted, onShowNotific
 	}
 
 	const handleDeleteSong = async (song: Song) => {
-		if (confirm(`Are you sure you want to delete "${song.title}"?\nThis will move the file to Trash.`)) {
+		if (confirm(t('songs.deleteConfirm', { title: song.title }))) {
 			const success = await window.electronAPI.deleteSong(song.path)
 			if (success) {
 				onSongDeleted?.(song.path)
-				onShowNotification?.(`"${song.title}" deleted`, 'success')
+				onShowNotification?.(t('songs.deleteSuccess', { title: song.title }), 'success')
 			} else {
-				onShowNotification?.('Failed to delete song', 'error')
+				onShowNotification?.(t('songs.deleteFailed'), 'error')
 			}
 		}
 	}
@@ -115,19 +117,19 @@ const SongsList = ({ songs, addToQueue, folderPath, onSongDeleted, onShowNotific
 
 		return [
 			{
-				label: 'Play Song',
+				label: t('songs.playSong'),
 				action: () => playNow(song),
 			},
 			{
-				label: 'Add to Queue',
+				label: t('songs.addToQueue'),
 				action: () => addToQueue(song),
 			},
 			{
-				label: 'Show in Finder',
+				label: t('songs.showInFinder'),
 				action: () => window.electronAPI.openInFinder(song.path),
 			},
 			{
-				label: 'Delete Song',
+				label: t('songs.deleteSong'),
 				action: () => handleDeleteSong(song),
 				danger: true,
 			},
@@ -138,7 +140,7 @@ const SongsList = ({ songs, addToQueue, folderPath, onSongDeleted, onShowNotific
 		<section className="songs" style={{ height: '100%' }}>
 			{songs.length === 0 ? (
 				<div className="empty-state">
-					<p>No songs found.</p>
+					<p>{t('songs.noSongsFound')}</p>
 				</div>
 			) : (
 				<SongsTable

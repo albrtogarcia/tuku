@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import './styles/app.scss'
 import Queue from './components/Queue/Queue'
 import Player from './components/Player/Player'
@@ -39,6 +40,7 @@ function groupAlbums(songs: Song[]): Album[] {
 }
 
 function App() {
+	const { t } = useTranslation()
 	const { folderPath, songs, handleSelectFolder, lastUpdated, handleRescanFolder, setSongs, isFirstRun } = useSongs()
 	const [search, setSearch] = useState('')
 	const debouncedSearch = useDebounce(search, 300)
@@ -62,11 +64,11 @@ function App() {
 		try {
 			const result = await window.electronAPI.cleanupMissingFiles()
 			if (result.error) {
-				handleShowNotification('Failed to cleanup missing files', 'error')
+				handleShowNotification(t('notifications.cleanupFailed'), 'error')
 			} else if (result.removed === 0) {
-				handleShowNotification('No missing files found', 'info')
+				handleShowNotification(t('notifications.noMissingFiles'), 'info')
 			} else {
-				handleShowNotification(`Removed ${result.removed} missing file${result.removed > 1 ? 's' : ''} from library`, 'success')
+				handleShowNotification(t('notifications.removedMissingFiles', { count: result.removed }), 'success')
 				// Reload the library to reflect changes
 				const updatedLibrary = await window.electronAPI.loadLibrary()
 				setSongs(updatedLibrary)
@@ -75,11 +77,11 @@ function App() {
 			}
 		} catch (error) {
 			console.error('[App] Error cleaning up missing files:', error)
-			handleShowNotification('Failed to cleanup missing files', 'error')
+			handleShowNotification(t('notifications.cleanupFailed'), 'error')
 		}
-	}, [handleShowNotification, setSongs])
+	}, [handleShowNotification, setSongs, t])
 
-	const { theme, volume: savedVolume, setVolume: saveVolume } = useSettingsStore()
+	const { theme, volume: savedVolume, setVolume: saveVolume, language } = useSettingsStore()
 
 	useEffect(() => {
 		const root = document.documentElement
@@ -176,11 +178,9 @@ function App() {
 			if (!errorNotificationShown) {
 				// If multiple failures detected, suggest going to Settings
 				if (failureCountRef.current.count >= 3) {
-					const detailedMessage = `Multiple songs failed to load. Files may be missing or moved. Check Settings to Rescan Library or Clean Up Missing Files.`
-					handleShowNotification(detailedMessage, 'error')
+					handleShowNotification(t('notifications.multipleLoadFailed'), 'error')
 				} else {
-					const detailedMessage = `Failed to load: ${songInfo}. The file may be missing or moved.`
-					handleShowNotification(detailedMessage, 'error')
+					handleShowNotification(t('notifications.loadFailed', { songInfo }), 'error')
 				}
 				setErrorNotificationShown(true)
 			}
@@ -228,7 +228,7 @@ function App() {
 		// Listen for queue songs removed event
 		const handleQueueSongsRemoved = (event: any) => {
 			const count = event.detail
-			handleShowNotification(`${count} song${count > 1 ? 's were' : ' was'} removed from queue (files not found in library)`, 'info')
+			handleShowNotification(t('queue.songsRemoved', { count }), 'info')
 		}
 		window.addEventListener('queue-songs-removed', handleQueueSongsRemoved)
 
@@ -384,7 +384,7 @@ function App() {
 		return activeTab === 'albums' ? filterAlbums(allAlbums, debouncedSearch) : allAlbums
 	}, [activeTab, allAlbums, debouncedSearch])
 
-	const searchPlaceholder = activeTab === 'albums' ? 'Search albums or artists...' : 'Search songs, albums, artists, genre or year...'
+	const searchPlaceholder = activeTab === 'albums' ? t('search.albumsPlaceholder') : t('search.songsPlaceholder')
 
 	// Function to set queue and start playing
 	const handleSetQueue = (songs: Array<any>) => {
@@ -447,7 +447,7 @@ function App() {
 			}
 		}
 
-		handleShowNotification('Album deleted successfully', 'success')
+		handleShowNotification(t('albums.deleteSuccess'), 'success')
 	}
 
 	const handleSongDeleted = (songPath: string) => {
@@ -496,10 +496,10 @@ function App() {
 						{/* TABS */}
 						<div className="tabs">
 							<button className={`tabs__button ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}>
-								Albums <small>({albums.length})</small>
+								{t('tabs.albums')} <small>({albums.length})</small>
 							</button>
 							<button className={`tabs__button ${activeTab === 'songs' ? 'active' : ''}`} onClick={() => setActiveTab('songs')}>
-								Songs <small>({songs.length})</small>
+								{t('tabs.songs')} <small>({songs.length})</small>
 							</button>
 						</div>
 
@@ -546,6 +546,8 @@ function App() {
 				onCleanupMissingFiles={handleCleanupMissingFiles}
 				theme={theme}
 				onSetTheme={useSettingsStore.getState().setTheme}
+				language={language}
+				onSetLanguage={useSettingsStore.getState().setLanguage}
 				isScanning={isScanning}
 				scanProgress={scanProgress}
 			/>

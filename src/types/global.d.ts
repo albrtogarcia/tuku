@@ -20,6 +20,7 @@ interface ElectronAPI {
 	deleteAlbum: (path: string) => Promise<boolean>
 	deleteSong: (path: string) => Promise<boolean>
 	cleanupMissingFiles: () => Promise<{ removed: number; error?: string }>
+	setLanguage: (lang: string) => Promise<void>
 }
 
 declare global {

@@ -21,4 +21,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	deleteAlbum: (path: string) => ipcRenderer.invoke('delete-album', path),
 	deleteSong: (path: string) => ipcRenderer.invoke('delete-song', path),
 	cleanupMissingFiles: (): Promise<{ removed: number; error?: string }> => ipcRenderer.invoke('cleanup-missing-files'),
+	setLanguage: (lang: string) => ipcRenderer.invoke('set-language', lang),
 })

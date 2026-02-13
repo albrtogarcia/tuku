@@ -13,6 +13,8 @@ describe('Settings Component', () => {
 		onCleanupMissingFiles: vi.fn(),
 		theme: 'system' as const,
 		onSetTheme: vi.fn(),
+		language: 'system' as const,
+		onSetLanguage: vi.fn(),
 	}
 
 	beforeEach(() => {

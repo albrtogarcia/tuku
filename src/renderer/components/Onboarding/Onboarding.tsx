@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { FolderOpenIcon, MusicNotesIcon } from '@phosphor-icons/react'
 import './_onboarding.scss'
 
@@ -9,6 +10,8 @@ interface OnboardingProps {
 }
 
 const Onboarding = ({ isOpen, onSelectFolder, isScanning, scanProgress }: OnboardingProps) => {
+	const { t } = useTranslation()
+
 	if (!isOpen) return null
 
 	return (
@@ -17,13 +20,13 @@ const Onboarding = ({ isOpen, onSelectFolder, isScanning, scanProgress }: Onboar
 				<div className="onboarding__icon">
 					<MusicNotesIcon size={48} weight="duotone" />
 				</div>
-				<h1 className="onboarding__title">Welcome to Tuku</h1>
-				<p className="onboarding__subtitle">Your music, your way. Select a folder to import your library.</p>
+				<h1 className="onboarding__title">{t('onboarding.welcome')}</h1>
+				<p className="onboarding__subtitle">{t('onboarding.subtitle')}</p>
 
 				{isScanning ? (
 					<div className="onboarding__progress">
 						<div className="onboarding__progress-header">
-							<span>Scanning...</span>
+							<span>{t('onboarding.scanning')}</span>
 							<span>
 								{scanProgress.current} / {scanProgress.total}
 							</span>
@@ -33,7 +36,7 @@ const Onboarding = ({ isOpen, onSelectFolder, isScanning, scanProgress }: Onboar
 				) : (
 					<button className="btn btn--primary onboarding__button" onClick={onSelectFolder}>
 						<FolderOpenIcon size={18} />
-						Import Folder
+						{t('onboarding.importFolder')}
 					</button>
 				)}
 			</div>

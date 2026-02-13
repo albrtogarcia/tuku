@@ -1,4 +1,5 @@
 import React, { useState, forwardRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VirtuosoGrid } from 'react-virtuoso'
 import './_albums-grid.scss'
 import { MusicNotesIcon } from '@phosphor-icons/react'
@@ -32,6 +33,7 @@ const GridItem: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ..
 )
 
 const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpdateCover, onAlbumDeleted, onOpenSettings, onShowNotification }) => {
+	const { t } = useTranslation()
 	const { addAlbumToQueue, playAlbumImmediately } = usePlayerStore()
 	const [loadingCovers, setLoadingCovers] = useState<Set<string>>(new Set())
 	const [dragOverAlbumId, setDragOverAlbumId] = useState<string | null>(null)
@@ -85,13 +87,13 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 			const cover = await window.electronAPI.fetchAlbumCover(album.artist, album.title)
 			if (cover) {
 				onUpdateCover(album.title, album.artist, cover)
-				onShowNotification?.(`Cover updated for "${album.title}"`, 'success')
+				onShowNotification?.(t('albums.coverUpdated', { title: album.title }), 'success')
 			} else {
-				onShowNotification?.(`Could not find cover for "${album.title}"`, 'error')
+				onShowNotification?.(t('albums.coverNotFound', { title: album.title }), 'error')
 			}
 		} catch (error) {
 			console.error('[Renderer] Failed to fetch cover', error)
-			onShowNotification?.('Failed to contact iTunes or save cover', 'error')
+			onShowNotification?.(t('albums.coverFetchFailed'), 'error')
 		} finally {
 			setLoadingCovers(prev => {
 				const next = new Set(prev)
@@ -106,12 +108,12 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 		const albumPath = album.songs[0].path.substring(0, album.songs[0].path.lastIndexOf('/'))
 
-		if (confirm(`Are you sure you want to delete "${album.title}"?\nThis will move files to Trash.`)) {
+		if (confirm(t('albums.deleteConfirm', { title: album.title }))) {
 			const success = await window.electronAPI.deleteAlbum(albumPath)
 			if (success) {
 				onAlbumDeleted(albumPath)
 			} else {
-				onShowNotification?.('Failed to delete album', 'error')
+				onShowNotification?.(t('albums.deleteFailed'), 'error')
 			}
 		}
 	}
@@ -128,7 +130,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 		if (!validTypes.includes(file.type)) {
-			onShowNotification?.('Please drop an image file (JPG, PNG, WebP, or GIF)', 'error')
+			onShowNotification?.(t('albums.dropImageHint'), 'error')
 			return
 		}
 
@@ -141,13 +143,13 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 			if (cover) {
 				onUpdateCover(album.title, album.artist, cover)
-				onShowNotification?.(`Cover updated for "${album.title}"`, 'success')
+				onShowNotification?.(t('albums.coverUpdated', { title: album.title }), 'success')
 			} else {
-				onShowNotification?.('Failed to save cover', 'error')
+				onShowNotification?.(t('albums.coverSaveFailed'), 'error')
 			}
 		} catch (error) {
 			console.error('[Renderer] Failed to upload cover', error)
-			onShowNotification?.('Failed to upload cover', 'error')
+			onShowNotification?.(t('albums.coverUploadFailed'), 'error')
 		} finally {
 			setLoadingCovers(prev => {
 				const next = new Set(prev)
@@ -163,7 +165,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 		return [
 			{
-				label: 'Play Album',
+				label: t('albums.playAlbum'),
 				action: () => {
 					if (album.songs && album.songs.length > 0) {
 						playAlbumImmediately(album.songs)
@@ -171,7 +173,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				},
 			},
 			{
-				label: 'Add to Queue',
+				label: t('albums.addToQueue'),
 				action: () => {
 					if (album.songs && album.songs.length > 0) {
 						addAlbumToQueue(album.songs)
@@ -179,11 +181,11 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				}
 			},
 			{
-				label: 'Get Album Cover',
+				label: t('albums.getAlbumCover'),
 				action: () => handleFetchCover(album),
 			},
 			{
-				label: 'Show in Finder',
+				label: t('albums.showInFinder'),
 				action: () => {
 					if (album.songs && album.songs.length > 0) {
 						const path = album.songs[0].path
@@ -192,7 +194,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				},
 			},
 			{
-				label: 'Delete Album',
+				label: t('albums.deleteAlbum'),
 				action: () => handleDeleteAlbum(album),
 				danger: true,
 			},
@@ -236,11 +238,11 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 					<img src={album.cover} alt={`${album.title}${album.artist ? ` by ${album.artist}` : ''}`} className="album-card__cover album__cover" />
 				) : (
 					<div className="album-card__cover album__cover default">
-						<span role="img" aria-label="No cover">
+						<span role="img" aria-label={t('albums.noCover')}>
 							<MusicNotesIcon size={48} weight="fill" />
 						</span>
 						<div className="album-card__info">
-							<strong>{album.title || 'Unknown Album'}</strong>
+							<strong>{album.title || t('albums.unknownAlbum')}</strong>
 							{album.artist && <div className="album-card__artist">{album.artist}</div>}
 						</div>
 						{isLoading && <div className="spinner"></div>}
@@ -248,14 +250,14 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				)}
 			</div>
 		)
-	}, [albums, loadingCovers, dragOverAlbumId, contextMenu, playAlbumImmediately])
+	}, [albums, loadingCovers, dragOverAlbumId, contextMenu, playAlbumImmediately, t])
 
 	if (albums.length === 0) {
 		return (
 			<div className="albums-grid--empty">
-				<p>No albums found in your library.</p>
+				<p>{t('albums.emptyState')}</p>
 				<button className="btn-primary" onClick={onOpenSettings}>
-					Configure Library
+					{t('albums.configureLibrary')}
 				</button>
 			</div>
 		)

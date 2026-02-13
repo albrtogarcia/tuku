@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { usePlayerStore } from '../../store/player'
 import { XIcon, WarningIcon } from '@phosphor-icons/react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
@@ -19,11 +20,12 @@ interface SortableQueueItemProps {
 	isPlaying: boolean
 	isPlayed: boolean
 	hasFailed: boolean
+	removeTitle: string
 	onRemove: (idx: number) => void
 	onDoubleClick: (idx: number) => void
 }
 
-function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, onRemove, onDoubleClick }: SortableQueueItemProps) {
+function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, removeTitle, onRemove, onDoubleClick }: SortableQueueItemProps) {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `${song.path}-${index}` })
 
 	const style = {
@@ -46,7 +48,7 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, onRemo
 				<small>{song.album}</small>
 				<small>{formatTime(song.duration)}</small>
 			</div>
-			<button className="btn btn--ghost" onClick={() => onRemove(index)} title="Remove from queue">
+			<button className="btn btn--ghost" onClick={() => onRemove(index)} title={removeTitle}>
 				<XIcon size={16} weight="bold" />
 			</button>
 		</li>
@@ -54,6 +56,7 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, onRemo
 }
 
 const Queue = ({ audio, failedSongPaths }: QueueProps) => {
+	const { t } = useTranslation()
 	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue } = usePlayerStore()
 	const { handlePause, handlePlay } = audio
 
@@ -128,11 +131,11 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 		<div className="queue">
 			<header className="queue__header">
 				<h2 className="queue__title">
-					Queue <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
+					{t('queue.title')} <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
 				</h2>
 				{queue.length != 0 && (
-					<button className="btn" onClick={clearQueue} title="Clear queue">
-						Clear
+					<button className="btn" onClick={clearQueue} title={t('queue.clearTitle')}>
+						{t('queue.clear')}
 					</button>
 				)}
 			</header>
@@ -142,8 +145,8 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 						{queue.length === 0 ? (
 							<li className="queue__empty">
 								<div className="queue__empty-content">
-									<span className="queue__empty-text">No upcoming songs</span>
-									<small className="queue__empty-subtitle">Add songs to start listening</small>
+									<span className="queue__empty-text">{t('queue.emptyTitle')}</span>
+									<small className="queue__empty-subtitle">{t('queue.emptySubtitle')}</small>
 								</div>
 							</li>
 						) : (
@@ -155,6 +158,7 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 									isPlaying={idx === currentIndex}
 									isPlayed={idx < currentIndex}
 									hasFailed={failedSongPaths.has(song.path)}
+									removeTitle={t('queue.removeTitle')}
 									onRemove={handleRemoveFromQueue}
 									onDoubleClick={handleQueueItemDoubleClick}
 								/>

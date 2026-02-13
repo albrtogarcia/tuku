@@ -4,5 +4,5 @@
 		"module": "CommonJS",
 		"outDir": "dist"
 	},
-	"include": ["src/main/**/*", "src/preload.ts"]
+	"include": ["src/main/**/*", "src/preload.ts", "src/i18n/locales/**/*"]
 }

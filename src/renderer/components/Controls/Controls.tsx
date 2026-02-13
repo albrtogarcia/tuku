@@ -1,4 +1,5 @@
 import { PlayIcon, PauseIcon, RewindIcon, FastForwardIcon, RepeatIcon, ShuffleIcon } from '@phosphor-icons/react/dist/ssr'
+import { useTranslation } from 'react-i18next'
 import { usePlayerStore } from '../../store/player'
 import './_controls.scss'
 import { SlidersIcon } from '@phosphor-icons/react'
@@ -10,6 +11,7 @@ interface ControlsProps {
 }
 
 const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
+	const { t } = useTranslation()
 	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffleQueue, isPlaying, setIsPlaying } = usePlayerStore()
 	const { volume, setVolume } = audio
 
@@ -45,27 +47,27 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 		<div className="controls">
 			<div className="controls__playback">
 				<div className="btn-holder">
-					<button className="btn btn--secondary" onClick={() => shuffleQueue()} title="Shuffle queue">
+					<button className="btn btn--secondary" onClick={() => shuffleQueue()} title={t('controls.shuffle')}>
 						<ShuffleIcon size={18} weight="fill" />
 					</button>
 				</div>
 
 				<div className="btn-holder">
-					<button className="btn" onClick={playPrev} title="Previous song" disabled={currentIndex <= 0}>
+					<button className="btn" onClick={playPrev} title={t('controls.previous')} disabled={currentIndex <= 0}>
 						<RewindIcon size={18} weight="fill" />
 					</button>
 				</div>
 
 				<div className="btn-holder btn-holder--big">
 					{isPlaying && currentIndex !== -1 ? (
-						<button className="btn btn--lg active" onClick={handlePlayPause} title="Pause">
+						<button className="btn btn--lg active" onClick={handlePlayPause} title={t('controls.pause')}>
 							<PauseIcon size={24} weight="fill" />
 						</button>
 					) : (
 						<button
 							className="btn btn--lg"
 							onClick={handlePlayPause}
-							title="Play"
+							title={t('controls.play')}
 							disabled={currentIndex === -1}
 						>
 							<PlayIcon size={24} weight="fill" />
@@ -74,20 +76,20 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 				</div>
 
 				<div className="btn-holder">
-					<button className="btn" onClick={playNext} title="Next song" disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
+					<button className="btn" onClick={playNext} title={t('controls.next')} disabled={currentIndex === -1 || currentIndex >= queue.length - 1}>
 						<FastForwardIcon size={18} weight="fill" />
 					</button>
 				</div>
 
 				<div className="btn-holder">
-					<button className={`btn btn--secondary${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title="Repeat queue">
+					<button className={`btn btn--secondary${repeat ? ' active' : ''}`} onClick={() => setRepeat(!repeat)} title={t('controls.repeat')}>
 						<RepeatIcon size={18} weight="fill" />
 					</button>
 				</div>
 			</div>
 
 			<div className="controls__volume">
-				<div className="knob__container" title={`Volume: ${Math.round(volume * 100)}%`}>
+				<div className="knob__container" title={t('controls.volume', { percent: Math.round(volume * 100) })}>
 					<div className="knob__outer" onWheel={handleVolumeWheel}>
 						<div className="knob__shadow"></div>
 						<div className="knob__inner">

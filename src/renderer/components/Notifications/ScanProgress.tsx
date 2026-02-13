@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import './_scan-progress.scss'
 
 interface ScanProgressProps {
@@ -6,12 +7,13 @@ interface ScanProgressProps {
 }
 
 const ScanProgress = ({ current, total }: ScanProgressProps) => {
+	const { t } = useTranslation()
 	const safeTotal = total > 0 ? total : 1
 
 	return (
 		<div className="scan-progress" role="status" aria-live="polite">
 			<div className="scan-progress__header">
-				<span>Scanning Library...</span>
+				<span>{t('notifications.scanningLibrary')}</span>
 				<span>
 					{current} / {total}
 				</span>

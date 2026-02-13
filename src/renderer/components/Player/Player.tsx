@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MusicNotesIcon, Shuffle } from '@phosphor-icons/react/dist/ssr'
 import { usePlayerStore } from '../../store/player'
 import { formatTime } from '../../utils'
@@ -24,6 +25,7 @@ interface PlayerProps {
 }
 
 const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
+	const { t } = useTranslation()
 	const { queue, currentIndex, setQueue, setCurrentIndex } = usePlayerStore()
 	const { duration, currentTime, setCurrentTime, handlePlay, isPlaying, playingPath } = audio
 	const song = queue[currentIndex]
@@ -51,11 +53,11 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 			<>
 				<div className="player player--empty">
 					<div className="player__empty-state">
-						<h4 className="player__empty-title">Ready to play</h4>
-						<p className="player__empty-subtitle">Add songs to your queue or let me pick for you</p>
+						<h4 className="player__empty-title">{t('player.readyToPlay')}</h4>
+						<p className="player__empty-subtitle">{t('player.subtitle')}</p>
 						<button className="btn" onClick={handleSurpriseMe} disabled={songs.length === 0}>
 							<Shuffle size={20} weight="fill" />
-							Surprise me!
+							{t('player.surpriseMe')}
 						</button>
 					</div>
 				</div>

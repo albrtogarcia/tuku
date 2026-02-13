@@ -1,0 +1,115 @@
+{
+	"tabs": {
+		"albums": "Álbumes",
+		"songs": "Canciones"
+	},
+	"search": {
+		"albumsPlaceholder": "Buscar álbumes o artistas...",
+		"songsPlaceholder": "Buscar canciones, álbumes, artistas, género o año..."
+	},
+	"player": {
+		"readyToPlay": "Listo para reproducir",
+		"subtitle": "Agrega canciones a la cola o deja que elija por ti",
+		"surpriseMe": "¡Sorpréndeme!"
+	},
+	"controls": {
+		"shuffle": "Mezclar cola",
+		"previous": "Canción anterior",
+		"play": "Reproducir",
+		"pause": "Pausa",
+		"next": "Siguiente canción",
+		"repeat": "Repetir cola",
+		"volume": "Volumen: {{percent}}%"
+	},
+	"queue": {
+		"title": "Cola",
+		"clear": "Limpiar",
+		"clearTitle": "Limpiar cola",
+		"removeTitle": "Quitar de la cola",
+		"emptyTitle": "No hay canciones en cola",
+		"emptySubtitle": "Agrega canciones para empezar a escuchar",
+		"songsRemoved_one": "{{count}} canción fue eliminada de la cola (archivo no encontrado en la biblioteca)",
+		"songsRemoved_other": "{{count}} canciones fueron eliminadas de la cola (archivos no encontrados en la biblioteca)"
+	},
+	"settings": {
+		"title": "Ajustes",
+		"close": "Cerrar",
+		"appearance": "Apariencia",
+		"theme": "Tema",
+		"light": "Claro",
+		"dark": "Oscuro",
+		"system": "Sistema",
+		"language": "Idioma",
+		"languageLabel": "Idioma",
+		"english": "English",
+		"spanish": "Español",
+		"musicLibrary": "Biblioteca de Música",
+		"libraryFolder": "Carpeta de Biblioteca",
+		"noFolderSelected": "Ninguna carpeta seleccionada",
+		"changeFolder": "Cambiar Carpeta",
+		"importFolder": "Importar Carpeta",
+		"selectMusicFolder": "Seleccionar carpeta de música",
+		"lastUpdated": "Última Actualización",
+		"never": "Nunca",
+		"invalidDate": "Fecha Inválida",
+		"scanning": "Escaneando...",
+		"rescan": "Re-escanear",
+		"rescanTitle": "Re-escanear carpeta actual",
+		"maintenance": "Mantenimiento",
+		"maintenanceInfo": "Eliminar archivos faltantes de la biblioteca",
+		"cleanUpMissingFiles": "Limpiar Archivos Faltantes",
+		"cleanUpTitle": "Eliminar canciones que ya no existen"
+	},
+	"onboarding": {
+		"welcome": "Bienvenido a Tuku",
+		"subtitle": "Tu música, a tu manera. Selecciona una carpeta para importar tu biblioteca.",
+		"importFolder": "Importar Carpeta",
+		"scanning": "Escaneando..."
+	},
+	"songs": {
+		"title": "Título",
+		"artist": "Artista",
+		"album": "Álbum",
+		"time": "Duración",
+		"year": "Año",
+		"genre": "Género",
+		"noSongsFound": "No se encontraron canciones.",
+		"playSong": "Reproducir Canción",
+		"addToQueue": "Agregar a la Cola",
+		"showInFinder": "Mostrar en Finder",
+		"deleteSong": "Eliminar Canción",
+		"deleteConfirm": "¿Estás seguro de que quieres eliminar \"{{title}}\"?\nEsto moverá el archivo a la Papelera.",
+		"deleteSuccess": "\"{{title}}\" eliminada",
+		"deleteFailed": "Error al eliminar la canción"
+	},
+	"albums": {
+		"playAlbum": "Reproducir Álbum",
+		"addToQueue": "Agregar a la Cola",
+		"getAlbumCover": "Obtener Portada",
+		"showInFinder": "Mostrar en Finder",
+		"deleteAlbum": "Eliminar Álbum",
+		"deleteConfirm": "¿Estás seguro de que quieres eliminar \"{{title}}\"?\nEsto moverá los archivos a la Papelera.",
+		"deleteSuccess": "Álbum eliminado correctamente",
+		"deleteFailed": "Error al eliminar el álbum",
+		"coverUpdated": "Portada actualizada para \"{{title}}\"",
+		"coverNotFound": "No se encontró portada para \"{{title}}\"",
+		"coverFetchFailed": "Error al contactar iTunes o guardar la portada",
+		"coverUploadFailed": "Error al subir la portada",
+		"coverSaveFailed": "Error al guardar la portada",
+		"dropImageHint": "Arrastra una imagen (JPG, PNG, WebP o GIF)",
+		"emptyState": "No se encontraron álbumes en tu biblioteca.",
+		"configureLibrary": "Configurar Biblioteca",
+		"unknownAlbum": "Álbum Desconocido",
+		"noCover": "Sin portada"
+	},
+	"notifications": {
+		"closeNotification": "Cerrar notificación",
+		"scanningLibrary": "Escaneando Biblioteca...",
+		"cleanupFailed": "Error al limpiar archivos faltantes",
+		"noMissingFiles": "No se encontraron archivos faltantes",
+		"removedMissingFiles_one": "Se eliminó {{count}} archivo faltante de la biblioteca",
+		"removedMissingFiles_other": "Se eliminaron {{count}} archivos faltantes de la biblioteca",
+		"multipleLoadFailed": "Varias canciones no se pudieron cargar. Los archivos pueden faltar o haberse movido. Ve a Ajustes para Re-escanear la Biblioteca o Limpiar Archivos Faltantes.",
+		"loadFailed": "Error al cargar: {{songInfo}}. El archivo puede faltar o haberse movido."
+	}
+}

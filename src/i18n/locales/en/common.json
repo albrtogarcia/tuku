@@ -1,0 +1,115 @@
+{
+	"tabs": {
+		"albums": "Albums",
+		"songs": "Songs"
+	},
+	"search": {
+		"albumsPlaceholder": "Search albums or artists...",
+		"songsPlaceholder": "Search songs, albums, artists, genre or year..."
+	},
+	"player": {
+		"readyToPlay": "Ready to play",
+		"subtitle": "Add songs to your queue or let me pick for you",
+		"surpriseMe": "Surprise me!"
+	},
+	"controls": {
+		"shuffle": "Shuffle queue",
+		"previous": "Previous song",
+		"play": "Play",
+		"pause": "Pause",
+		"next": "Next song",
+		"repeat": "Repeat queue",
+		"volume": "Volume: {{percent}}%"
+	},
+	"queue": {
+		"title": "Queue",
+		"clear": "Clear",
+		"clearTitle": "Clear queue",
+		"removeTitle": "Remove from queue",
+		"emptyTitle": "No upcoming songs",
+		"emptySubtitle": "Add songs to start listening",
+		"songsRemoved_one": "{{count}} song was removed from queue (files not found in library)",
+		"songsRemoved_other": "{{count}} songs were removed from queue (files not found in library)"
+	},
+	"settings": {
+		"title": "Settings",
+		"close": "Close",
+		"appearance": "Appearance",
+		"theme": "Theme",
+		"light": "Light",
+		"dark": "Dark",
+		"system": "System",
+		"language": "Language",
+		"languageLabel": "Language",
+		"english": "English",
+		"spanish": "Español",
+		"musicLibrary": "Music Library",
+		"libraryFolder": "Library Folder",
+		"noFolderSelected": "No folder selected",
+		"changeFolder": "Change Folder",
+		"importFolder": "Import Folder",
+		"selectMusicFolder": "Select music folder",
+		"lastUpdated": "Last Updated",
+		"never": "Never",
+		"invalidDate": "Invalid Date",
+		"scanning": "Scanning...",
+		"rescan": "Rescan",
+		"rescanTitle": "Rescan current folder",
+		"maintenance": "Maintenance",
+		"maintenanceInfo": "Remove missing files from library",
+		"cleanUpMissingFiles": "Clean Up Missing Files",
+		"cleanUpTitle": "Remove songs that no longer exist"
+	},
+	"onboarding": {
+		"welcome": "Welcome to Tuku",
+		"subtitle": "Your music, your way. Select a folder to import your library.",
+		"importFolder": "Import Folder",
+		"scanning": "Scanning..."
+	},
+	"songs": {
+		"title": "Title",
+		"artist": "Artist",
+		"album": "Album",
+		"time": "Time",
+		"year": "Year",
+		"genre": "Genre",
+		"noSongsFound": "No songs found.",
+		"playSong": "Play Song",
+		"addToQueue": "Add to Queue",
+		"showInFinder": "Show in Finder",
+		"deleteSong": "Delete Song",
+		"deleteConfirm": "Are you sure you want to delete \"{{title}}\"?\nThis will move the file to Trash.",
+		"deleteSuccess": "\"{{title}}\" deleted",
+		"deleteFailed": "Failed to delete song"
+	},
+	"albums": {
+		"playAlbum": "Play Album",
+		"addToQueue": "Add to Queue",
+		"getAlbumCover": "Get Album Cover",
+		"showInFinder": "Show in Finder",
+		"deleteAlbum": "Delete Album",
+		"deleteConfirm": "Are you sure you want to delete \"{{title}}\"?\nThis will move files to Trash.",
+		"deleteSuccess": "Album deleted successfully",
+		"deleteFailed": "Failed to delete album",
+		"coverUpdated": "Cover updated for \"{{title}}\"",
+		"coverNotFound": "Could not find cover for \"{{title}}\"",
+		"coverFetchFailed": "Failed to contact iTunes or save cover",
+		"coverUploadFailed": "Failed to upload cover",
+		"coverSaveFailed": "Failed to save cover",
+		"dropImageHint": "Please drop an image file (JPG, PNG, WebP, or GIF)",
+		"emptyState": "No albums found in your library.",
+		"configureLibrary": "Configure Library",
+		"unknownAlbum": "Unknown Album",
+		"noCover": "No cover"
+	},
+	"notifications": {
+		"closeNotification": "Close notification",
+		"scanningLibrary": "Scanning Library...",
+		"cleanupFailed": "Failed to cleanup missing files",
+		"noMissingFiles": "No missing files found",
+		"removedMissingFiles_one": "Removed {{count}} missing file from library",
+		"removedMissingFiles_other": "Removed {{count}} missing files from library",
+		"multipleLoadFailed": "Multiple songs failed to load. Files may be missing or moved. Check Settings to Rescan Library or Clean Up Missing Files.",
+		"loadFailed": "Failed to load: {{songInfo}}. The file may be missing or moved."
+	}
+}
