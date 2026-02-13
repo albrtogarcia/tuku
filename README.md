@@ -56,7 +56,7 @@ Create a simple, fast, and customizable application to:
 - [x] Initial interface
 - [x] Persistent database with SQLite
 - [x] Add album artwork from iTunes
-- [ ] i18n: EN and ES support
+- [x] i18n: EN and ES support
 
 #### 📐 MVP Pending Tasks Checklist
 
@@ -77,10 +77,12 @@ Create a simple, fast, and customizable application to:
 #### iTunes-Style Album Expansion (Planned Feature)
 
 When clicking an album in the grid, an expansion panel appears below that row showing:
+
 - **Left column**: Large album cover
 - **Right column**: Album title, artist, year + song list with track numbers and durations
 
 **Implementation approach:**
+
 - Switch from `VirtuosoGrid` to `Virtuoso` (list mode) with row-based rendering
 - Calculate albums per row using `ResizeObserver` on container width
 - Group albums into row items (each virtualized item = one row of albums)
@@ -88,6 +90,7 @@ When clicking an album in the grid, an expansion panel appears below that row sh
 - Use variable row heights (normal rows fixed, expansion rows taller)
 
 **Performance considerations:**
+
 - Virtualization remains efficient (rows instead of individual items)
 - Minimal re-renders (only affected rows on expand/collapse)
 - Slight overhead from ResizeObserver for responsive row calculation
