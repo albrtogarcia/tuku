@@ -29,6 +29,21 @@ vi.mock('@phosphor-icons/react', () => ({
 	),
 }))
 
+// Mock react-virtuoso so items render without a real viewport
+vi.mock('react-virtuoso', () => ({
+	VirtuosoGrid: ({ totalCount, itemContent, components }: any) => {
+		const List = components?.List || 'div'
+		const Item = components?.Item || 'div'
+		return (
+			<List>
+				{Array.from({ length: totalCount }, (_, index) => (
+					<Item key={index}>{itemContent(index)}</Item>
+				))}
+			</List>
+		)
+	},
+}))
+
 describe('AlbumsGrid Component', () => {
 	const mockAlbums = [
 		{

@@ -231,11 +231,15 @@ describe('SongsList Component', () => {
 			expect(mockPlayerStore.playNow).toHaveBeenCalledWith(expectedSong)
 		})
 
-		it('should call addToQueue when right-clicking a song', () => {
+		it('should call addToQueue when right-clicking a song and selecting Add to Queue', () => {
 			render(<SongsList songs={mockSongs} addToQueue={mockAddToQueue} folderPath="/music" />)
 
 			const firstSong = screen.getByTestId('song-item-0')
 			fireEvent.contextMenu(firstSong)
+
+			// Click "Add to Queue" in the context menu
+			const addToQueueOption = screen.getByText('Add to Queue')
+			fireEvent.click(addToQueueOption)
 
 			// First song in sorted order is "Bohemian Rhapsody"
 			const expectedSong = mockSongs.find((song) => song.title === 'Bohemian Rhapsody')
