@@ -10,6 +10,9 @@ describe('Settings Component', () => {
 		lastUpdated: null,
 		onSelectFolder: vi.fn(),
 		onRescanFolder: vi.fn(),
+		onCleanupMissingFiles: vi.fn(),
+		theme: 'system' as const,
+		onSetTheme: vi.fn(),
 	}
 
 	beforeEach(() => {

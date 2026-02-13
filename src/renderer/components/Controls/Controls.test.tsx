@@ -31,6 +31,7 @@ describe('Controls Component', () => {
 		handleCanPlay: vi.fn(),
 		handleStop: vi.fn(),
 		setVolume: vi.fn(),
+		setIsPlaying: vi.fn(),
 		...overrides,
 	})
 

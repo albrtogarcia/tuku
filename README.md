@@ -72,6 +72,26 @@ Create a simple, fast, and customizable application to:
 - [ ] Settings modal UI
 - [ ] Notifications component
 - [ ] Fix album cover formatting
+- [ ] iTunes-style inline album expansion in grid view
+
+#### iTunes-Style Album Expansion (Planned Feature)
+
+When clicking an album in the grid, an expansion panel appears below that row showing:
+- **Left column**: Large album cover
+- **Right column**: Album title, artist, year + song list with track numbers and durations
+
+**Implementation approach:**
+- Switch from `VirtuosoGrid` to `Virtuoso` (list mode) with row-based rendering
+- Calculate albums per row using `ResizeObserver` on container width
+- Group albums into row items (each virtualized item = one row of albums)
+- Insert expansion panels as special items after the selected album's row
+- Use variable row heights (normal rows fixed, expansion rows taller)
+
+**Performance considerations:**
+- Virtualization remains efficient (rows instead of individual items)
+- Minimal re-renders (only affected rows on expand/collapse)
+- Slight overhead from ResizeObserver for responsive row calculation
+- Memory usage similar to current implementation
 - [x] Memory leak in playback
 
 #### 🔴 Priority 0: Critical (must fix before release)

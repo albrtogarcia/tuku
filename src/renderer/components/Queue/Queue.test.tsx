@@ -129,7 +129,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(emptyPlayerStore)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByText('No upcoming songs')).toBeInTheDocument()
 			expect(screen.getByText('Add songs to start listening')).toBeInTheDocument()
@@ -143,7 +143,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(emptyPlayerStore)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.queryByTitle('Clear queue')).not.toBeInTheDocument()
 		})
@@ -157,7 +157,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(emptyPlayerStore)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByText('Queue')).toBeInTheDocument()
 			expect(screen.getByText('(0)')).toBeInTheDocument()
@@ -167,7 +167,7 @@ describe('Queue Component', () => {
 	describe('Queue with Songs', () => {
 		it('should render all songs in the queue', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByText('Test Song 1')).toBeInTheDocument()
 			expect(screen.getByText('Test Artist 1')).toBeInTheDocument()
@@ -185,7 +185,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(storeWithCurrentIndex)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			// Remaining songs = total - (currentIndex + 1) = 3 - (1 + 1) = 1
 			expect(screen.getByText('Queue')).toBeInTheDocument()
@@ -194,7 +194,7 @@ describe('Queue Component', () => {
 
 		it('should highlight currently playing song', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const queueItems = document.querySelectorAll('.queue__item')
 			expect(queueItems[0]).toHaveClass('playing')
@@ -210,7 +210,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(storeWithCurrentIndex)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const queueItems = document.querySelectorAll('.queue__item')
 			expect(queueItems[0]).toHaveClass('played')
@@ -221,7 +221,7 @@ describe('Queue Component', () => {
 
 		it('should show clear button when queue has songs', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByTitle('Clear queue')).toBeInTheDocument()
 		})
@@ -230,7 +230,7 @@ describe('Queue Component', () => {
 	describe('Queue Actions', () => {
 		it('should clear queue when clear button is clicked', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const clearButton = screen.getByTitle('Clear queue')
 			fireEvent.click(clearButton)
@@ -240,7 +240,7 @@ describe('Queue Component', () => {
 
 		it('should remove song from queue when remove button is clicked', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const removeButtons = screen.getAllByTitle('Remove from queue')
 			fireEvent.click(removeButtons[1]) // Remove second song
@@ -250,7 +250,7 @@ describe('Queue Component', () => {
 
 		it('should handle removing current song and play next', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const removeButtons = screen.getAllByTitle('Remove from queue')
 			fireEvent.click(removeButtons[0]) // Remove currently playing song (index 0)
@@ -269,7 +269,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(storeWithLastSong)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const removeButton = screen.getByTitle('Remove from queue')
 			fireEvent.click(removeButton)
@@ -282,7 +282,7 @@ describe('Queue Component', () => {
 	describe('Song Interaction', () => {
 		it('should restart current song when double-clicking playing song', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const firstSongContent = screen.getByText('Test Song 1').closest('.queue__item-content')
 			fireEvent.doubleClick(firstSongContent!)
@@ -292,7 +292,7 @@ describe('Queue Component', () => {
 
 		it('should move song to next position and play when double-clicking non-current song', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const thirdSongContent = screen.getByText('Test Song 3').closest('.queue__item-content')
 			fireEvent.doubleClick(thirdSongContent!)
@@ -307,7 +307,7 @@ describe('Queue Component', () => {
 	describe('Drag and Drop', () => {
 		it('should render DndContext and SortableContext', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByTestId('dnd-context')).toBeInTheDocument()
 			expect(screen.getByTestId('sortable-context')).toBeInTheDocument()
@@ -315,7 +315,7 @@ describe('Queue Component', () => {
 
 		it('should render sortable queue items', () => {
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const queueItems = document.querySelectorAll('.queue__item')
 			expect(queueItems).toHaveLength(3)
@@ -338,7 +338,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(storeAtEnd)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByText('Queue')).toBeInTheDocument()
 			expect(screen.getByText('(0)')).toBeInTheDocument()
@@ -352,7 +352,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(storeAtEnd)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			const removeButtons = screen.getAllByTitle('Remove from queue')
 			fireEvent.click(removeButtons[2]) // Remove last song (current)
@@ -370,7 +370,7 @@ describe('Queue Component', () => {
 				; (usePlayerStore as any).mockReturnValue(singleSongStore)
 
 			const mockAudio = createMockAudio()
-			render(<Queue audio={mockAudio} />)
+			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByText('Test Song 1')).toBeInTheDocument()
 			expect(screen.getByText('Queue')).toBeInTheDocument()

@@ -11,6 +11,7 @@ export function useSongs() {
 	const [folderPath, setFolderPath] = useState<string | null>(null)
 	const [songs, setSongs] = useState<Song[]>([])
 	const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+	const [isFirstRun, setIsFirstRun] = useState(false)
 
 	useEffect(() => {
 		// On mount, try to load library from SQLite
@@ -26,6 +27,12 @@ export function useSongs() {
 				console.log('Loaded folderPath from DB:', savedFolderPath)
 				if (savedFolderPath) {
 					setFolderPath(savedFolderPath)
+				}
+			} else {
+				// Check if there's a saved folder path (empty library but folder configured)
+				const savedFolderPath = await window.electronAPI.getLibraryMetadata('folderPath')
+				if (!savedFolderPath) {
+					setIsFirstRun(true)
 				}
 			}
 		})()
@@ -55,6 +62,7 @@ export function useSongs() {
 			console.log('FolderPath saved:', saved)
 			const files = await window.electronAPI.getAudioFiles(path)
 			setSongs(files)
+			setIsFirstRun(false)
 			// Timestamp is updated automatically by saveLibrary in the useEffect above
 			const now = new Date().toISOString()
 			setLastUpdated(now)
@@ -77,6 +85,7 @@ export function useSongs() {
 		songs,
 		setSongs,
 		lastUpdated,
+		isFirstRun,
 		handleSelectFolder,
 		handleRescanFolder,
 	}

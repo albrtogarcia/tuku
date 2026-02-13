@@ -6,6 +6,7 @@ import SongsList from './components/SongsList/SongsList'
 import SearchBar from './components/SearchBar/SearchBar'
 import AlbumsGrid from './components/AlbumsGrid/AlbumsGrid'
 import Settings from './components/Settings/Settings'
+import Onboarding from './components/Onboarding/Onboarding'
 import { useAudioPlayer } from './hooks/useAudioPlayer'
 import { useSongs } from './hooks/useSongs'
 import { formatTime, filterSongs, filterAlbums } from './utils'
@@ -38,7 +39,7 @@ function groupAlbums(songs: Song[]): Album[] {
 }
 
 function App() {
-	const { folderPath, songs, handleSelectFolder, lastUpdated, handleRescanFolder, setSongs } = useSongs()
+	const { folderPath, songs, handleSelectFolder, lastUpdated, handleRescanFolder, setSongs, isFirstRun } = useSongs()
 	const [search, setSearch] = useState('')
 	const debouncedSearch = useDebounce(search, 300)
 	const [activeTab, setActiveTab] = useState<'albums' | 'songs'>('albums')
@@ -531,6 +532,9 @@ function App() {
 					</div>
 				</div>
 			</div>
+			{/* Onboarding Modal */}
+			<Onboarding isOpen={isFirstRun} onSelectFolder={handleSelectFolder} isScanning={isScanning} scanProgress={scanProgress} />
+
 			{/* Settings Modal */}
 			<Settings
 				isOpen={isSettingsOpen}
@@ -566,7 +570,7 @@ function App() {
 			/>
 
 			{/* Scan Progress Bar (only show when Settings is closed) */}
-			{isScanning && !isSettingsOpen && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
+			{isScanning && !isSettingsOpen && !isFirstRun && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
 
 			{/* Notifications */}
 			{notification && (
