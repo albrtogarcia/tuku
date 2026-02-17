@@ -10,7 +10,10 @@ module.exports = {
 		main: 'dist/main/index.js',
 	},
 	mac: {
-		target: 'dmg',
+		target: {
+			target: 'dmg',
+			arch: ['universal'],
+		},
 		category: 'public.app-category.music',
 		icon: 'build/icons/icon.icns',
 		// Configuración para code signing (descomenta si tienes certificado)
