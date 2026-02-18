@@ -1,31 +1,98 @@
 name: Release
 
-on:
-  workflow_dispatch: # Manual trigger for testing
-
 permissions:
   contents: write
 
-jobs:
-  release:
-    runs-on: macos-latest
+on:
+  push:
+    tags:
+      - 'v*'
 
+jobs:
+  build-linux-win:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Needed for release-it
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: 20
           cache: 'yarn'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Release
-        run: yarn release --ci
+      - name: Build Linux
+        run: yarn run build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Windows
+        run: yarn run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-builds
+          path: |
+            dist-electron/*.AppImage
+            dist-electron/*.deb
+            dist-electron/*.rpm
+
+      - name: Upload Artifacts (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-builds
+          path: dist-electron/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build macOS
+        run: yarn run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-builds
+          path: |
+            dist-electron/*.dmg
+            dist-electron/*.dmg.blockmap
+
+  release:
+    needs: [build-linux-win, build-mac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: false
+          files: |
+            artifacts/linux-builds/*
+            artifacts/win-builds/*
+            artifacts/mac-builds/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

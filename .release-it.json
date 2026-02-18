@@ -4,13 +4,9 @@
 		"tagName": "v${version}"
 	},
 	"github": {
-		"release": true,
-		"assets": ["dist-electron/*.dmg", "dist-electron/*.blockmap"]
+		"release": false
 	},
 	"npm": {
 		"publish": false
-	},
-	"hooks": {
-		"before:init": ["yarn build"]
 	}
 }
