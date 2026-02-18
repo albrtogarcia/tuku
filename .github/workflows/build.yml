@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - develop
+    tags-ignore:
+      - 'v*'
   pull_request:
 
 jobs:
-  build-linux-win:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,24 +28,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Windows
-        run: yarn run build:win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Artifacts (Linux)
         uses: actions/upload-artifact@v4
         with:
           name: linux-builds
-          path: dist-electron/*.AppImage
-
-      - name: Upload Artifacts (Deb / RPM)
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-dist-builds
           path: |
+            dist-electron/*.AppImage
             dist-electron/*.deb
             dist-electron/*.rpm
+
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Windows
+        run: yarn run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifacts (Windows)
         uses: actions/upload-artifact@v4

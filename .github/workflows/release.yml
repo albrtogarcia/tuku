@@ -9,7 +9,22 @@ on:
       - 'v*'
 
 jobs:
-  build-linux-win:
+  check-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure tag is on main
+        run: |
+          if ! git branch -r --contains ${{ github.sha }} | grep -q 'origin/main'; then
+            echo "Tag is not on main branch. Skipping release."
+            exit 1
+          fi
+
+  build-linux:
+    needs: check-branch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,11 +43,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Windows
-        run: yarn run build:win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Artifacts (Linux)
         uses: actions/upload-artifact@v4
         with:
@@ -42,6 +52,26 @@ jobs:
             dist-electron/*.deb
             dist-electron/*.rpm
 
+  build-win:
+    needs: check-branch
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Windows
+        run: yarn run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload Artifacts (Windows)
         uses: actions/upload-artifact@v4
         with:
@@ -49,6 +79,7 @@ jobs:
           path: dist-electron/*.exe
 
   build-mac:
+    needs: check-branch
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,12 +102,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mac-builds
-          path: |
-            dist-electron/*.dmg
-            dist-electron/*.dmg.blockmap
+          path: dist-electron/*.dmg
 
   release:
-    needs: [build-linux-win, build-mac]
+    needs: [build-linux, build-win, build-mac]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

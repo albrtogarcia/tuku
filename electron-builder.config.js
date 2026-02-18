@@ -6,6 +6,7 @@ module.exports = {
 		buildResources: 'build',
 	},
 	files: ['dist/**/*', 'node_modules/**/*', 'package.json'],
+	publish: null,
 	extraMetadata: {
 		main: 'dist/main/index.js',
 	},
