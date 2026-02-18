@@ -45,7 +45,7 @@ module.exports = {
 		},
 	},
 	linux: {
-		target: ['AppImage', 'deb'],
+		target: ['AppImage', 'deb', 'rpm'],
 		category: 'Audio',
 		icon: 'build/icons',
 	},
