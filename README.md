@@ -312,6 +312,41 @@ This should allow you to compile and run the project correctly on Fedora/Linux.
 
 ---
 
+## 🔄 CI/CD Workflow
+
+### Test Builds (develop)
+
+Every push to `develop` and every pull request triggers the **Test Builds** workflow. It builds for Linux, Windows, and macOS in parallel. Binaries are uploaded as GitHub Actions artifacts, downloadable from the Actions tab for manual testing.
+
+### Releases (main)
+
+1. Merge `develop` into `main` when ready.
+2. Bump the version and create a tag:
+   ```bash
+   yarn release
+   ```
+   Or manually:
+   ```bash
+   # Edit version in package.json
+   git add package.json
+   git commit -m "Release X.Y.Z"
+   git tag vX.Y.Z
+   git push && git push --tags
+   ```
+3. The `v*` tag triggers the **Release** workflow, which verifies the tag is on `main`, builds all platforms, and creates a draft GitHub Release with all assets.
+
+### Release Assets
+
+| File | Platform | Description |
+|------|----------|-------------|
+| `Tuku-X.Y.Z-universal.dmg` | macOS | Installer (ARM + Intel) |
+| `Tuku-X.Y.Z-Setup.exe` | Windows | NSIS installer |
+| `Tuku-X.Y.Z.AppImage` | Linux | Portable binary (all distros) |
+| `tuku_X.Y.Z_amd64.deb` | Linux | Debian/Ubuntu package |
+| `tuku-X.Y.Z.x86_64.rpm` | Linux | Fedora/RHEL package |
+
+---
+
 ## 🛡 License
 
 MIT License
