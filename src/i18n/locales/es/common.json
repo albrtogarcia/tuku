@@ -29,7 +29,9 @@
 		"emptyTitle": "No hay canciones en cola",
 		"emptySubtitle": "Agrega canciones para empezar a escuchar",
 		"songsRemoved_one": "{{count}} canción fue eliminada de la cola (archivo no encontrado en la biblioteca)",
-		"songsRemoved_other": "{{count}} canciones fueron eliminadas de la cola (archivos no encontrados en la biblioteca)"
+		"songsRemoved_other": "{{count}} canciones fueron eliminadas de la cola (archivos no encontrados en la biblioteca)",
+		"history": "Historial",
+		"historyEmpty": "Aún no se han reproducido canciones"
 	},
 	"settings": {
 		"title": "Ajustes",

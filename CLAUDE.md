@@ -62,6 +62,8 @@ src/
 - Theming via CSS custom properties and `[data-theme='dark']` selector
 - No inline styles; all styling in SCSS files
 - Global styles use `@use` imports (not `@import`)
+- **Never add or modify CSS/SCSS unless explicitly asked.** Always reuse existing classes. If a new class is strictly needed, show the proposed CSS to the user first and wait for approval before writing it.
+- BEM modifiers (`--`) are for states only (e.g. `playing`, `played`, `failed`). Never use content categories as modifiers (e.g. `--history` is wrong).
 
 ### State Management
 - Zustand stores accessed directly in components (no Context providers)

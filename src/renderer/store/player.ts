@@ -8,6 +8,7 @@ interface PlayerState {
 	isPlaying: boolean
 	playingPath: string | null
 	repeat: boolean
+	playHistory: Song[]
 	setQueue: (queue: Song[]) => void
 	setCurrentIndex: (idx: number) => void
 	setIsPlaying: (playing: boolean) => void
@@ -22,6 +23,8 @@ interface PlayerState {
 	removeFromQueue: (index: number) => void
 	insertInQueue: (song: Song, position: number) => void
 	cleanQueueHistory: () => void
+	addToHistory: (songs: Song[]) => void
+	clearHistory: () => void
 	updateSongMetadata: (path: string, metadata: Partial<Song>) => void
 	loadQueueFromStorage: () => Promise<void>
 	saveQueueToStorage: () => Promise<void>
@@ -33,6 +36,7 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	isPlaying: false,
 	playingPath: null,
 	repeat: false,
+	playHistory: [],
 	setQueue: (queue) => {
 		set({ queue })
 		// Auto-save when queue changes
@@ -136,8 +140,8 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		saveQueueToStorage()
 	},
 	clearQueue: () => {
-		const { queue, currentIndex } = get()
-		if (currentIndex !== -1 && queue[currentIndex]) {
+		const { queue, currentIndex, isPlaying } = get()
+		if (isPlaying && currentIndex !== -1 && queue[currentIndex]) {
 			// Keep current playing song, remove everything else
 			set({ queue: [queue[currentIndex]], currentIndex: 0 })
 		} else {
@@ -178,16 +182,22 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		saveQueueToStorage()
 	},
 	cleanQueueHistory: () => {
-		const { queue, currentIndex } = get()
+		const { queue, currentIndex, playHistory } = get()
 		if (currentIndex > 3) {
+			const dropped = queue.slice(0, currentIndex - 3)
 			const newQueue = queue.slice(currentIndex - 3)
-			const newIndex = 3
-			set({ queue: newQueue, currentIndex: newIndex })
+			const newHistory = [...dropped.reverse(), ...playHistory].slice(0, 25)
+			set({ queue: newQueue, currentIndex: 3, playHistory: newHistory })
 			// Auto-save
 			const { saveQueueToStorage } = get()
 			saveQueueToStorage()
 		}
 	},
+	addToHistory: (songs) => {
+		const { playHistory } = get()
+		set({ playHistory: [...songs, ...playHistory].slice(0, 25) })
+	},
+	clearHistory: () => set({ playHistory: [] }),
 	updateSongMetadata: (path, metadata) => {
 		const { queue } = get()
 		const newQueue = queue.map((song) => {

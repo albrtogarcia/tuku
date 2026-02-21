@@ -29,7 +29,9 @@
 		"emptyTitle": "No upcoming songs",
 		"emptySubtitle": "Add songs to start listening",
 		"songsRemoved_one": "{{count}} song was removed from queue (files not found in library)",
-		"songsRemoved_other": "{{count}} songs were removed from queue (files not found in library)"
+		"songsRemoved_other": "{{count}} songs were removed from queue (files not found in library)",
+		"history": "History",
+		"historyEmpty": "No songs played yet"
 	},
 	"settings": {
 		"title": "Settings",

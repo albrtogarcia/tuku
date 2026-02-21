@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePlayerStore } from '../../store/player'
 import { XIcon, WarningIcon } from '@phosphor-icons/react'
@@ -57,8 +58,14 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, remove
 
 const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 	const { t } = useTranslation()
-	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue } = usePlayerStore()
+	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue, playHistory } = usePlayerStore()
 	const { handlePause, handlePlay } = audio
+
+	const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue')
+
+	const start = Math.max(currentIndex, 0)
+	const recentInQueue = currentIndex > 0 ? queue.slice(0, currentIndex).reverse() : []
+	const historyItems = [...recentInQueue, ...playHistory].slice(0, 25)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -130,43 +137,86 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 	return (
 		<div className="queue">
 			<header className="queue__header">
-				<h2 className="queue__title">
-					{t('queue.title')} <small>({Math.max(queue.length - (currentIndex + 1), 0)})</small>
-				</h2>
-				{queue.length != 0 && (
+				<div className="tabs">
+					<button
+						className={`tabs__button${activeTab === 'queue' ? ' active' : ''}`}
+						onClick={() => setActiveTab('queue')}
+					>
+						{t('queue.title')} ({Math.max(queue.length - (currentIndex + 1), 0)})
+					</button>
+					<button
+						className={`tabs__button${activeTab === 'history' ? ' active' : ''}`}
+						onClick={() => setActiveTab('history')}
+					>
+						{t('queue.history')} ({historyItems.length})
+					</button>
+				</div>
+				{activeTab === 'queue' && queue.length > 0 && (
 					<button className="btn" onClick={clearQueue} title={t('queue.clearTitle')}>
 						{t('queue.clear')}
 					</button>
 				)}
 			</header>
-			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-				<SortableContext items={queue.map((song, idx) => `${song.path}-${idx}`)} strategy={verticalListSortingStrategy}>
-					<ol className="queue__list">
-						{queue.length === 0 ? (
-							<li className="queue__empty">
-								<div className="queue__empty-content">
-									<span className="queue__empty-text">{t('queue.emptyTitle')}</span>
-									<small className="queue__empty-subtitle">{t('queue.emptySubtitle')}</small>
+
+			{activeTab === 'queue' && (
+				<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+					<SortableContext
+						items={queue.slice(start).map((_, i) => `${queue[start + i].path}-${start + i}`)}
+						strategy={verticalListSortingStrategy}
+					>
+						<ol className="queue__list">
+							{queue.length === 0 ? (
+								<li className="queue__empty">
+									<div className="queue__empty-content">
+										<span className="queue__empty-text">{t('queue.emptyTitle')}</span>
+										<small className="queue__empty-subtitle">{t('queue.emptySubtitle')}</small>
+									</div>
+								</li>
+							) : (
+								queue.slice(start).map((song, i) => {
+									const idx = start + i
+									return (
+										<SortableQueueItem
+											key={`${song.path}-${idx}`}
+											song={song}
+											index={idx}
+											isPlaying={idx === currentIndex}
+											isPlayed={false}
+											hasFailed={failedSongPaths.has(song.path)}
+											removeTitle={t('queue.removeTitle')}
+											onRemove={handleRemoveFromQueue}
+											onDoubleClick={handleQueueItemDoubleClick}
+										/>
+									)
+								})
+							)}
+						</ol>
+					</SortableContext>
+				</DndContext>
+			)}
+
+			{activeTab === 'history' && (
+				<ol className="queue__list">
+					{historyItems.length === 0 ? (
+						<li className="queue__empty">
+							<div className="queue__empty-content">
+								<span className="queue__empty-text">{t('queue.historyEmpty')}</span>
+							</div>
+						</li>
+					) : (
+						historyItems.map((song, idx) => (
+							<li key={`${song.path}-${idx}`} className="queue__item played">
+								<div className="queue__item-content">
+									<span>{song.title}</span>
+									<small>{song.artist}</small>
+									<small>{song.album}</small>
+									<small>{formatTime(song.duration)}</small>
 								</div>
 							</li>
-						) : (
-							queue.map((song, idx) => (
-								<SortableQueueItem
-									key={`${song.path}-${idx}`}
-									song={song}
-									index={idx}
-									isPlaying={idx === currentIndex}
-									isPlayed={idx < currentIndex}
-									hasFailed={failedSongPaths.has(song.path)}
-									removeTitle={t('queue.removeTitle')}
-									onRemove={handleRemoveFromQueue}
-									onDoubleClick={handleQueueItemDoubleClick}
-								/>
-							))
-						)}
-					</ol>
-				</SortableContext>
-			</DndContext>
+						))
+					)}
+				</ol>
+			)}
 		</div>
 	)
 }

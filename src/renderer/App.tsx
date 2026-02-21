@@ -251,13 +251,9 @@ function App() {
 
 		if (lastPlayedIndex.current !== currentIndex) {
 			lastPlayedIndex.current = currentIndex
-			// Index changed. If we are supposed to be playing, play.
-			if (isPlaying) {
+			if (isPlaying && audioPlayingPath !== song.path) {
 				console.log(`[App] Index changed to ${currentIndex}. Playing ${song.path}`)
 				handlePlay(song.path)
-			} else {
-				// If we changed track but are paused, we might want to load it?
-				// For now, let's assume we expect handlePlay to be called when we resume or if interaction drove this.
 			}
 		} else {
 			// Index is SAME. Check play status.
