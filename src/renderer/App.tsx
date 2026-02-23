@@ -295,8 +295,9 @@ function App() {
 			addToHistory([queue[currentIndex]])
 			audio.handleStop()
 			setIsPlaying(false)
+			clearQueue()
 		}
-	}, [currentIndex, queue, repeat, audio.handleStop])
+	}, [currentIndex, queue, repeat, audio.handleStop, clearQueue])
 
 	const handlePrevious = useCallback(() => {
 		// If > 3 seconds in, restart song
