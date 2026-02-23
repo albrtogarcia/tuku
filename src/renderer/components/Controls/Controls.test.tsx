@@ -13,25 +13,18 @@ vi.mock('../../store/player', () => ({
 
 describe('Controls Component', () => {
 	const createMockAudio = (overrides = {}) => ({
-		audioRef: { current: null },
-		audioUrl: null,
 		isPlaying: true,
-		pendingPlay: false,
 		currentTime: 60,
 		duration: 180,
 		playingPath: '/path/to/song.mp3',
 		volume: 0.8,
 		setCurrentTime: vi.fn(),
-		setCurrentTimeOnly: vi.fn(),
-		setDuration: vi.fn(),
-		setPlayingPath: vi.fn(),
 		handlePlay: vi.fn(),
 		handlePause: vi.fn(),
 		handleResume: vi.fn(),
-		handleCanPlay: vi.fn(),
 		handleStop: vi.fn(),
 		setVolume: vi.fn(),
-		setIsPlaying: vi.fn(),
+		preloadNext: vi.fn(),
 		...overrides,
 	})
 

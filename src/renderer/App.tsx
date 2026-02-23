@@ -203,7 +203,9 @@ function App() {
 		[handleShowNotification, errorNotificationShown],
 	)
 
-	const audio = useAudioPlayer({ onError: handleAudioError, initialVolume: savedVolume })
+	// Stable ref so handleNext (defined later) can be used as the onEnded callback
+	const handleNextRef = useRef<() => void>(() => {})
+	const audio = useAudioPlayer({ onError: handleAudioError, onEnded: () => handleNextRef.current(), initialVolume: savedVolume })
 
 	// Ref to track current time without causing re-renders
 	const currentTimeRef = useRef(audio.currentTime)
@@ -280,6 +282,14 @@ function App() {
 		}
 	}, [currentIndex, isPlaying, audio.isPlaying, audioPlayingPath, queue, handlePlay, handleResume, handlePause])
 
+	// Preload next track for gapless playback
+	const { preloadNext } = audio
+	useEffect(() => {
+		if (!isPlaying || currentIndex < 0) return
+		const nextSong = queue[currentIndex + 1]
+		if (nextSong) preloadNext(nextSong.path)
+	}, [currentIndex, isPlaying, queue, preloadNext])
+
 	const handleNext = useCallback(() => {
 		const { addToHistory } = usePlayerStore.getState()
 		if (currentIndex + 1 < queue.length) {
@@ -314,14 +324,10 @@ function App() {
 		}
 	}, [audio.setCurrentTime, currentIndex])
 
-	const handleSongEnd = () => {
-		handleNext()
-	}
-
-	// Refs for MediaSession action handlers (stable references)
-	const handleNextRef = useRef(handleNext)
-	const handlePreviousRef = useRef(handlePrevious)
+	// Keep handleNextRef up to date on every render
 	handleNextRef.current = handleNext
+	// Refs for MediaSession action handlers (stable references)
+	const handlePreviousRef = useRef(handlePrevious)
 	handlePreviousRef.current = handlePrevious
 
 	// Media Session API - set up action handlers once
@@ -550,26 +556,7 @@ function App() {
 				scanProgress={scanProgress}
 			/>
 
-			{/* Audio player (hidden) */}
-			<audio
-				ref={audio.audioRef}
-				src={audio.audioUrl || undefined}
-				style={{ display: 'none' }}
-				onEnded={handleSongEnd}
-				onCanPlay={audio.handleCanPlay}
-				onPlay={() => {
-					audio.setIsPlaying(true)
-					setIsPlaying(true)
-				}}
-				onPause={() => {
-					audio.setIsPlaying(false)
-					setIsPlaying(false)
-				}}
-				onTimeUpdate={() => audio.setCurrentTimeOnly(audio.audioRef.current?.currentTime || 0)}
-				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
-			/>
-
-			{/* Scan Progress Bar (only show when Settings is closed) */}
+{/* Scan Progress Bar (only show when Settings is closed) */}
 			{isScanning && !isSettingsOpen && !isFirstRun && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
 
 			{/* Notifications */}

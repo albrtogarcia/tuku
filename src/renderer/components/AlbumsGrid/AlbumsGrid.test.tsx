@@ -111,30 +111,18 @@ describe('AlbumsGrid Component', () => {
 	const mockOnAlbumDeleted = vi.fn()
 
 	const createMockAudio = () => ({
-
-		audioRef: { current: null },
-		audioUrl: null,
 		isPlaying: false,
-		pendingPlay: false,
 		currentTime: 0,
 		setCurrentTime: vi.fn(),
 		duration: 0,
-		setDuration: vi.fn(),
 		playingPath: null,
-		setPlayingPath: vi.fn(),
 		volume: 0.5,
 		setVolume: vi.fn(),
 		handlePlay: vi.fn(),
 		handlePause: vi.fn(),
 		handleStop: vi.fn(),
 		handleResume: vi.fn(),
-		handleCanPlay: vi.fn(),
-		setCurrentTimeOnly: vi.fn(),
-		togglePlayPause: vi.fn(),
-		skipForward: vi.fn(),
-		skipBackward: vi.fn(),
-		seekTo: vi.fn(),
-		setIsPlaying: vi.fn(),
+		preloadNext: vi.fn(),
 	})
 
 	beforeEach(() => {
