@@ -118,7 +118,6 @@ function App() {
 		addToQueue,
 		clearQueue,
 		setCurrentIndex,
-		cleanQueueHistory,
 		setIsPlaying,
 		repeat,
 		setQueue,
@@ -188,14 +187,14 @@ function App() {
 			// Skip to next song immediately
 			if (idx + 1 < queueLen) {
 				console.log(`[App] Skipping to next song after error. Moving from index ${idx} to ${idx + 1}`)
+				if (failedSong) state.addToHistory([failedSong])
 				state.setCurrentIndex(idx + 1)
 				state.setIsPlaying(true)
-				state.cleanQueueHistory()
 			} else if (repeatMode && queueLen > 0) {
 				console.log('[App] End of queue, restarting from beginning due to repeat')
+				if (failedSong) state.addToHistory([failedSong])
 				state.setCurrentIndex(0)
 				state.setIsPlaying(true)
-				state.cleanQueueHistory()
 			} else {
 				console.log('[App] End of queue, stopping playback')
 				state.setIsPlaying(false)
@@ -282,20 +281,22 @@ function App() {
 	}, [currentIndex, isPlaying, audio.isPlaying, audioPlayingPath, queue, handlePlay, handleResume, handlePause])
 
 	const handleNext = useCallback(() => {
+		const { addToHistory } = usePlayerStore.getState()
 		if (currentIndex + 1 < queue.length) {
+			addToHistory([queue[currentIndex]])
 			setCurrentIndex(currentIndex + 1)
 			setIsPlaying(true)
-			cleanQueueHistory()
 		} else if (repeat && queue.length > 0) {
+			addToHistory([queue[currentIndex]])
 			setCurrentIndex(0)
 			setIsPlaying(true)
-			cleanQueueHistory()
 			return
 		} else {
+			addToHistory([queue[currentIndex]])
 			audio.handleStop()
 			setIsPlaying(false)
 		}
-	}, [currentIndex, queue.length, repeat, audio.handleStop, cleanQueueHistory])
+	}, [currentIndex, queue, repeat, audio.handleStop])
 
 	const handlePrevious = useCallback(() => {
 		// If > 3 seconds in, restart song

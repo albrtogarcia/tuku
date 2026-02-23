@@ -49,6 +49,11 @@ src/
   types/               # Shared TypeScript types (Song, Album, global.d.ts)
 ```
 
+## Workflow Rules
+
+- **Never make edits without presenting a plan first.** Always explain what will change and in which files, then wait for explicit user approval before touching any file.
+- **CSS/SCSS**: Never add or modify unless explicitly asked. Show proposed styles first, wait for approval. Always try to reuse existing classes before considering new ones.
+
 ## Code Patterns
 
 ### Components

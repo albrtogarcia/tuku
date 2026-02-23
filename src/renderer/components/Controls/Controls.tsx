@@ -12,7 +12,7 @@ interface ControlsProps {
 
 const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const { t } = useTranslation()
-	const { queue, currentIndex, setCurrentIndex, cleanQueueHistory, repeat, setRepeat, shuffleQueue, isPlaying, setIsPlaying } = usePlayerStore()
+	const { queue, currentIndex, setCurrentIndex, repeat, setRepeat, shuffleQueue, isPlaying, setIsPlaying } = usePlayerStore()
 	const { volume, setVolume } = audio
 
 	const handlePlayPause = () => {
@@ -30,7 +30,6 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const playPrev = () => {
 		if (currentIndex > 0) {
 			setCurrentIndex(currentIndex - 1)
-			cleanQueueHistory()
 			setIsPlaying(true)
 		}
 	}
@@ -38,7 +37,6 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	const playNext = () => {
 		if (currentIndex + 1 < queue.length) {
 			setCurrentIndex(currentIndex + 1)
-			cleanQueueHistory()
 			setIsPlaying(true)
 		}
 	}

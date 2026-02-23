@@ -54,14 +54,6 @@
 			color: var(--accent);
 		}
 
-		&.played {
-			opacity: 0.33;
-		}
-
-		// &.failed {
-		// 	opacity: 0.7;
-		// }
-
 		&:hover {
 			background-color: var(--bgPrimary);
 
