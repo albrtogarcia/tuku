@@ -4,7 +4,7 @@
 		"songs": "Songs"
 	},
 	"search": {
-		"albumsPlaceholder": "Search albums or artists...",
+		"albumsPlaceholder": "Search albums, artists or genres...",
 		"songsPlaceholder": "Search songs, albums, artists, genre or year..."
 	},
 	"player": {
