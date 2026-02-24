@@ -43,11 +43,6 @@
 	transform: translate(-50%, -50%);
 }
 
-@keyframes spin {
-	to {
-		transform: translate(-50%, -50%) rotate(360deg);
-	}
-}
 
 .album__cover {
 	height: auto;
@@ -131,29 +126,6 @@
 	height: 1px;
 }
 
-@keyframes expansion-open {
-	from {
-		opacity: 0;
-		transform: translateY(-8px);
-	}
-
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@keyframes expansion-close {
-	from {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	to {
-		opacity: 0;
-		transform: translateY(-8px);
-	}
-}
 
 .albums-grid__expansion--closing {
 	animation: expansion-close 0.15s ease forwards;

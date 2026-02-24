@@ -104,22 +104,21 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		saveQueueToStorage()
 	},
 	playAlbumImmediately: (songs) => {
-		const { queue } = get()
-		// Filter out duplicates to avoid mess (optional, but consistent with other methods)
-		const uniqueSongs = songs.filter((song) => !queue.find((q) => q.path === song.path))
+		const { queue, currentIndex, playHistory } = get()
 
-		// If we want to strictly "move" them continuously to top, we might need more complex logic.
-		// But "add to front" usually means Prepend.
-		// If songs are ALREADY in queue, we might duplicate them if we don't filter?
-		// The requirement is "add to start and play".
-		// Let's assume we prepend them.
+		// Move the currently playing song (and anything before it) to history
+		const playedSongs = currentIndex >= 0 ? queue.slice(0, currentIndex + 1) : []
+		const upcoming = currentIndex >= 0 ? queue.slice(currentIndex + 1) : queue
 
-		const newQueue = [...songs, ...queue]
+		const newHistory = [...playedSongs.reverse(), ...playHistory].slice(0, 25)
+		const newQueue = [...songs, ...upcoming]
+
 		set({
 			queue: newQueue,
 			currentIndex: 0,
 			playingPath: songs[0]?.path || null,
-			isPlaying: true
+			isPlaying: true,
+			playHistory: newHistory,
 		})
 
 		const { saveQueueToStorage } = get()
