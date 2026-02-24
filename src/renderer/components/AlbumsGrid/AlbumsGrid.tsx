@@ -82,7 +82,7 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 							<li
 								key={song.path}
 								className="album-expansion__track"
-								onDoubleClick={() => onPlay(album.songs.slice(i))}
+								onDoubleClick={() => onPlay(sortedSongs.slice(i))}
 								title={song.title}
 							>
 								<span className="album-expansion__track-num">{parseInt(song.track) || i + 1}</span>
@@ -90,7 +90,7 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 								<span className="album-expansion__track-duration">{formatTime(song.duration)}</span>
 								<button
 									className="album-expansion__track-play btn btn--ghost"
-									onClick={() => onPlay(album.songs.slice(i))}
+									onClick={() => onPlay([song])}
 									tabIndex={-1}
 								>
 									<PlayIcon size={12} weight="fill" />
