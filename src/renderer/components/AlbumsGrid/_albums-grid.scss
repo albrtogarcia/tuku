@@ -1,21 +1,15 @@
 .albums-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+	// grid-template-columns is set via inline style (computed from container width in JS)
+	align-content: start;
 	gap: 0.5rem;
 	max-width: 100%;
 	padding-inline: 0.5rem;
-	margin-block: 0.5rem;
-
-	@media (max-width: 960px) and (max-height: 600px) {
-		grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-	}
-}
-
-// Virtuoso scroller container
-[data-testid="virtuoso-scroller"] {
+	padding-block: 0.5rem;
+	overflow-y: auto;
 	height: 100%;
-	overflow-x: hidden;
 }
+
 
 .album-card {
 	position: relative;
@@ -112,5 +106,203 @@
 
 	&:active {
 		transform: translateY(1px);
+	}
+}
+
+// ─── Album card selected state ────────────────────────────────────────────────
+
+.album-card--selected {
+	.album__cover {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+}
+
+// ─── Album expansion panel ────────────────────────────────────────────────────
+
+.albums-grid__expansion {
+	grid-column: 1 / -1;
+	min-height: max-content;
+	background: var(--inputBg);
+	border-top: 1px solid var(--border);
+	border-bottom: 1px solid var(--border);
+	animation: expansion-open 0.2s ease;
+	height: 1px;
+}
+
+@keyframes expansion-open {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes expansion-close {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	to {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+}
+
+.albums-grid__expansion--closing {
+	animation: expansion-close 0.15s ease forwards;
+}
+
+.album-expansion {
+	display: flex;
+	flex-direction: row;
+	gap: 1.5rem;
+	padding: 1.25rem 1.5rem;
+	position: relative;
+
+	&__cover-col {
+		flex-shrink: 0;
+		width: 140px;
+	}
+
+	&__cover {
+		width: 140px;
+		height: 140px;
+		object-fit: cover;
+		border-radius: 0.25rem;
+
+		&--default {
+			background: var(--bgPrimary);
+			color: var(--textMuted);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 0.25rem;
+		}
+	}
+
+	&__body {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	&__meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	&__title {
+		font-size: 1rem;
+		font-weight: 700;
+		margin: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__artist {
+		font-size: 0.8rem;
+		color: var(--textMuted);
+		margin: 0;
+	}
+
+	&__info {
+		font-size: 0.7rem;
+		color: var(--textMuted);
+		margin: 0;
+		opacity: 0.8;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 0.25rem;
+	}
+
+	&__tracklist {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		flex: 1;
+		overflow-y: auto;
+		max-height: 160px;
+	}
+
+	&__track {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.25rem 0.25rem;
+		border-radius: 0.2rem;
+		cursor: default;
+		font-size: 0.75rem;
+		position: relative;
+
+		&:hover {
+			background: var(--border);
+
+			.album-expansion__track-play {
+				opacity: 1;
+			}
+
+			.album-expansion__track-num {
+				opacity: 0;
+			}
+		}
+	}
+
+	&__track-num {
+		width: 1.5rem;
+		text-align: right;
+		color: var(--textMuted);
+		flex-shrink: 0;
+		font-size: 0.7rem;
+		transition: opacity 0.1s;
+	}
+
+	&__track-title {
+		flex: 1;
+		min-width: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__track-duration {
+		color: var(--textMuted);
+		flex-shrink: 0;
+		font-size: 0.7rem;
+	}
+
+	&__track-play {
+		position: absolute;
+		left: 0.25rem;
+		opacity: 0;
+		transition: opacity 0.1s;
+		padding: 0.1rem 0.25rem;
+		width: 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__close {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+		opacity: 0.5;
+
+		&:hover {
+			opacity: 1;
+		}
 	}
 }

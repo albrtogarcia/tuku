@@ -68,11 +68,12 @@ Create a simple, fast, and customizable application to:
 - [x] Section header component
 - [x] Fix album grid height
 - [x] Responsive
+- [x] Memory leak in playback
+- [x] Settings modal UI
+- [x] Fix album cover formatting
+- [x] iTunes-style inline album expansion in grid view
 - [ ] Polish general UI
-- [ ] Settings modal UI
 - [ ] Notifications component
-- [ ] Fix album cover formatting
-- [ ] iTunes-style inline album expansion in grid view
 
 #### iTunes-Style Album Expansion (Planned Feature)
 
@@ -95,7 +96,6 @@ When clicking an album in the grid, an expansion panel appears below that row sh
 - Minimal re-renders (only affected rows on expand/collapse)
 - Slight overhead from ResizeObserver for responsive row calculation
 - Memory usage similar to current implementation
-- [x] Memory leak in playback
 
 #### 🔴 Priority 0: Critical (must fix before release)
 
@@ -337,13 +337,13 @@ Every push to `develop` and every pull request triggers the **Test Builds** work
 
 ### Release Assets
 
-| File | Platform | Description |
-|------|----------|-------------|
-| `Tuku-X.Y.Z-universal.dmg` | macOS | Installer (ARM + Intel) |
-| `Tuku-X.Y.Z-Setup.exe` | Windows | NSIS installer |
-| `Tuku-X.Y.Z.AppImage` | Linux | Portable binary (all distros) |
-| `tuku_X.Y.Z_amd64.deb` | Linux | Debian/Ubuntu package |
-| `tuku-X.Y.Z.x86_64.rpm` | Linux | Fedora/RHEL package |
+| File                       | Platform | Description                   |
+| -------------------------- | -------- | ----------------------------- |
+| `Tuku-X.Y.Z-universal.dmg` | macOS    | Installer (ARM + Intel)       |
+| `Tuku-X.Y.Z-Setup.exe`     | Windows  | NSIS installer                |
+| `Tuku-X.Y.Z.AppImage`      | Linux    | Portable binary (all distros) |
+| `tuku_X.Y.Z_amd64.deb`     | Linux    | Debian/Ubuntu package         |
+| `tuku-X.Y.Z.x86_64.rpm`    | Linux    | Fedora/RHEL package           |
 
 ---
 
