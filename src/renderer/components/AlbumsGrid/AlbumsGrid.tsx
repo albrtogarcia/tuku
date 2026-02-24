@@ -31,6 +31,26 @@ interface AlbumExpansionProps {
 function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQueue }: AlbumExpansionProps) {
 	const { t } = useTranslation()
 	const panelRef = useRef<HTMLDivElement>(null)
+	const [songContextMenu, setSongContextMenu] = useState<{ isOpen: boolean; x: number; y: number; song: Song | null }>({
+		isOpen: false, x: 0, y: 0, song: null,
+	})
+
+	const handleSongContextMenu = (e: React.MouseEvent, song: Song) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setSongContextMenu({ isOpen: true, x: e.clientX, y: e.clientY, song })
+	}
+
+	const closeSongContextMenu = () => setSongContextMenu({ isOpen: false, x: 0, y: 0, song: null })
+
+	const songMenuOptions = (): ContextMenuOption[] => {
+		const { song } = songContextMenu
+		if (!song) return []
+		return [
+			{ label: t('songs.playSong'), action: () => onPlay([song]) },
+			{ label: t('songs.addToQueue'), action: () => onAddToQueue([song]) },
+		]
+	}
 
 	const sortedSongs: Song[] = [...album.songs].sort((a, b) => (parseInt(a.track) || 0) - (parseInt(b.track) || 0))
 	const totalDuration = sortedSongs.reduce((acc, s) => acc + (s.duration || 0), 0)
@@ -83,6 +103,7 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 								key={song.path}
 								className="album-expansion__track"
 								onDoubleClick={() => onPlay(sortedSongs.slice(i))}
+								onContextMenu={(e) => handleSongContextMenu(e, song)}
 								title={song.title}
 							>
 								<span className="album-expansion__track-num">{parseInt(song.track) || i + 1}</span>
@@ -104,6 +125,15 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 					<XIcon size={16} weight="bold" />
 				</button>
 			</div>
+
+			{songContextMenu.isOpen && (
+				<ContextMenu
+					x={songContextMenu.x}
+					y={songContextMenu.y}
+					options={songMenuOptions()}
+					onClose={closeSongContextMenu}
+				/>
+			)}
 		</div>
 	)
 }
