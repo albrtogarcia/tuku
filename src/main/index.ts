@@ -4,9 +4,12 @@ import path from 'path'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import { promisify } from 'util'
+import { spawn } from 'child_process'
 import { parseFile } from 'music-metadata'
 import Database from 'better-sqlite3'
 import os from 'os'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ffmpegPath: string = require('ffmpeg-static')
 import enMenu from '../i18n/locales/en/menu.json'
 import esMenu from '../i18n/locales/es/menu.json'
 
@@ -264,7 +267,24 @@ async function getAllAudioFiles(dir: string): Promise<string[]> {
 }
 
 import { getAlbumId, getCoverPath, getCoverUrl, processCover, ensureCoversDir, findFolderCover } from './utils/coverUtils'
-import { flacToFmp4, oggToWebm, m4aToFmp4 } from './utils/audioConvert'
+
+/**
+ * Run ffmpeg on a local file and return stdout as a Buffer.
+ * args: ffmpeg arguments that come AFTER `-i <inputPath>` and BEFORE `pipe:1`.
+ */
+function ffmpegConvert(inputPath: string, args: string[]): Promise<Buffer> {
+	return new Promise((resolve, reject) => {
+		const proc = spawn(ffmpegPath, ['-i', inputPath, ...args, 'pipe:1'])
+		const chunks: Buffer[] = []
+		proc.stdout.on('data', (chunk: Buffer) => chunks.push(chunk))
+		proc.stderr.on('data', () => { /* suppress ffmpeg log output */ })
+		proc.on('close', (code) => {
+			if (code === 0) resolve(Buffer.concat(chunks))
+			else reject(new Error(`ffmpeg exited with code ${code}`))
+		})
+		proc.on('error', reject)
+	})
+}
 
 ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 	try {
@@ -409,31 +429,41 @@ ipcMain.handle('get-audio-buffer', async (_event, filePath: string) => {
 
 /**
  * Returns MSE-ready bytes + the correct SourceBuffer MIME type.
- * FLAC is wrapped in fragmented MP4; OGG is wrapped in WebM.
- * MP3 and M4A pass through unchanged.
+ * Uses ffmpeg to produce fragmented MP4 (FLAC, M4A) or WebM (OGG).
+ * MP3 passes through unchanged — Chromium MSE accepts audio/mpeg directly.
  */
 ipcMain.handle('get-msdata', async (_event, filePath: string): Promise<{ data: Buffer; mimeType: string } | null> => {
 	try {
-		const exists = fs.existsSync(filePath)
-		if (!exists) return null
+		if (!fs.existsSync(filePath)) return null
 
-		const raw = await fsPromises.readFile(filePath)
 		const ext = path.extname(filePath).toLowerCase()
 
 		switch (ext) {
-			case '.mp3':
-				return { data: raw, mimeType: 'audio/mpeg' }
-			case '.m4a':
-				return { data: m4aToFmp4(raw), mimeType: 'audio/mp4;codecs="mp4a.40.2"' }
+			case '.mp3': {
+				const data = await fsPromises.readFile(filePath)
+				return { data, mimeType: 'audio/mpeg' }
+			}
 			case '.flac': {
-				const converted = flacToFmp4(raw)
-				return { data: converted, mimeType: 'audio/mp4;codecs="flac"' }
+				const data = await ffmpegConvert(filePath, [
+					'-c:a', 'flac',
+					'-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+					'-f', 'mp4',
+				])
+				return { data, mimeType: 'audio/mp4;codecs="flac"' }
+			}
+			case '.m4a': {
+				const data = await ffmpegConvert(filePath, [
+					'-c:a', 'copy',
+					'-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+					'-f', 'mp4',
+				])
+				return { data, mimeType: 'audio/mp4;codecs="mp4a.40.2"' }
 			}
 			case '.ogg': {
-				// Detect Vorbis vs Opus from the first OGG page
+				// Detect Vorbis vs Opus by reading the first OGG page header
 				let mimeType = 'audio/webm;codecs="vorbis"'
 				try {
-					const fd  = await fsPromises.open(filePath, 'r')
+					const fd = await fsPromises.open(filePath, 'r')
 					const hdr = Buffer.alloc(36)
 					await fd.read(hdr, 0, 36, 0)
 					await fd.close()
@@ -441,11 +471,13 @@ ipcMain.handle('get-msdata', async (_event, filePath: string): Promise<{ data: B
 						mimeType = 'audio/webm;codecs="opus"'
 					}
 				} catch { /* keep vorbis default */ }
-				const converted = oggToWebm(raw)
-				return { data: converted, mimeType }
+				const data = await ffmpegConvert(filePath, ['-c:a', 'copy', '-f', 'webm'])
+				return { data, mimeType }
 			}
-			default:
-				return { data: raw, mimeType: 'audio/mpeg' }
+			default: {
+				const data = await fsPromises.readFile(filePath)
+				return { data, mimeType: 'audio/mpeg' }
+			}
 		}
 	} catch (err) {
 		console.error('[Main] get-msdata error:', err)

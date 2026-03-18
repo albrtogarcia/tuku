@@ -82,8 +82,9 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			setCurrentTime(rel >= 0 ? rel : 0)
 
 			// ── Gapless: append next track ~GAPLESS_THRESHOLD s before end ──────
+			// Only attempt if the MediaSource is still open (not ended via endOfStream).
 			const sb = sbRef.current
-			if (dur > 0 && !appendScheduledRef.current && pendingNextRef.current && rel >= dur - GAPLESS_THRESHOLD && sb && !sb.updating) {
+			if (dur > 0 && !appendScheduledRef.current && pendingNextRef.current && rel >= dur - GAPLESS_THRESHOLD && sb && !sb.updating && msRef.current?.readyState === 'open') {
 				appendScheduledRef.current = true
 				const next = pendingNextRef.current
 				const gaplessStart = trackOffsetRef.current + dur
@@ -277,6 +278,16 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			msUrlRef.current = url
 			currentMimeRef.current = msData.mimeType
 
+			// Set ondurationchange BEFORE audio.src so we catch the durationchange
+			// fired by ms.endOfStream() inside the updateend callback below.
+			audio.ondurationchange = () => {
+				const d = audio.duration
+				if (isFinite(d) && d > 0) {
+					trackDurationRef.current = d
+					setDuration(d)
+				}
+			}
+
 			const appendError = await new Promise<string | null>((resolve) => {
 				const onOpen = () => {
 					if (gen !== playGenRef.current) {
@@ -290,12 +301,12 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 						sb.addEventListener(
 							'updateend',
 							() => {
+								// endOfStream signals the browser that all data is appended.
+								// The browser then sets audio.duration to the real buffered
+								// duration and fires durationchange — caught by ondurationchange above.
+								// Without this, audio.duration stays Infinity and audio.onended never fires.
 								try {
-									const buffEnd = sb.buffered.length > 0 ? sb.buffered.end(0) : 0
-									if (buffEnd > 0) {
-										trackDurationRef.current = buffEnd
-										setDuration(buffEnd)
-									}
+									if (ms.readyState === 'open') ms.endOfStream()
 								} catch {
 									/* ignore */
 								}
@@ -343,11 +354,13 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 				optionsRef.current?.onError?.({ message: 'An error occurred while loading the audio file.', path: songPath })
 			}
 
-			audio.ondurationchange = () => {
-				const d = audio.duration
-				if (isFinite(d) && d > 0) {
-					trackDurationRef.current = d
-					setDuration(d)
+			// Fires at natural end even without window focus (unlike requestAnimationFrame).
+			// transitionFiredRef prevents double-fire when RAF also detects the boundary.
+			audio.onended = () => {
+				if (gen !== playGenRef.current) return
+				if (!transitionFiredRef.current) {
+					transitionFiredRef.current = true
+					optionsRef.current?.onEnded?.()
 				}
 			}
 
@@ -363,14 +376,6 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			if (gen !== playGenRef.current) {
 				audio.pause()
 				return
-			}
-
-			// Read duration from audio element — more reliable than sb.buffered.end(0)
-			// which can be 0 when updateend fires before the element reports duration.
-			const d = audio.duration
-			if (isFinite(d) && d > 0) {
-				trackDurationRef.current = d
-				setDuration(d)
 			}
 
 			setIsPlaying(true)
