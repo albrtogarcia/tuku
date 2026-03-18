@@ -22,7 +22,7 @@ const isDev = !app.isPackaged
 const readdir = promisify(fs.readdir)
 const stat = promisify(fs.stat)
 
-const AUDIO_EXTENSIONS = ['.mp3', '.flac', '.wav', '.ogg', '.m4a']
+const AUDIO_EXTENSIONS = ['.mp3', '.flac', '.ogg', '.m4a']
 
 // Initialize database in user folder
 const userDataPath = path.join(os.homedir(), '.tuku')
@@ -264,6 +264,7 @@ async function getAllAudioFiles(dir: string): Promise<string[]> {
 }
 
 import { getAlbumId, getCoverPath, getCoverUrl, processCover, ensureCoversDir, findFolderCover } from './utils/coverUtils'
+import { flacToFmp4, oggToWebm, m4aToFmp4 } from './utils/audioConvert'
 
 ipcMain.handle('get-audio-files', async (event, folderPath: string) => {
 	try {
@@ -403,6 +404,74 @@ ipcMain.handle('get-audio-buffer', async (_event, filePath: string) => {
 			console.error(`[Main] Error reading file ${filePath}:`, err.message)
 		}
 		return null
+	}
+})
+
+/**
+ * Returns MSE-ready bytes + the correct SourceBuffer MIME type.
+ * FLAC is wrapped in fragmented MP4; OGG is wrapped in WebM.
+ * MP3 and M4A pass through unchanged.
+ */
+ipcMain.handle('get-msdata', async (_event, filePath: string): Promise<{ data: Buffer; mimeType: string } | null> => {
+	try {
+		const exists = fs.existsSync(filePath)
+		if (!exists) return null
+
+		const raw = await fsPromises.readFile(filePath)
+		const ext = path.extname(filePath).toLowerCase()
+
+		switch (ext) {
+			case '.mp3':
+				return { data: raw, mimeType: 'audio/mpeg' }
+			case '.m4a':
+				return { data: m4aToFmp4(raw), mimeType: 'audio/mp4;codecs="mp4a.40.2"' }
+			case '.flac': {
+				const converted = flacToFmp4(raw)
+				return { data: converted, mimeType: 'audio/mp4;codecs="flac"' }
+			}
+			case '.ogg': {
+				// Detect Vorbis vs Opus from the first OGG page
+				let mimeType = 'audio/webm;codecs="vorbis"'
+				try {
+					const fd  = await fsPromises.open(filePath, 'r')
+					const hdr = Buffer.alloc(36)
+					await fd.read(hdr, 0, 36, 0)
+					await fd.close()
+					if (hdr.slice(28, 36).toString('latin1') === 'OpusHead') {
+						mimeType = 'audio/webm;codecs="opus"'
+					}
+				} catch { /* keep vorbis default */ }
+				const converted = oggToWebm(raw)
+				return { data: converted, mimeType }
+			}
+			default:
+				return { data: raw, mimeType: 'audio/mpeg' }
+		}
+	} catch (err) {
+		console.error('[Main] get-msdata error:', err)
+		return null
+	}
+})
+
+ipcMain.handle('get-mime-type', async (_event, filePath: string): Promise<string> => {
+	const ext = path.extname(filePath).toLowerCase()
+	switch (ext) {
+		case '.mp3': return 'audio/mpeg'
+		case '.flac': return 'audio/flac'
+		case '.m4a': return 'audio/mp4;codecs="mp4a.40.2"'
+		case '.ogg': {
+			// Detect Opus vs Vorbis from the first OGG page header.
+			// The codec identification packet starts at byte 28 in a standard single-segment page.
+			try {
+				const fd = await fsPromises.open(filePath, 'r')
+				const buf = Buffer.alloc(36)
+				await fd.read(buf, 0, 36, 0)
+				await fd.close()
+				if (buf.slice(28, 36).toString('binary') === 'OpusHead') return 'audio/ogg;codecs="opus"'
+			} catch { }
+			return 'audio/ogg;codecs="vorbis"'
+		}
+		default: return 'audio/mpeg'
 	}
 })
 

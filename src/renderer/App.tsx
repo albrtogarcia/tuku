@@ -110,19 +110,8 @@ function App() {
 		})
 	}, [])
 
-	const {
-		queue,
-		currentIndex,
-		isPlaying,
-		playingPath,
-		addToQueue,
-		clearQueue,
-		setCurrentIndex,
-		setIsPlaying,
-		repeat,
-		setQueue,
-		loadQueueFromStorage,
-	} = usePlayerStore()
+	const { queue, currentIndex, isPlaying, playingPath, addToQueue, clearQueue, setCurrentIndex, setIsPlaying, repeat, setQueue, loadQueueFromStorage } =
+		usePlayerStore()
 
 	// Track last error to prevent duplicate handling
 	const lastErrorRef = useRef<{ path: string; time: number } | null>(null)
@@ -334,11 +323,11 @@ function App() {
 	useEffect(() => {
 		if (!('mediaSession' in navigator)) return
 
-		navigator.mediaSession.setActionHandler('play', () => audio.handleResume())
-		navigator.mediaSession.setActionHandler('pause', () => audio.handlePause())
+		navigator.mediaSession.setActionHandler('play', () => usePlayerStore.getState().setIsPlaying(true))
+		navigator.mediaSession.setActionHandler('pause', () => usePlayerStore.getState().setIsPlaying(false))
 		navigator.mediaSession.setActionHandler('previoustrack', () => handlePreviousRef.current())
 		navigator.mediaSession.setActionHandler('nexttrack', () => handleNextRef.current())
-	}, [audio.handleResume, audio.handlePause])
+	}, [])
 
 	// Media Session API - update metadata only when song changes
 	const currentSong = queue[currentIndex]
@@ -556,7 +545,7 @@ function App() {
 				scanProgress={scanProgress}
 			/>
 
-{/* Scan Progress Bar (only show when Settings is closed) */}
+			{/* Scan Progress Bar (only show when Settings is closed) */}
 			{isScanning && !isSettingsOpen && !isFirstRun && <ScanProgress current={scanProgress.current} total={scanProgress.total} />}
 
 			{/* Notifications */}

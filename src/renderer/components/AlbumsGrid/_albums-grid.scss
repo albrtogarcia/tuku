@@ -124,18 +124,17 @@
 	border-bottom: 1px solid var(--border);
 	animation: expansion-open 0.2s ease;
 	height: 1px;
-}
 
-
-.albums-grid__expansion--closing {
-	animation: expansion-close 0.15s ease forwards;
+	&--closing {
+		animation: expansion-close 0.15s ease forwards;
+	}
 }
 
 .album-expansion {
 	display: flex;
 	flex-direction: row;
-	gap: 1.5rem;
-	padding: 1.25rem 1.5rem;
+	gap: 1rem;
+	padding: 1rem;
 	position: relative;
 
 	&__cover-col {
@@ -208,6 +207,7 @@
 		flex: 1;
 		overflow-y: auto;
 		max-height: 160px;
+		padding-right: 0.5rem;
 	}
 
 	&__track {

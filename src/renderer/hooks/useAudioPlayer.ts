@@ -6,50 +6,54 @@ interface UseAudioPlayerOptions {
 	initialVolume?: number
 }
 
-/** Convert a Node.js Buffer (Uint8Array subclass) or ArrayBuffer to a detached ArrayBuffer. */
-function toArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
-	if (data instanceof ArrayBuffer) return data
-	return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer
-}
+// Start appending the next track this many seconds before the current one ends.
+const GAPLESS_THRESHOLD = 3
 
 export function useAudioPlayer(options?: UseAudioPlayerOptions) {
-	// Keep options in a ref so stable callbacks always call the latest version
 	const optionsRef = useRef(options)
 	optionsRef.current = options
 
-	// ─── Web Audio API ───────────────────────────────────────────────────────
-	const ctxRef = useRef<AudioContext | null>(null)
-	const gainRef = useRef<GainNode | null>(null)
+	// ─── Audio element ────────────────────────────────────────────────────────
+	const audioRef = useRef<HTMLAudioElement | null>(null)
 
-	// Current playback
-	const srcRef = useRef<AudioBufferSourceNode | null>(null)
-	const bufferRef = useRef<AudioBuffer | null>(null)
-	const srcStartCtxTimeRef = useRef<number>(0) // AudioContext.currentTime when src.start() was called
-	const srcStartOffsetRef = useRef<number>(0)  // seconds into buffer when src started
-	const pauseOffsetRef = useRef<number>(0)     // position saved on pause
+	// ─── MSE state ────────────────────────────────────────────────────────────
+	const msRef = useRef<MediaSource | null>(null)
+	const msUrlRef = useRef<string | null>(null)
+	const sbRef = useRef<SourceBuffer | null>(null)
+	const currentMimeRef = useRef<string>('')
 
-	// Gapless: preloaded & scheduled next track
-	const nextSrcRef = useRef<AudioBufferSourceNode | null>(null)
-	const nextBufferRef = useRef<AudioBuffer | null>(null)
-	const nextPathRef = useRef<string | null>(null)
-	const nextScheduledCtxTimeRef = useRef<number>(0)
+	// Track timeline: audio.currentTime is absolute (accumulates across tracks).
+	// We expose time relative to the current track start.
+	const trackOffsetRef = useRef<number>(0) // abs seconds where current track started
+	const trackDurationRef = useRef<number>(0) // duration of current track
+
+	// Gapless handshake: path that has already been appended to the SourceBuffer
+	const gaplessNextPathRef = useRef<string | null>(null)
+	// Prevent double-firing onEnded at the track boundary
+	const transitionFiredRef = useRef<boolean>(false)
+	// Guard against scheduling the gapless append more than once
+	const appendScheduledRef = useRef<boolean>(false)
+
+	// Next track pre-fetched from main process (getMsData)
+	const pendingNextRef = useRef<{
+		path: string
+		data: ArrayBuffer
+		mimeType: string
+		duration: number // filled after gapless append updateend
+	} | null>(null)
 
 	// Generation counters to discard stale async results
 	const playGenRef = useRef<number>(0)
 	const preloadGenRef = useRef<number>(0)
 
-	// Ref mirrors of state for use inside stable callbacks
-	const playingPathRef = useRef<string | null>(null)
-	const isPlayingRef = useRef<boolean>(false)
-
 	// ─── React state ─────────────────────────────────────────────────────────
-	const [isPlaying, setIsPlayingState] = useState(false)
+	const [isPlaying, setIsPlaying] = useState(false)
 	const [currentTime, setCurrentTime] = useState(0)
 	const [duration, setDuration] = useState(0)
 	const [playingPath, setPlayingPath] = useState<string | null>(null)
 	const [volume, setVolumeState] = useState(options?.initialVolume ?? 0.25)
 
-	// ─── RAF time tracker ────────────────────────────────────────────────────
+	// ─── RAF ──────────────────────────────────────────────────────────────────
 	const rafRef = useRef<number>(0)
 
 	const stopRaf = useCallback(() => {
@@ -59,355 +63,367 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 		}
 	}, [])
 
+	useEffect(() => () => stopRaf(), [stopRaf])
+
+	// startRaf defines tick inline so it reads fresh refs on every frame.
 	const startRaf = useCallback(() => {
 		stopRaf()
 		const tick = () => {
-			if (ctxRef.current && bufferRef.current) {
-				const elapsed = ctxRef.current.currentTime - srcStartCtxTimeRef.current + srcStartOffsetRef.current
-				setCurrentTime(Math.min(Math.max(0, elapsed), bufferRef.current.duration))
+			const audio = audioRef.current
+			if (!audio) {
+				rafRef.current = requestAnimationFrame(tick)
+				return
 			}
+
+			const abs = audio.currentTime
+			const rel = abs - trackOffsetRef.current
+			const dur = trackDurationRef.current
+
+			setCurrentTime(rel >= 0 ? rel : 0)
+
+			// ── Gapless: append next track ~GAPLESS_THRESHOLD s before end ──────
+			const sb = sbRef.current
+			if (dur > 0 && !appendScheduledRef.current && pendingNextRef.current && rel >= dur - GAPLESS_THRESHOLD && sb && !sb.updating) {
+				appendScheduledRef.current = true
+				const next = pendingNextRef.current
+				const gaplessStart = trackOffsetRef.current + dur
+
+				try {
+					// Same MIME → append directly.
+					// Different MIME → try changeType (same container family);
+					// if it throws (incompatible codec) fall back to non-gapless.
+					if (next.mimeType !== currentMimeRef.current) {
+						try {
+							;(sb as any).changeType(next.mimeType)
+							currentMimeRef.current = next.mimeType
+						} catch {
+							// Incompatible codec transition — give up on gapless append.
+							appendScheduledRef.current = false
+							rafRef.current = requestAnimationFrame(tick)
+							return
+						}
+					}
+
+					sb.timestampOffset = gaplessStart
+					sb.appendBuffer(next.data)
+					gaplessNextPathRef.current = next.path
+
+					sb.addEventListener(
+						'updateend',
+						() => {
+							try {
+								const len = sb.buffered.length
+								if (len > 0 && pendingNextRef.current) {
+									pendingNextRef.current.duration = sb.buffered.end(len - 1) - gaplessStart
+								}
+							} catch {
+								/* ignore */
+							}
+						},
+						{ once: true },
+					)
+				} catch {
+					appendScheduledRef.current = false
+				}
+			}
+
+			// ── Transition: fire onEnded when crossing the track boundary ────────
+			if (dur > 0 && !transitionFiredRef.current && rel >= dur) {
+				transitionFiredRef.current = true
+				const next = pendingNextRef.current
+				if (next) {
+					trackOffsetRef.current += dur
+					trackDurationRef.current = next.duration > 0 ? next.duration : 0
+					setDuration(trackDurationRef.current)
+					pendingNextRef.current = null
+					appendScheduledRef.current = false
+				}
+				optionsRef.current?.onEnded?.()
+			}
+
 			rafRef.current = requestAnimationFrame(tick)
 		}
 		rafRef.current = requestAnimationFrame(tick)
 	}, [stopRaf])
 
-	useEffect(() => () => stopRaf(), [stopRaf])
-
-	// ─── AudioContext init ────────────────────────────────────────────────────
-	const getCtx = useCallback((): AudioContext => {
-		if (!ctxRef.current || ctxRef.current.state === 'closed') {
-			const ctx = new AudioContext()
-			const gain = ctx.createGain()
-			gain.gain.value = volume
-			gain.connect(ctx.destination)
-			ctxRef.current = ctx
-			gainRef.current = gain
+	// ─── Audio element init ───────────────────────────────────────────────────
+	const getAudio = useCallback((): HTMLAudioElement => {
+		if (!audioRef.current) {
+			const el = document.createElement('audio')
+			el.volume = volume
+			el.style.display = 'none'
+			document.body.appendChild(el)
+			audioRef.current = el
 		}
-		return ctxRef.current
+		return audioRef.current
 	}, [volume])
 
-	// ─── Volume ──────────────────────────────────────────────────────────────
+	// Cleanup on unmount
+	useEffect(() => {
+		return () => {
+			stopRaf()
+			const el = audioRef.current
+			if (el) {
+				el.pause()
+				el.src = ''
+				el.remove()
+				audioRef.current = null
+			}
+			if (msRef.current) {
+				try {
+					if (msRef.current.readyState === 'open') msRef.current.endOfStream()
+				} catch {
+					/* ignore */
+				}
+			}
+			if (msUrlRef.current) {
+				URL.revokeObjectURL(msUrlRef.current)
+				msUrlRef.current = null
+			}
+		}
+	}, [stopRaf])
+
+	// ─── Volume ───────────────────────────────────────────────────────────────
 	const setVolume = useCallback((v: number | ((prev: number) => number)) => {
 		setVolumeState((prev) => {
 			const next = typeof v === 'function' ? v(prev) : v
-			if (gainRef.current) gainRef.current.gain.value = next
+			if (audioRef.current) audioRef.current.volume = next
 			return next
 		})
 	}, [])
 
 	useEffect(() => {
-		if (gainRef.current) gainRef.current.gain.value = volume
+		if (audioRef.current) audioRef.current.volume = volume
 	}, [volume])
 
-	// ─── Internal helpers ─────────────────────────────────────────────────────
-	const releaseSource = (source: AudioBufferSourceNode) => {
-		source.onended = null
-		try { source.stop(0) } catch { /* already stopped */ }
-		try { source.disconnect() } catch { /* already disconnected */ }
-	}
-
-	const cancelNextSource = useCallback(() => {
-		if (nextSrcRef.current) {
-			releaseSource(nextSrcRef.current)
-			nextSrcRef.current = null
+	// ─── Shared MSE teardown ──────────────────────────────────────────────────
+	const teardownMse = useCallback(() => {
+		if (msRef.current) {
+			try {
+				if (msRef.current.readyState === 'open') msRef.current.endOfStream()
+			} catch {
+				/* ignore */
+			}
 		}
-		nextBufferRef.current = null
-		nextPathRef.current = null
-		nextScheduledCtxTimeRef.current = 0
-		preloadGenRef.current++ // invalidate any in-flight preload
+		if (msUrlRef.current) {
+			URL.revokeObjectURL(msUrlRef.current)
+			msUrlRef.current = null
+		}
+		msRef.current = null
+		sbRef.current = null
+		trackOffsetRef.current = 0
+		trackDurationRef.current = 0
+		transitionFiredRef.current = false
+		appendScheduledRef.current = false
+		pendingNextRef.current = null
+		gaplessNextPathRef.current = null
 	}, [])
 
-	// ─── onSourceEnded (stable - all state via refs) ──────────────────────────
-	const onSourceEnded = useCallback(() => {
-		stopRaf()
-
-		if (nextSrcRef.current && nextPathRef.current && nextBufferRef.current) {
-			// ── Gapless transition: next source is already playing ──
-			const oldSrc = srcRef.current
-			srcRef.current = nextSrcRef.current
-			bufferRef.current = nextBufferRef.current
-			srcStartCtxTimeRef.current = nextScheduledCtxTimeRef.current
-			srcStartOffsetRef.current = 0
-			playingPathRef.current = nextPathRef.current
-
-			// Wire the new source's onended
-			srcRef.current.onended = onSourceEnded
-
-			const newDuration = nextBufferRef.current.duration
-			nextSrcRef.current = null
-			nextBufferRef.current = null
-			nextPathRef.current = null
-			nextScheduledCtxTimeRef.current = 0
-
-			// Disconnect old (ended) source
-			if (oldSrc) try { oldSrc.disconnect() } catch { /* ok */ }
-
-			setDuration(newDuration)
-			setCurrentTime(0)
-			setPlayingPath(playingPathRef.current)
-			startRaf()
-		} else {
-			// ── No next scheduled: natural end of queue ──
-			if (srcRef.current) {
-				try { srcRef.current.disconnect() } catch { /* ok */ }
-				srcRef.current = null
-			}
-			playingPathRef.current = null
-			isPlayingRef.current = false
-			setIsPlayingState(false)
-			setPlayingPath(null)
-		}
-
-		optionsRef.current?.onEnded?.()
-	}, [stopRaf, startRaf]) // stable: accesses everything else via refs
-
 	// ─── handlePlay ───────────────────────────────────────────────────────────
-	const handlePlay = useCallback(async (songPath: string) => {
-		// Already playing this path (e.g. gapless transition completed before store update)
-		if (songPath === playingPathRef.current && srcRef.current) return
+	const handlePlay = useCallback(
+		async (songPath: string) => {
+			const gen = ++playGenRef.current
+			preloadGenRef.current++ // cancel any in-flight preloadNext
 
-		const gen = ++playGenRef.current
-		preloadGenRef.current++ // cancel any in-flight preload
+			// Mark new path immediately — prevents App.tsx sync effect from
+			// seeing a path mismatch and re-triggering handlePlay mid-load.
+			setPlayingPath(songPath)
 
-		// Cancel scheduled next (different path)
-		if (nextSrcRef.current) {
-			releaseSource(nextSrcRef.current)
-			nextSrcRef.current = null
-		}
+			// ── Gapless fast path ──────────────────────────────────────────────────
+			// The next track was already appended to the SourceBuffer; audio is
+			// already playing. Just update display state and reset transition guards.
+			if (gaplessNextPathRef.current === songPath) {
+				gaplessNextPathRef.current = null
+				transitionFiredRef.current = false
+				setDuration(trackDurationRef.current)
+				// RAF is already running; isPlaying is already true.
+				return
+			}
 
-		// Stop current source
-		if (srcRef.current) {
-			releaseSource(srcRef.current)
-			srcRef.current = null
-		}
-		stopRaf()
+			// ── Full reset path ────────────────────────────────────────────────────
+			const audio = getAudio()
+			audio.pause()
+			audio.onended = null
+			audio.onerror = null
+			audio.src = ''
+			stopRaf()
+			setIsPlaying(false)
+			setCurrentTime(0)
+			setDuration(0)
+			teardownMse()
 
-		const ctx = getCtx()
-		await ctx.resume()
-
-		// Try to reuse a preloaded buffer for this path
-		let buffer: AudioBuffer | null = null
-		if (nextPathRef.current === songPath && nextBufferRef.current) {
-			buffer = nextBufferRef.current
-			nextBufferRef.current = null
-			nextPathRef.current = null
-		}
-
-		if (!buffer) {
+			// Fetch MSE-ready bytes from main process (converts FLAC→fMP4, OGG→WebM)
+			let msData: { data: ArrayBuffer; mimeType: string } | null = null
 			try {
-				const raw = await window.electronAPI.getAudioBuffer(songPath)
-				if (gen !== playGenRef.current) return // superseded
-				if (!raw) {
+				msData = await window.electronAPI.getMsData(songPath)
+				if (gen !== playGenRef.current) return
+				if (!msData) {
 					optionsRef.current?.onError?.({ message: 'Failed to load audio file. The file may be missing or moved.', path: songPath })
 					return
 				}
-				buffer = await ctx.decodeAudioData(toArrayBuffer(raw as unknown as ArrayBuffer | Uint8Array))
 			} catch {
 				if (gen !== playGenRef.current) return
 				optionsRef.current?.onError?.({ message: 'An error occurred while loading the audio file.', path: songPath })
 				return
 			}
-		}
 
-		if (gen !== playGenRef.current) return // superseded while decoding
+			if (gen !== playGenRef.current) return
 
-		const src = ctx.createBufferSource()
-		src.buffer = buffer
-		src.connect(gainRef.current!)
-		src.onended = onSourceEnded
+			// Create MediaSource and wait for sourceopen + initial append
+			const ms = new MediaSource()
+			const url = URL.createObjectURL(ms)
+			msRef.current = ms
+			msUrlRef.current = url
+			currentMimeRef.current = msData.mimeType
 
-		const startCtxTime = ctx.currentTime
-		src.start(0, 0)
+			const appendError = await new Promise<string | null>((resolve) => {
+				const onOpen = () => {
+					if (gen !== playGenRef.current) {
+						resolve('superseded')
+						return
+					}
+					try {
+						const sb = ms.addSourceBuffer(msData!.mimeType)
+						sbRef.current = sb
 
-		srcRef.current = src
-		bufferRef.current = buffer
-		srcStartCtxTimeRef.current = startCtxTime
-		srcStartOffsetRef.current = 0
-		pauseOffsetRef.current = 0
-		playingPathRef.current = songPath
-		isPlayingRef.current = true
+						sb.addEventListener(
+							'updateend',
+							() => {
+								try {
+									const buffEnd = sb.buffered.length > 0 ? sb.buffered.end(0) : 0
+									if (buffEnd > 0) {
+										trackDurationRef.current = buffEnd
+										setDuration(buffEnd)
+									}
+								} catch {
+									/* ignore */
+								}
+								resolve(null)
+							},
+							{ once: true },
+						)
 
-		setPlayingPath(songPath)
-		setDuration(buffer.duration)
-		setCurrentTime(0)
-		setIsPlayingState(true)
-		startRaf()
-	}, [getCtx, onSourceEnded, stopRaf])
+						sb.addEventListener(
+							'error',
+							(e) => {
+								console.error('[MSE] SourceBuffer error', e)
+								resolve('SourceBuffer error')
+							},
+							{ once: true },
+						)
+						sb.appendBuffer(msData!.data)
+					} catch (e: any) {
+						console.error('[MSE] addSourceBuffer/appendBuffer threw:', e)
+						resolve(e?.message ?? 'append error')
+					}
+				}
+				ms.addEventListener('sourceopen', onOpen, { once: true })
+				ms.addEventListener('error', () => resolve('MediaSource error'), { once: true })
+				audio.src = url
+			})
+
+			if (gen !== playGenRef.current) return
+			if (appendError) {
+				console.error(
+					'[MSE] append failed:',
+					appendError,
+					'| mime:',
+					msData.mimeType,
+					'| bytes:',
+					(msData.data as any).byteLength ?? (msData.data as any).length,
+				)
+				optionsRef.current?.onError?.({ message: 'An error occurred while loading the audio file.', path: songPath })
+				return
+			}
+
+			audio.onerror = () => {
+				if (gen !== playGenRef.current) return
+				console.error('[MSE] audio.error:', audio.error?.code, audio.error?.message)
+				optionsRef.current?.onError?.({ message: 'An error occurred while loading the audio file.', path: songPath })
+			}
+
+			try {
+				await audio.play()
+			} catch (e) {
+				if (gen !== playGenRef.current) return
+				console.error('[MSE] audio.play() threw:', e)
+				optionsRef.current?.onError?.({ message: 'An error occurred while loading the audio file.', path: songPath })
+				return
+			}
+
+			if (gen !== playGenRef.current) {
+				audio.pause()
+				return
+			}
+
+			setIsPlaying(true)
+			startRaf()
+		},
+		[getAudio, stopRaf, startRaf, teardownMse],
+	)
 
 	// ─── preloadNext ──────────────────────────────────────────────────────────
 	const preloadNext = useCallback(async (songPath: string) => {
-		if (nextPathRef.current === songPath && nextBufferRef.current) return // already ready
-
-		// Cancel previous preload
-		if (nextSrcRef.current) {
-			releaseSource(nextSrcRef.current)
-			nextSrcRef.current = null
-		}
-		nextBufferRef.current = null
-		nextPathRef.current = null
+		if (pendingNextRef.current?.path === songPath) return // already ready
+		pendingNextRef.current = null
+		appendScheduledRef.current = false
 
 		const gen = ++preloadGenRef.current
-
 		try {
-			const ctx = getCtx()
-			const raw = await window.electronAPI.getAudioBuffer(songPath)
-			if (gen !== preloadGenRef.current) return // superseded
-
-			if (!raw || !bufferRef.current || !srcRef.current) return
-
-			const buffer = await ctx.decodeAudioData(toArrayBuffer(raw as unknown as ArrayBuffer | Uint8Array))
-			if (gen !== preloadGenRef.current) return // superseded while decoding
-
-			// Schedule the next source to start exactly when current ends
-			const scheduleAt = srcStartCtxTimeRef.current + bufferRef.current.duration - srcStartOffsetRef.current
-			if (scheduleAt <= ctx.currentTime) return // too late to schedule
-
-			const nextSrc = ctx.createBufferSource()
-			nextSrc.buffer = buffer
-			nextSrc.connect(gainRef.current!)
-			nextSrc.start(scheduleAt, 0)
-
-			nextSrcRef.current = nextSrc
-			nextBufferRef.current = buffer
-			nextPathRef.current = songPath
-			nextScheduledCtxTimeRef.current = scheduleAt
+			const msData = await window.electronAPI.getMsData(songPath)
+			if (gen !== preloadGenRef.current) return
+			if (!msData) return
+			pendingNextRef.current = { path: songPath, data: msData.data, mimeType: msData.mimeType, duration: 0 }
 		} catch {
-			// Preload failed silently — playback continues normally with a small gap
+			// Preload failed silently — playback continues without gapless
 		}
-	}, [getCtx])
+	}, [])
 
-	// ─── handlePause ──────────────────────────────────────────────────────────
+	// ─── handlePause ─────────────────────────────────────────────────────────
 	const handlePause = useCallback(() => {
-		if (!ctxRef.current) return
-
-		// Save position
-		if (srcRef.current && bufferRef.current) {
-			const elapsed = ctxRef.current.currentTime - srcStartCtxTimeRef.current + srcStartOffsetRef.current
-			pauseOffsetRef.current = Math.max(0, Math.min(elapsed, bufferRef.current.duration))
-		}
-
-		if (srcRef.current) {
-			releaseSource(srcRef.current)
-			srcRef.current = null
-		}
+		audioRef.current?.pause()
 		stopRaf()
-		isPlayingRef.current = false
-		setIsPlayingState(false)
-
-		// Cancel the scheduled next source but keep its buffer/path for rescheduling on resume
-		if (nextSrcRef.current) {
-			releaseSource(nextSrcRef.current)
-			nextSrcRef.current = null
-			// nextBufferRef and nextPathRef intentionally kept
-		}
+		setIsPlaying(false)
 	}, [stopRaf])
 
-	// ─── handleResume ─────────────────────────────────────────────────────────
+	// ─── handleResume ────────────────────────────────────────────────────────
 	const handleResume = useCallback(async () => {
-		if (!bufferRef.current || !gainRef.current) return
-
-		const ctx = getCtx()
-		await ctx.resume()
-
-		const offset = pauseOffsetRef.current
-		const src = ctx.createBufferSource()
-		src.buffer = bufferRef.current
-		src.connect(gainRef.current)
-		src.onended = onSourceEnded
-
-		const startCtxTime = ctx.currentTime
-		src.start(0, offset)
-
-		srcRef.current = src
-		srcStartCtxTimeRef.current = startCtxTime
-		srcStartOffsetRef.current = offset
-		isPlayingRef.current = true
-		setIsPlayingState(true)
-		startRaf()
-
-		// Reschedule next if we still have its buffer
-		if (nextBufferRef.current && nextPathRef.current && gainRef.current && bufferRef.current) {
-			const scheduleAt = startCtxTime + (bufferRef.current.duration - offset)
-			if (scheduleAt > ctx.currentTime) {
-				const nextSrc = ctx.createBufferSource()
-				nextSrc.buffer = nextBufferRef.current
-				nextSrc.connect(gainRef.current)
-				nextSrc.start(scheduleAt, 0)
-				nextSrcRef.current = nextSrc
-				nextScheduledCtxTimeRef.current = scheduleAt
-			}
+		const audio = audioRef.current
+		if (!audio || !audio.src) return
+		try {
+			await audio.play()
+			setIsPlaying(true)
+			startRaf()
+		} catch {
+			// AbortError from rapid play/pause — ignore
 		}
-	}, [getCtx, onSourceEnded, startRaf])
+	}, [startRaf])
 
-	// ─── handleStop ───────────────────────────────────────────────────────────
+	// ─── handleStop ──────────────────────────────────────────────────────────
 	const handleStop = useCallback(() => {
-		if (srcRef.current) {
-			releaseSource(srcRef.current)
-			srcRef.current = null
+		const audio = audioRef.current
+		if (audio) {
+			audio.pause()
+			audio.onended = null
+			audio.onerror = null
+			audio.src = ''
 		}
-		cancelNextSource()
 		stopRaf()
-		bufferRef.current = null
-		playingPathRef.current = null
-		pauseOffsetRef.current = 0
-		isPlayingRef.current = false
+		teardownMse()
+		setIsPlaying(false)
 		setPlayingPath(null)
-		setIsPlayingState(false)
 		setCurrentTime(0)
 		setDuration(0)
-	}, [cancelNextSource, stopRaf])
+	}, [stopRaf, teardownMse])
 
-	// ─── setCurrentTime (seek) ────────────────────────────────────────────────
+	// ─── seekTo ──────────────────────────────────────────────────────────────
 	const seekTo = useCallback((time: number) => {
-		if (!bufferRef.current) return
-
-		const clamped = Math.max(0, Math.min(time, bufferRef.current.duration))
-
-		if (!isPlayingRef.current) {
-			pauseOffsetRef.current = clamped
-			setCurrentTime(clamped)
-			return
-		}
-
-		const ctx = getCtx()
-		if (srcRef.current) {
-			releaseSource(srcRef.current)
-			srcRef.current = null
-		}
-
-		// Save next buffer before cancelling so we can reschedule
-		const savedNextBuffer = nextBufferRef.current
-		const savedNextPath = nextPathRef.current
-		cancelNextSource()
-
-		const src = ctx.createBufferSource()
-		src.buffer = bufferRef.current
-		src.connect(gainRef.current!)
-		src.onended = onSourceEnded
-
-		const startCtxTime = ctx.currentTime
-		src.start(0, clamped)
-
-		srcRef.current = src
-		srcStartCtxTimeRef.current = startCtxTime
-		srcStartOffsetRef.current = clamped
+		const audio = audioRef.current
+		if (!audio || !audio.src) return
+		const clamped = Math.max(0, Math.min(time, trackDurationRef.current))
+		audio.currentTime = trackOffsetRef.current + clamped
 		setCurrentTime(clamped)
-
-		// Reschedule next if buffer was ready
-		if (savedNextBuffer && savedNextPath && gainRef.current && bufferRef.current) {
-			const scheduleAt = startCtxTime + (bufferRef.current.duration - clamped)
-			if (scheduleAt > ctx.currentTime) {
-				const nextSrc = ctx.createBufferSource()
-				nextSrc.buffer = savedNextBuffer
-				nextSrc.connect(gainRef.current)
-				nextSrc.start(scheduleAt, 0)
-				nextSrcRef.current = nextSrc
-				nextBufferRef.current = savedNextBuffer
-				nextPathRef.current = savedNextPath
-				nextScheduledCtxTimeRef.current = scheduleAt
-			}
-		}
-	}, [getCtx, onSourceEnded, cancelNextSource])
+	}, [])
 
 	return {
 		isPlaying,

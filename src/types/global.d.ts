@@ -4,6 +4,8 @@ interface ElectronAPI {
 	selectFolder: () => Promise<string | null>
 	getAudioFiles: (path: string) => Promise<Song[]>
 	getAudioBuffer: (filePath: string) => Promise<ArrayBuffer | null>
+	getMimeType: (filePath: string) => Promise<string>
+	getMsData: (filePath: string) => Promise<{ data: ArrayBuffer; mimeType: string } | null>
 	saveLibrary: (songs: Song[]) => Promise<boolean>
 	loadLibrary: () => Promise<Song[]>
 	getLibraryMetadata: (key: string) => Promise<string | null>

@@ -32,7 +32,10 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 	const { t } = useTranslation()
 	const panelRef = useRef<HTMLDivElement>(null)
 	const [songContextMenu, setSongContextMenu] = useState<{ isOpen: boolean; x: number; y: number; song: Song | null }>({
-		isOpen: false, x: 0, y: 0, song: null,
+		isOpen: false,
+		x: 0,
+		y: 0,
+		song: null,
 	})
 
 	const handleSongContextMenu = (e: React.MouseEvent, song: Song) => {
@@ -55,9 +58,7 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 	const sortedSongs: Song[] = [...album.songs].sort((a, b) => (parseInt(a.track) || 0) - (parseInt(b.track) || 0))
 	const totalDuration = sortedSongs.reduce((acc, s) => acc + (s.duration || 0), 0)
 	const genre = album.songs[0]?.genre || ''
-	const meta = [album.year || null, genre || null, `${sortedSongs.length} ${t('albums.songs')}`, formatTime(totalDuration)]
-		.filter(Boolean)
-		.join(' · ')
+	const meta = [album.year || null, genre || null, `${sortedSongs.length} ${t('albums.songs')}`, formatTime(totalDuration)].filter(Boolean).join(' · ')
 
 	useEffect(() => {
 		panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -67,7 +68,9 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 		<div
 			ref={panelRef}
 			className={`albums-grid__expansion${isClosing ? ' albums-grid__expansion--closing' : ''}`}
-			onAnimationEnd={() => { if (isClosing) onClosed() }}
+			onAnimationEnd={() => {
+				if (isClosing) onClosed()
+			}}
 			onClick={(e) => e.stopPropagation()}
 		>
 			<div className="album-expansion">
@@ -109,11 +112,7 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 								<span className="album-expansion__track-num">{parseInt(song.track) || i + 1}</span>
 								<span className="album-expansion__track-title">{song.title}</span>
 								<span className="album-expansion__track-duration">{formatTime(song.duration)}</span>
-								<button
-									className="album-expansion__track-play btn btn--ghost"
-									onClick={() => onPlay([song])}
-									tabIndex={-1}
-								>
+								<button className="album-expansion__track-play btn btn--ghost" onClick={() => onPlay([song])} tabIndex={-1}>
 									<PlayIcon size={12} weight="fill" />
 								</button>
 							</li>
@@ -126,14 +125,7 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 				</button>
 			</div>
 
-			{songContextMenu.isOpen && (
-				<ContextMenu
-					x={songContextMenu.x}
-					y={songContextMenu.y}
-					options={songMenuOptions()}
-					onClose={closeSongContextMenu}
-				/>
-			)}
+			{songContextMenu.isOpen && <ContextMenu x={songContextMenu.x} y={songContextMenu.y} options={songMenuOptions()} onClose={closeSongContextMenu} />}
 		</div>
 	)
 }
@@ -154,7 +146,10 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 	const [loadingCovers, setLoadingCovers] = useState<Set<string>>(new Set())
 	const [dragOverAlbumId, setDragOverAlbumId] = useState<string | null>(null)
 	const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; album: any | null }>({
-		isOpen: false, x: 0, y: 0, album: null,
+		isOpen: false,
+		x: 0,
+		y: 0,
+		album: null,
 	})
 
 	const closeMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -225,7 +220,11 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		} catch {
 			onShowNotification?.(t('albums.coverFetchFailed'), 'error')
 		} finally {
-			setLoadingCovers((prev) => { const next = new Set(prev); next.delete(albumId); return next })
+			setLoadingCovers((prev) => {
+				const next = new Set(prev)
+				next.delete(albumId)
+				return next
+			})
 		}
 	}
 
@@ -265,7 +264,11 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 		} catch {
 			onShowNotification?.(t('albums.coverUploadFailed'), 'error')
 		} finally {
-			setLoadingCovers((prev) => { const next = new Set(prev); next.delete(albumId); return next })
+			setLoadingCovers((prev) => {
+				const next = new Set(prev)
+				next.delete(albumId)
+				return next
+			})
 		}
 	}
 
@@ -285,14 +288,10 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 
 	// ─── Render ────────────────────────────────────────────────────────────
 
-	const selectedIdx = selectedAlbumId
-		? albums.findIndex((a) => (a.id || `${a.title}-${a.artist}`) === selectedAlbumId)
-		: -1
+	const selectedIdx = selectedAlbumId ? albums.findIndex((a) => (a.id || `${a.title}-${a.artist}`) === selectedAlbumId) : -1
 
 	// Insert expansion after the last album in the selected album's row
-	const expansionAfterIdx = selectedIdx >= 0
-		? Math.min(Math.ceil((selectedIdx + 1) / colCount) * colCount - 1, albums.length - 1)
-		: -1
+	const expansionAfterIdx = selectedIdx >= 0 ? Math.min(Math.ceil((selectedIdx + 1) / colCount) * colCount - 1, albums.length - 1) : -1
 
 	const handleAlbumClick = useCallback((albumId: string) => {
 		if (selectedAlbumIdRef.current === albumId) {
@@ -336,7 +335,10 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				onContextMenu={(e) => handleContextMenu(e, album)}
 				onMouseEnter={() => contextMenu.isOpen && contextMenu.album === album && cancelCloseMenu()}
 				onMouseLeave={() => contextMenu.isOpen && contextMenu.album === album && scheduleCloseMenu()}
-				onDragOver={(e) => { e.preventDefault(); setDragOverAlbumId(albumId) }}
+				onDragOver={(e) => {
+					e.preventDefault()
+					setDragOverAlbumId(albumId)
+				}}
 				onDragLeave={() => setDragOverAlbumId(null)}
 				onDrop={(e) => handleDrop(e, album)}
 				tabIndex={0}
@@ -344,15 +346,11 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				aria-expanded={isSelected}
 			>
 				{album.cover ? (
-					<img
-						src={album.cover}
-						alt={`${album.title}${album.artist ? ` by ${album.artist}` : ''}`}
-						className="album-card__cover album__cover"
-					/>
+					<img src={album.cover} alt={`${album.title}${album.artist ? ` by ${album.artist}` : ''}`} className="album-card__cover album__cover" />
 				) : (
 					<div className="album-card__cover album__cover default">
 						<span role="img" aria-label={t('albums.noCover')}>
-							<MusicNotesIcon size={48} weight="fill" />
+							<MusicNotesIcon size={32} weight="fill" />
 						</span>
 						<div className="album-card__info">
 							<strong>{album.title || t('albums.unknownAlbum')}</strong>
@@ -361,7 +359,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 						{isLoading && <div className="spinner"></div>}
 					</div>
 				)}
-			</div>
+			</div>,
 		)
 		if (i === expansionAfterIdx) {
 			items.push(
@@ -373,7 +371,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 					onClosed={handleExpansionClosed}
 					onPlay={playAlbumImmediately}
 					onAddToQueue={addAlbumToQueue}
-				/>
+				/>,
 			)
 		}
 	})
