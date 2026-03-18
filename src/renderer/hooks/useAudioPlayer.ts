@@ -245,6 +245,7 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			audio.pause()
 			audio.onended = null
 			audio.onerror = null
+			audio.ondurationchange = null
 			audio.src = ''
 			stopRaf()
 			setIsPlaying(false)
@@ -342,6 +343,14 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 				optionsRef.current?.onError?.({ message: 'An error occurred while loading the audio file.', path: songPath })
 			}
 
+			audio.ondurationchange = () => {
+				const d = audio.duration
+				if (isFinite(d) && d > 0) {
+					trackDurationRef.current = d
+					setDuration(d)
+				}
+			}
+
 			try {
 				await audio.play()
 			} catch (e) {
@@ -354,6 +363,14 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			if (gen !== playGenRef.current) {
 				audio.pause()
 				return
+			}
+
+			// Read duration from audio element — more reliable than sb.buffered.end(0)
+			// which can be 0 when updateend fires before the element reports duration.
+			const d = audio.duration
+			if (isFinite(d) && d > 0) {
+				trackDurationRef.current = d
+				setDuration(d)
 			}
 
 			setIsPlaying(true)
@@ -406,6 +423,7 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			audio.pause()
 			audio.onended = null
 			audio.onerror = null
+			audio.ondurationchange = null
 			audio.src = ''
 		}
 		stopRaf()
