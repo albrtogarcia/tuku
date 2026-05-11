@@ -332,6 +332,7 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				key={albumId}
 				className={`album-card${isSelected ? ' album-card--selected' : ''}${dragOverAlbumId === albumId ? ' album-card--drag-over' : ''}`}
 				onClick={() => handleAlbumClick(albumId)}
+				onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAlbumClick(albumId) } }}
 				onContextMenu={(e) => handleContextMenu(e, album)}
 				onMouseEnter={() => contextMenu.isOpen && contextMenu.album === album && cancelCloseMenu()}
 				onMouseLeave={() => contextMenu.isOpen && contextMenu.album === album && scheduleCloseMenu()}

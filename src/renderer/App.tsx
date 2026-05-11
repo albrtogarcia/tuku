@@ -59,6 +59,8 @@ function App() {
 			setTimeout(() => setNotification(null), 3000)
 		}
 	}, [])
+	const handleShowNotificationRef = useRef(handleShowNotification)
+	handleShowNotificationRef.current = handleShowNotification
 
 	const handleCleanupMissingFiles = useCallback(async () => {
 		try {
@@ -218,14 +220,14 @@ function App() {
 		// Listen for queue songs removed event
 		const handleQueueSongsRemoved = (event: any) => {
 			const count = event.detail
-			handleShowNotification(t('queue.songsRemoved', { count }), 'info')
+			handleShowNotificationRef.current(t('queue.songsRemoved', { count }), 'info')
 		}
 		window.addEventListener('queue-songs-removed', handleQueueSongsRemoved)
 
 		return () => {
 			window.removeEventListener('queue-songs-removed', handleQueueSongsRemoved)
 		}
-	}, [loadQueueFromStorage, handleShowNotification])
+	}, [loadQueueFromStorage])
 
 	// Sync Store -> Audio Player
 	const { handlePlay, handleResume, handlePause, playingPath: audioPlayingPath } = audio
@@ -413,7 +415,10 @@ function App() {
 		console.log(`[App] Removing songs from album path: ${albumPath}`)
 
 		// First, identify which song paths belong to this album
-		const deletedPaths = songs.filter((song) => song.path.startsWith(albumPath)).map((song) => song.path)
+		const deletedPaths = songs.reduce<string[]>((acc, song) => {
+			if (song.path.startsWith(albumPath)) acc.push(song.path)
+			return acc
+		}, [])
 
 		// Remove songs that start with the album path from the songs state
 		setSongs((prevSongs) => {

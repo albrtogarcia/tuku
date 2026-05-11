@@ -28,15 +28,17 @@ const Controls = ({ audio, onOpenSettings }: ControlsProps) => {
 	}
 
 	const playPrev = () => {
-		if (currentIndex > 0) {
-			setCurrentIndex(currentIndex - 1)
+		const { currentIndex: idx } = usePlayerStore.getState()
+		if (idx > 0) {
+			setCurrentIndex(idx - 1)
 			setIsPlaying(true)
 		}
 	}
 
 	const playNext = () => {
-		if (currentIndex + 1 < queue.length) {
-			setCurrentIndex(currentIndex + 1)
+		const { currentIndex: idx, queue: q } = usePlayerStore.getState()
+		if (idx + 1 < q.length) {
+			setCurrentIndex(idx + 1)
 			setIsPlaying(true)
 		}
 	}
