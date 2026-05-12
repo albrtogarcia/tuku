@@ -332,7 +332,12 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 				key={albumId}
 				className={`album-card${isSelected ? ' album-card--selected' : ''}${dragOverAlbumId === albumId ? ' album-card--drag-over' : ''}`}
 				onClick={() => handleAlbumClick(albumId)}
-				onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAlbumClick(albumId) } }}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault()
+						handleAlbumClick(albumId)
+					}
+				}}
 				onContextMenu={(e) => handleContextMenu(e, album)}
 				onMouseEnter={() => contextMenu.isOpen && contextMenu.album === album && cancelCloseMenu()}
 				onMouseLeave={() => contextMenu.isOpen && contextMenu.album === album && scheduleCloseMenu()}
@@ -350,12 +355,9 @@ const AlbumsGrid: React.FC<AlbumsGridProps> = ({ albums, setQueue, audio, onUpda
 					<img src={album.cover} alt={`${album.title}${album.artist ? ` by ${album.artist}` : ''}`} className="album-card__cover album__cover" />
 				) : (
 					<div className="album-card__cover album__cover default">
-						<span role="img" aria-label={t('albums.noCover')}>
-							<MusicNotesIcon size={32} weight="fill" />
-						</span>
 						<div className="album-card__info">
 							<strong>{album.title || t('albums.unknownAlbum')}</strong>
-							{album.artist && <div className="album-card__artist">{album.artist}</div>}
+							{album.artist && <span>{album.artist}</span>}
 						</div>
 						{isLoading && <div className="spinner"></div>}
 					</div>

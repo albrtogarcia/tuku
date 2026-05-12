@@ -373,7 +373,10 @@ function App() {
 		return activeTab === 'songs' ? filterSongs(songs, debouncedSearch) : songs
 	}, [activeTab, songs, debouncedSearch])
 
-	const allAlbums = useMemo(() => groupAlbums(songs), [songs])
+	const allAlbums = useMemo(() => {
+		const grouped = groupAlbums(songs)
+		return grouped.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
+	}, [songs])
 
 	const albums = useMemo(() => {
 		return activeTab === 'albums' ? filterAlbums(allAlbums, debouncedSearch) : allAlbums
