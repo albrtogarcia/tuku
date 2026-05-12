@@ -46,6 +46,10 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 	const playGenRef = useRef<number>(0)
 	const preloadGenRef = useRef<number>(0)
 
+	// ─── Web Audio API (declicking) ───────────────────────────────────────────
+	const audioCtxRef = useRef<AudioContext | null>(null)
+	const gainNodeRef = useRef<GainNode | null>(null)
+
 	// ─── React state ─────────────────────────────────────────────────────────
 	const [isPlaying, setIsPlaying] = useState(false)
 	const [currentTime, setCurrentTime] = useState(0)
@@ -155,6 +159,18 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			el.style.display = 'none'
 			document.body.appendChild(el)
 			audioRef.current = el
+
+			try {
+				const ctx = new AudioContext()
+				const gain = ctx.createGain()
+				gain.gain.setValueAtTime(1, ctx.currentTime)
+				ctx.createMediaElementSource(el).connect(gain)
+				gain.connect(ctx.destination)
+				audioCtxRef.current = ctx
+				gainNodeRef.current = gain
+			} catch {
+				// Web Audio API unavailable — declicking disabled
+			}
 		}
 		return audioRef.current
 	}, [volume])
@@ -181,6 +197,9 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 				URL.revokeObjectURL(msUrlRef.current)
 				msUrlRef.current = null
 			}
+			audioCtxRef.current?.close()
+			audioCtxRef.current = null
+			gainNodeRef.current = null
 		}
 	}, [stopRaf])
 
@@ -220,6 +239,34 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 		gaplessNextPathRef.current = null
 	}, [])
 
+	// ─── Gain helpers for declicking ──────────────────────────────────────────
+	const decayGain = useCallback((ms: number): Promise<void> => {
+		return new Promise(resolve => {
+			const ctx = audioCtxRef.current
+			const gain = gainNodeRef.current
+			if (!ctx || !gain) { resolve(); return }
+			const now = ctx.currentTime
+			gain.gain.cancelScheduledValues(now)
+			gain.gain.setValueAtTime(gain.gain.value, now)
+			gain.gain.linearRampToValueAtTime(0.0001, now + ms / 1000)
+			setTimeout(resolve, ms)
+		})
+	}, [])
+
+	const restoreGain = useCallback((ms: number) => {
+		const ctx = audioCtxRef.current
+		const gain = gainNodeRef.current
+		if (!ctx || !gain) return
+		const now = ctx.currentTime
+		gain.gain.cancelScheduledValues(now)
+		gain.gain.setValueAtTime(0.0001, now)
+		if (ms > 0) {
+			gain.gain.linearRampToValueAtTime(1, now + ms / 1000)
+		} else {
+			gain.gain.setValueAtTime(1, now)
+		}
+	}, [])
+
 	// ─── handlePlay ───────────────────────────────────────────────────────────
 	const handlePlay = useCallback(
 		async (songPath: string) => {
@@ -242,6 +289,9 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 			}
 
 			// ── Full reset path ────────────────────────────────────────────────────
+			await decayGain(25)
+			if (gen !== playGenRef.current) return
+
 			const audio = getAudio()
 			audio.pause()
 			audio.onended = null
@@ -364,6 +414,7 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 				}
 			}
 
+			await audioCtxRef.current?.resume()
 			try {
 				await audio.play()
 			} catch (e) {
@@ -378,10 +429,11 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 				return
 			}
 
+			restoreGain(20)
 			setIsPlaying(true)
 			startRaf()
 		},
-		[getAudio, stopRaf, startRaf, teardownMse],
+		[getAudio, stopRaf, startRaf, teardownMse, decayGain, restoreGain],
 	)
 
 	// ─── preloadNext ──────────────────────────────────────────────────────────
@@ -413,6 +465,7 @@ export function useAudioPlayer(options?: UseAudioPlayerOptions) {
 		const audio = audioRef.current
 		if (!audio || !audio.src) return
 		try {
+			await audioCtxRef.current?.resume()
 			await audio.play()
 			setIsPlaying(true)
 			startRaf()

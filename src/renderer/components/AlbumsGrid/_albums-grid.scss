@@ -43,7 +43,6 @@
 	transform: translate(-50%, -50%);
 }
 
-
 .album__cover {
 	height: auto;
 	width: 100%;
@@ -63,7 +62,6 @@
 		span,
 		strong {
 			display: block;
-			// Clamp to 2 lines with ellipsis
 			overflow: hidden;
 			text-overflow: ellipsis;
 			display: -webkit-box;
@@ -128,7 +126,7 @@
 
 .album-card--selected {
 	.album__cover {
-		outline: 2px solid var(--accent);
+		outline: 1px solid var(--accent);
 		outline-offset: 2px;
 	}
 }
