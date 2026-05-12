@@ -375,7 +375,10 @@ function App() {
 
 	const allAlbums = useMemo(() => {
 		const grouped = groupAlbums(songs)
-		return grouped.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
+		return grouped.sort((a, b) => {
+			const artistCmp = a.artist.localeCompare(b.artist, undefined, { sensitivity: 'base' })
+			return artistCmp !== 0 ? artistCmp : a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+		})
 	}, [songs])
 
 	const albums = useMemo(() => {
