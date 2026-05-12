@@ -17,6 +17,16 @@ vi.mock('@phosphor-icons/react', () => ({
 			MusicNotesIcon
 		</div>
 	),
+	PlayIcon: ({ size, weight }: any) => (
+		<div data-testid="play-icon" data-size={size} data-weight={weight}>
+			PlayIcon
+		</div>
+	),
+	XIcon: ({ size, weight }: any) => (
+		<div data-testid="x-icon" data-size={size} data-weight={weight}>
+			XIcon
+		</div>
+	),
 	PlusIcon: ({ size, weight }: any) => (
 		<div data-testid="plus-icon" data-size={size} data-weight={weight}>
 			PlusIcon
@@ -172,12 +182,7 @@ describe('AlbumsGrid Component', () => {
 			const mockAudio = createMockAudio()
 			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
 
-			// Should show default cover with music notes icon
-			expect(screen.getByTestId('music-notes-icon')).toBeInTheDocument()
-			expect(screen.getByTestId('music-notes-icon')).toHaveAttribute('data-size', '48')
-			expect(screen.getByTestId('music-notes-icon')).toHaveAttribute('data-weight', 'fill')
-
-			// Should show album info
+			// Card shows title and artist text when no cover image is available
 			expect(screen.getByText('A Night at the Opera')).toBeInTheDocument()
 			expect(screen.getByText('Queen')).toBeInTheDocument()
 		})
@@ -200,10 +205,13 @@ describe('AlbumsGrid Component', () => {
 			const mockAudio = createMockAudio()
 			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
 
-			// Double-click on the album card
+			// Click album card to expand the panel, then click Play Album
 			const albumCards = screen.getAllByRole('button')
 			const albumCard = albumCards.find((card) => card.getAttribute('tabIndex') === '0')
-			fireEvent.doubleClick(albumCard!)
+			fireEvent.click(albumCard!)
+
+			const playButton = screen.getByText('Play Album')
+			fireEvent.click(playButton)
 
 			expect(mockPlayerStore.playAlbumImmediately).toHaveBeenCalledWith(mockAlbums[0].songs)
 		})
@@ -309,17 +317,11 @@ describe('AlbumsGrid Component', () => {
 			const mockAudio = createMockAudio()
 			render(<AlbumsGrid albums={[albumWithUndefinedSongs]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
 
-			// Should render the album
+			// Should render the album card
 			expect(screen.getByText('Undefined Songs Album')).toBeInTheDocument()
-
-			// Click should not do anything
 			const albumCards = screen.getAllByRole('button')
 			const albumCard = albumCards.find((card) => card.getAttribute('tabIndex') === '0')
 			expect(albumCard).toBeInTheDocument()
-			fireEvent.click(albumCard!)
-
-			expect(mockSetQueue).not.toHaveBeenCalled()
-			expect(mockAudio.handlePlay).not.toHaveBeenCalled()
 		})
 
 		it('should handle album without title', () => {
@@ -394,21 +396,16 @@ describe('AlbumsGrid Component', () => {
 			const mockAudio = createMockAudio()
 			render(<AlbumsGrid albums={mockAlbums} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
 
-			// Get all album cards (exclude add to queue buttons)
 			const albumCards = screen.getAllByRole('button').filter((card) => card.getAttribute('tabIndex') === '0')
 
-			// Click first album
-			fireEvent.doubleClick(albumCards[0])
+			// Clicking a card expands it (aria-expanded becomes true)
+			expect(albumCards[0]).toHaveAttribute('aria-expanded', 'false')
+			fireEvent.click(albumCards[0])
+			expect(albumCards[0]).toHaveAttribute('aria-expanded', 'true')
 
-			expect(mockPlayerStore.playAlbumImmediately).toHaveBeenCalledWith(mockAlbums[0].songs)
-
-			// Reset mocks
-			vi.clearAllMocks()
-
-			// Click second album
-			fireEvent.doubleClick(albumCards[1])
-
-			expect(mockPlayerStore.playAlbumImmediately).toHaveBeenCalledWith(mockAlbums[1].songs)
+			// Clicking a different card changes the expanded card
+			fireEvent.click(albumCards[1])
+			expect(albumCards[1]).toHaveAttribute('aria-expanded', 'true')
 		})
 	})
 
@@ -417,9 +414,10 @@ describe('AlbumsGrid Component', () => {
 			const mockAudio = createMockAudio()
 			render(<AlbumsGrid albums={[mockAlbums[1]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
 
-			// Check that the music notes icon has proper aria-label
-			const musicIcon = screen.getByRole('img', { name: 'No cover' })
-			expect(musicIcon).toBeInTheDocument()
+			// Cards have role="button" and aria-expanded to indicate expansion state
+			const albumCard = screen.getAllByRole('button').find((card) => card.getAttribute('tabIndex') === '0')
+			expect(albumCard).toHaveAttribute('aria-expanded', 'false')
+			expect(albumCard).toHaveAttribute('tabIndex', '0')
 		})
 
 		it('should have proper alt text for album covers', () => {

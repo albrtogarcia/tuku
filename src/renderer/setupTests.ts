@@ -2,6 +2,28 @@ import { vi } from 'vitest'
 import '@testing-library/jest-dom'
 import enCommon from '../i18n/locales/en/common.json'
 
+Element.prototype.scrollIntoView = vi.fn()
+
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+	observe: vi.fn(),
+	unobserve: vi.fn(),
+	disconnect: vi.fn(),
+}))
+
+Object.defineProperty(window, 'matchMedia', {
+	writable: true,
+	value: vi.fn().mockImplementation((query: string) => ({
+		matches: false,
+		media: query,
+		onchange: null,
+		addListener: vi.fn(),
+		removeListener: vi.fn(),
+		addEventListener: vi.fn(),
+		removeEventListener: vi.fn(),
+		dispatchEvent: vi.fn(),
+	})),
+})
+
 // Flatten nested JSON keys into dot-notation (e.g. { player: { readyToPlay: "..." } } -> { "player.readyToPlay": "..." })
 function flattenKeys(obj: Record<string, any>, prefix = ''): Record<string, string> {
 	const result: Record<string, string> = {}

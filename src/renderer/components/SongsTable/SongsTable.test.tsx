@@ -117,25 +117,6 @@ describe('SongsTable Component', () => {
 			expect(screen.getByRole('columnheader', { name: /duration/i })).toBeInTheDocument()
 		})
 
-		/*
-			it('should render sortable indicators for sortable columns', () => {
-				render(<SongsTable songs={mockSongs} columns={basicColumns} onSort={mockOnSort} />)
-
-				const titleHeader = screen.getByRole('columnheader', { name: /title/i })
-				const artistHeader = screen.getByRole('columnheader', { name: /artist/i })
-				const albumHeader = screen.getByRole('columnheader', { name: /album/i })
-				const durationHeader = screen.getByRole('columnheader', { name: /duration/i })
-
-				// Sortable columns should have indicators
-				// expect(titleHeader).toHaveTextContent('⇅')
-				// expect(artistHeader).toHaveTextContent('⇅')
-				// expect(durationHeader).toHaveTextContent('⇅')
-
-				// Non-sortable column should not have indicator
-				// expect(albumHeader).not.toHaveTextContent('⇅')
-			})
-			*/
-
 		it('should render all song rows', () => {
 			render(<SongsTable songs={mockSongs} columns={basicColumns} />)
 
@@ -425,13 +406,6 @@ describe('SongsTable Component', () => {
 			const artistHeader = screen.getByRole('columnheader', { name: /artist/i })
 			const albumHeader = screen.getByRole('columnheader', { name: /album/i })
 			const durationHeader = screen.getByRole('columnheader', { name: /duration/i })
-
-			/*
-			expect(titleHeader).toHaveTextContent('⇅')
-			expect(artistHeader).not.toHaveTextContent('⇅')
-			expect(albumHeader).toHaveTextContent('⇅')
-			expect(durationHeader).not.toHaveTextContent('⇅')
-			*/
 
 			fireEvent.click(titleHeader)
 			expect(mockOnSort).toHaveBeenCalledWith('title')
