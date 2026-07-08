@@ -11,7 +11,6 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.5rem;
-		padding-inline: 0.5rem;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.25);
 
 		.btn {
@@ -25,7 +24,7 @@
 	}
 
 	&__item small {
-		opacity: 0.7;
+		opacity: 0.75;
 		padding-inline: 0.5rem;
 	}
 
@@ -53,14 +52,6 @@
 		&.playing {
 			color: var(--accent);
 		}
-
-		&.played {
-			opacity: 0.33;
-		}
-
-		// &.failed {
-		// 	opacity: 0.7;
-		// }
 
 		&:hover {
 			background-color: var(--bgPrimary);

@@ -22,7 +22,6 @@ interface PlayerState {
 	clearQueue: () => void
 	removeFromQueue: (index: number) => void
 	insertInQueue: (song: Song, position: number) => void
-	cleanQueueHistory: () => void
 	addToHistory: (songs: Song[]) => void
 	clearHistory: () => void
 	updateSongMetadata: (path: string, metadata: Partial<Song>) => void
@@ -105,22 +104,21 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		saveQueueToStorage()
 	},
 	playAlbumImmediately: (songs) => {
-		const { queue } = get()
-		// Filter out duplicates to avoid mess (optional, but consistent with other methods)
-		const uniqueSongs = songs.filter((song) => !queue.find((q) => q.path === song.path))
+		const { queue, currentIndex, playHistory } = get()
 
-		// If we want to strictly "move" them continuously to top, we might need more complex logic.
-		// But "add to front" usually means Prepend.
-		// If songs are ALREADY in queue, we might duplicate them if we don't filter?
-		// The requirement is "add to start and play".
-		// Let's assume we prepend them.
+		// Move the currently playing song (and anything before it) to history
+		const playedSongs = currentIndex >= 0 ? queue.slice(0, currentIndex + 1) : []
+		const upcoming = currentIndex >= 0 ? queue.slice(currentIndex + 1) : queue
 
-		const newQueue = [...songs, ...queue]
+		const newHistory = [...playedSongs.reverse(), ...playHistory].slice(0, 25)
+		const newQueue = [...songs, ...upcoming]
+
 		set({
 			queue: newQueue,
 			currentIndex: 0,
 			playingPath: songs[0]?.path || null,
-			isPlaying: true
+			isPlaying: true,
+			playHistory: newHistory,
 		})
 
 		const { saveQueueToStorage } = get()
@@ -181,18 +179,6 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 		const { saveQueueToStorage } = get()
 		saveQueueToStorage()
 	},
-	cleanQueueHistory: () => {
-		const { queue, currentIndex, playHistory } = get()
-		if (currentIndex > 3) {
-			const dropped = queue.slice(0, currentIndex - 3)
-			const newQueue = queue.slice(currentIndex - 3)
-			const newHistory = [...dropped.reverse(), ...playHistory].slice(0, 25)
-			set({ queue: newQueue, currentIndex: 3, playHistory: newHistory })
-			// Auto-save
-			const { saveQueueToStorage } = get()
-			saveQueueToStorage()
-		}
-	},
 	addToHistory: (songs) => {
 		const { playHistory } = get()
 		set({ playHistory: [...songs, ...playHistory].slice(0, 25) })
@@ -217,24 +203,34 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	},
 	loadQueueFromStorage: async () => {
 		try {
-			const loaded = await window.electronAPI.loadQueue()
-			if (!loaded || !loaded.queue || loaded.queue.length === 0) {
-				return
+			const [loaded, library, savedHistory] = await Promise.all([
+				window.electronAPI.loadQueue(),
+				window.electronAPI.loadLibrary(),
+				window.electronAPI.getLibraryMetadata('playHistory'),
+			])
+
+			if (library.length === 0) return
+
+			const libraryMap = new Map(library.map((song: Song) => [song.path, song]))
+
+			// Restore play history
+			if (savedHistory) {
+				try {
+					const historyPaths: string[] = JSON.parse(savedHistory)
+					const historyWithMetadata = historyPaths.map((p) => libraryMap.get(p)).filter(Boolean) as Song[]
+					if (historyWithMetadata.length > 0) {
+						set({ playHistory: historyWithMetadata })
+					}
+				} catch { }
 			}
 
-			// Load the full library to get metadata
-			const library: Song[] = await window.electronAPI.loadLibrary()
-			if (library.length === 0) {
-				return
-			}
+			// Restore queue
+			if (!loaded || !loaded.queue || loaded.queue.length === 0) return
 
-			const libraryMap = new Map(library.map((song) => [song.path, song]))
-
-			// Build the queue with complete metadata, tracking which songs are missing
 			const queueWithMetadata: Song[] = []
 			const missingSongs: string[] = []
 
-			loaded.queue.forEach((path) => {
+			loaded.queue.forEach((path: string) => {
 				const song = libraryMap.get(path)
 				if (song) {
 					queueWithMetadata.push(song)
@@ -243,19 +239,16 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 				}
 			})
 
-			// Notify if songs were removed from queue
 			if (missingSongs.length > 0) {
 				console.warn(`[Player Store] ${missingSongs.length} songs removed from queue (not found in library)`)
-				// Dispatch custom event that App.tsx can listen to
 				window.dispatchEvent(new CustomEvent('queue-songs-removed', { detail: missingSongs.length }))
 			}
 
 			if (queueWithMetadata.length > 0) {
 				const currentIndex = Math.max(0, Math.min(loaded.currentIndex, queueWithMetadata.length - 1))
-
 				set({
 					queue: queueWithMetadata,
-					currentIndex: currentIndex,
+					currentIndex,
 					playingPath: queueWithMetadata[currentIndex]?.path || null,
 				})
 			}
@@ -263,8 +256,11 @@ export const usePlayerStore = create<PlayerState>((set: (state: Partial<PlayerSt
 	},
 	saveQueueToStorage: async () => {
 		try {
-			const { queue, currentIndex } = get()
-			await window.electronAPI.saveQueue(queue, currentIndex)
+			const { queue, currentIndex, playHistory } = get()
+			await Promise.all([
+				window.electronAPI.saveQueue(queue, currentIndex),
+				window.electronAPI.setLibraryMetadata('playHistory', JSON.stringify(playHistory.map((s) => s.path))),
+			])
 		} catch (error) {
 			// Error saving queue to storage
 		}

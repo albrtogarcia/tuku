@@ -21,5 +21,10 @@ export function filterSongs(songs: Song[], search: string): Song[] {
 
 export function filterAlbums(albums: Album[], search: string): Album[] {
 	const q = search.toLowerCase()
-	return albums.filter((album) => album.title.toLowerCase().includes(q) || album.artist.toLowerCase().includes(q))
+	return albums.filter(
+		(album) =>
+			album.title.toLowerCase().includes(q) ||
+			album.artist.toLowerCase().includes(q) ||
+			album.songs.some((song) => song.genre.toLowerCase().includes(q)),
+	)
 }

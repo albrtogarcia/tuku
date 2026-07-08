@@ -51,25 +51,18 @@ vi.mock('@dnd-kit/utilities', () => ({
 
 describe('Queue Component', () => {
 	const createMockAudio = (overrides = {}) => ({
-		audioRef: { current: null },
-		audioUrl: null,
 		isPlaying: true,
-		pendingPlay: false,
 		currentTime: 60,
 		duration: 180,
 		playingPath: '/path/to/song.mp3',
 		volume: 1,
 		setCurrentTime: vi.fn(),
-		setCurrentTimeOnly: vi.fn(),
-		setDuration: vi.fn(),
-		setPlayingPath: vi.fn(),
 		handlePlay: vi.fn(),
 		handlePause: vi.fn(),
 		handleResume: vi.fn(),
-		handleCanPlay: vi.fn(),
 		handleStop: vi.fn(),
 		setVolume: vi.fn(),
-		setIsPlaying: vi.fn(),
+		preloadNext: vi.fn(),
 		...overrides,
 	})
 
@@ -109,10 +102,12 @@ describe('Queue Component', () => {
 	const mockPlayerStore = {
 		queue: mockSongs,
 		currentIndex: 0,
+		playHistory: [],
 		setQueue: vi.fn(),
 		setCurrentIndex: vi.fn(),
 		clearQueue: vi.fn(),
 		removeFromQueue: vi.fn(),
+		addToQueue: vi.fn(),
 	}
 
 	beforeEach(() => {
@@ -159,8 +154,7 @@ describe('Queue Component', () => {
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
-			expect(screen.getByText('Queue')).toBeInTheDocument()
-			expect(screen.getByText('(0)')).toBeInTheDocument()
+			expect(screen.getByText('Queue (0)')).toBeInTheDocument()
 		})
 	})
 
@@ -188,8 +182,7 @@ describe('Queue Component', () => {
 			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			// Remaining songs = total - (currentIndex + 1) = 3 - (1 + 1) = 1
-			expect(screen.getByText('Queue')).toBeInTheDocument()
-			expect(screen.getByText('(1)')).toBeInTheDocument()
+			expect(screen.getByText('Queue (1)')).toBeInTheDocument()
 		})
 
 		it('should highlight currently playing song', () => {
@@ -212,11 +205,11 @@ describe('Queue Component', () => {
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
+			// Queue only shows songs from currentIndex onwards; past songs are in history
 			const queueItems = document.querySelectorAll('.queue__item')
-			expect(queueItems[0]).toHaveClass('played')
-			expect(queueItems[1]).toHaveClass('played')
-			expect(queueItems[2]).toHaveClass('playing')
-			expect(queueItems[2]).not.toHaveClass('played')
+			expect(queueItems).toHaveLength(1)
+			expect(queueItems[0]).toHaveClass('playing')
+			expect(queueItems[0]).not.toHaveClass('played')
 		})
 
 		it('should show clear button when queue has songs', () => {
@@ -340,8 +333,7 @@ describe('Queue Component', () => {
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
-			expect(screen.getByText('Queue')).toBeInTheDocument()
-			expect(screen.getByText('(0)')).toBeInTheDocument()
+			expect(screen.getByText('Queue (0)')).toBeInTheDocument()
 		})
 
 		it('should handle removing song when currentIndex is at the end', () => {
@@ -354,8 +346,9 @@ describe('Queue Component', () => {
 			const mockAudio = createMockAudio()
 			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
+			// Queue shows only the current song (index 2), so there is one remove button
 			const removeButtons = screen.getAllByTitle('Remove from queue')
-			fireEvent.click(removeButtons[2]) // Remove last song (current)
+			fireEvent.click(removeButtons[0])
 
 			expect(mockPlayerStore.removeFromQueue).toHaveBeenCalledWith(2)
 			expect(mockAudio.handlePause).toHaveBeenCalled()
@@ -373,8 +366,7 @@ describe('Queue Component', () => {
 			render(<Queue audio={mockAudio} failedSongPaths={new Set()} />)
 
 			expect(screen.getByText('Test Song 1')).toBeInTheDocument()
-			expect(screen.getByText('Queue')).toBeInTheDocument()
-			expect(screen.getByText('(0)')).toBeInTheDocument()
+			expect(screen.getByText('Queue (0)')).toBeInTheDocument()
 			expect(screen.getByTitle('Clear queue')).toBeInTheDocument()
 		})
 	})

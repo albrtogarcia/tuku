@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePlayerStore } from '../../store/player'
 import { XIcon, WarningIcon } from '@phosphor-icons/react'
+import ContextMenu from '../ContextMenu/ContextMenu'
+import type { Song } from '../../../types/song'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
@@ -58,14 +60,14 @@ function SortableQueueItem({ song, index, isPlaying, isPlayed, hasFailed, remove
 
 const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 	const { t } = useTranslation()
-	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue, playHistory } = usePlayerStore()
+	const { queue, currentIndex, clearQueue, removeFromQueue, setCurrentIndex, setQueue, playHistory, addToQueue } = usePlayerStore()
 	const { handlePause, handlePlay } = audio
 
 	const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue')
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; song: Song | null }>({ x: 0, y: 0, song: null })
 
 	const start = Math.max(currentIndex, 0)
-	const recentInQueue = currentIndex > 0 ? queue.slice(0, currentIndex).reverse() : []
-	const historyItems = [...recentInQueue, ...playHistory].slice(0, 25)
+	const historyItems = playHistory
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -205,7 +207,11 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 						</li>
 					) : (
 						historyItems.map((song, idx) => (
-							<li key={`${song.path}-${idx}`} className="queue__item played">
+							<li
+								key={`${song.path}-${idx}`}
+								className="queue__item played"
+								onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, song }) }}
+							>
 								<div className="queue__item-content">
 									<span>{song.title}</span>
 									<small>{song.artist}</small>
@@ -217,6 +223,14 @@ const Queue = ({ audio, failedSongPaths }: QueueProps) => {
 					)}
 				</ol>
 			)}
+		{contextMenu.song && (
+			<ContextMenu
+				x={contextMenu.x}
+				y={contextMenu.y}
+				options={[{ label: t('songs.addToQueue'), action: () => addToQueue(contextMenu.song!) }]}
+				onClose={() => setContextMenu({ x: 0, y: 0, song: null })}
+			/>
+		)}
 		</div>
 	)
 }

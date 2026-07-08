@@ -50,19 +50,22 @@ const Player = ({ audio, songs, onOpenSettings }: PlayerProps) => {
 	// If there's no current song and nothing is playing, show empty state
 	if (!currentSong && (!isPlaying || !playingPath)) {
 		return (
-			<>
-				<div className="player player--empty">
-					<div className="player__empty-state">
-						<h4 className="player__empty-title">{t('player.readyToPlay')}</h4>
+			<div className="player">
+				<div className="player__media">
+					<AlbumCover cover={null} />
+				</div>
+				<div className="player__data">
+					<div className="player__info">
+						<h4 className="song__title">{t('player.readyToPlay')}</h4>
 						<p className="player__empty-subtitle">{t('player.subtitle')}</p>
 						<button className="btn" onClick={handleSurpriseMe} disabled={songs.length === 0}>
 							<Shuffle size={20} weight="fill" />
 							{t('player.surpriseMe')}
 						</button>
 					</div>
+					<Controls audio={audio} onOpenSettings={onOpenSettings} />
 				</div>
-				<Controls audio={audio} onOpenSettings={onOpenSettings} />
-			</>
+			</div>
 		)
 	}
 

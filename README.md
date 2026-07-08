@@ -68,13 +68,14 @@ Create a simple, fast, and customizable application to:
 - [x] Section header component
 - [x] Fix album grid height
 - [x] Responsive
+- [x] Memory leak in playback
+- [x] Settings modal UI
+- [x] Fix album cover formatting
+- [x] iTunes-style inline album expansion in grid view
 - [ ] Polish general UI
-- [ ] Settings modal UI
 - [ ] Notifications component
-- [ ] Fix album cover formatting
-- [ ] iTunes-style inline album expansion in grid view
 
-#### iTunes-Style Album Expansion (Planned Feature)
+iTunes-Style Album Expansion (Planned Feature)
 
 When clicking an album in the grid, an expansion panel appears below that row showing:
 
@@ -95,11 +96,10 @@ When clicking an album in the grid, an expansion panel appears below that row sh
 - Minimal re-renders (only affected rows on expand/collapse)
 - Slight overhead from ResizeObserver for responsive row calculation
 - Memory usage similar to current implementation
-- [x] Memory leak in playback
 
 #### 🔴 Priority 0: Critical (must fix before release)
 
-**Errors that cause crashes or data loss**
+Errors that cause crashes or data loss
 
 - [x] **Silent audio file loading failures** (`src/renderer/hooks/useAudioPlayer.ts:33-44`)
   - Add error notification when a file cannot be loaded
@@ -129,7 +129,7 @@ When clicking an album in the grid, an expansion panel appears below that row sh
 
 #### 🟠 Priority 1: High (affect performance and experience)
 
-**Performance and data loss issues**
+Performance and data loss issues
 
 - [x] **Album grid without virtualization** (`src/renderer/components/AlbumsGrid/AlbumsGrid.tsx`)
   - With 1000+ albums the UI freezes
@@ -164,7 +164,7 @@ When clicking an album in the grid, an expansion panel appears below that row sh
 
 #### 🟡 Priority 2: Medium (UX improvements and edge cases)
 
-**Improvements that would enhance experience but don't block release**
+Improvements that would enhance experience but don't block release
 
 - [ ] **No feedback for file not found errors**
   - Files: `useAudioPlayer.ts`, `Player.tsx`
@@ -322,10 +322,13 @@ Every push to `develop` and every pull request triggers the **Test Builds** work
 
 1. Merge `develop` into `main` when ready.
 2. Bump the version and create a tag:
+
    ```bash
    yarn release
    ```
+
    Or manually:
+
    ```bash
    # Edit version in package.json
    git add package.json
@@ -333,17 +336,18 @@ Every push to `develop` and every pull request triggers the **Test Builds** work
    git tag vX.Y.Z
    git push && git push --tags
    ```
+
 3. The `v*` tag triggers the **Release** workflow, which verifies the tag is on `main`, builds all platforms, and creates a draft GitHub Release with all assets.
 
 ### Release Assets
 
-| File | Platform | Description |
-|------|----------|-------------|
-| `Tuku-X.Y.Z-universal.dmg` | macOS | Installer (ARM + Intel) |
-| `Tuku-X.Y.Z-Setup.exe` | Windows | NSIS installer |
-| `Tuku-X.Y.Z.AppImage` | Linux | Portable binary (all distros) |
-| `tuku_X.Y.Z_amd64.deb` | Linux | Debian/Ubuntu package |
-| `tuku-X.Y.Z.x86_64.rpm` | Linux | Fedora/RHEL package |
+| File                       | Platform | Description                   |
+| -------------------------- | -------- | ----------------------------- |
+| `Tuku-X.Y.Z-universal.dmg` | macOS    | Installer (ARM + Intel)       |
+| `Tuku-X.Y.Z-Setup.exe`     | Windows  | NSIS installer                |
+| `Tuku-X.Y.Z.AppImage`      | Linux    | Portable binary (all distros) |
+| `tuku_X.Y.Z_amd64.deb`     | Linux    | Debian/Ubuntu package         |
+| `tuku-X.Y.Z.x86_64.rpm`    | Linux    | Fedora/RHEL package           |
 
 ---
 

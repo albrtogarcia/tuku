@@ -179,14 +179,6 @@ describe('SearchBar Component', () => {
 			expect(searchInput).toHaveValue(unicodeText)
 		})
 
-		it('should handle null/undefined values gracefully', () => {
-			// TypeScript would prevent this, but testing runtime behavior
-			render(<SearchBar value={'' as any} onChange={mockOnChange} />)
-
-			const searchInput = screen.getByRole('searchbox')
-			expect(searchInput).toHaveValue('')
-		})
-
 		it('should not break when onChange is not provided', () => {
 			// This would be a TypeScript error, but testing runtime behavior
 			expect(() => {

@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	selectFolder: () => ipcRenderer.invoke('select-folder'),
 	getAudioFiles: (folderPath: string) => ipcRenderer.invoke('get-audio-files', folderPath),
 	getAudioBuffer: (filePath: string) => ipcRenderer.invoke('get-audio-buffer', filePath),
+	getMimeType: (filePath: string) => ipcRenderer.invoke('get-mime-type', filePath),
+	getMsData: (filePath: string) => ipcRenderer.invoke('get-msdata', filePath),
 	saveLibrary: (songs: Song[]) => ipcRenderer.invoke('save-library', songs),
 	loadLibrary: (): Promise<Song[]> => ipcRenderer.invoke('load-library'),
 	getLibraryMetadata: (key: string): Promise<string | null> => ipcRenderer.invoke('get-library-metadata', key),

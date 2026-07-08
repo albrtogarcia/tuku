@@ -59,6 +59,8 @@ function App() {
 			setTimeout(() => setNotification(null), 3000)
 		}
 	}, [])
+	const handleShowNotificationRef = useRef(handleShowNotification)
+	handleShowNotificationRef.current = handleShowNotification
 
 	const handleCleanupMissingFiles = useCallback(async () => {
 		try {
@@ -110,20 +112,8 @@ function App() {
 		})
 	}, [])
 
-	const {
-		queue,
-		currentIndex,
-		isPlaying,
-		playingPath,
-		addToQueue,
-		clearQueue,
-		setCurrentIndex,
-		cleanQueueHistory,
-		setIsPlaying,
-		repeat,
-		setQueue,
-		loadQueueFromStorage,
-	} = usePlayerStore()
+	const { queue, currentIndex, isPlaying, playingPath, addToQueue, clearQueue, setCurrentIndex, setIsPlaying, repeat, setQueue, loadQueueFromStorage } =
+		usePlayerStore()
 
 	// Track last error to prevent duplicate handling
 	const lastErrorRef = useRef<{ path: string; time: number } | null>(null)
@@ -188,14 +178,14 @@ function App() {
 			// Skip to next song immediately
 			if (idx + 1 < queueLen) {
 				console.log(`[App] Skipping to next song after error. Moving from index ${idx} to ${idx + 1}`)
+				if (failedSong) state.addToHistory([failedSong])
 				state.setCurrentIndex(idx + 1)
 				state.setIsPlaying(true)
-				state.cleanQueueHistory()
 			} else if (repeatMode && queueLen > 0) {
 				console.log('[App] End of queue, restarting from beginning due to repeat')
+				if (failedSong) state.addToHistory([failedSong])
 				state.setCurrentIndex(0)
 				state.setIsPlaying(true)
-				state.cleanQueueHistory()
 			} else {
 				console.log('[App] End of queue, stopping playback')
 				state.setIsPlaying(false)
@@ -204,7 +194,9 @@ function App() {
 		[handleShowNotification, errorNotificationShown],
 	)
 
-	const audio = useAudioPlayer({ onError: handleAudioError, initialVolume: savedVolume })
+	// Stable ref so handleNext (defined later) can be used as the onEnded callback
+	const handleNextRef = useRef<() => void>(() => {})
+	const audio = useAudioPlayer({ onError: handleAudioError, onEnded: () => handleNextRef.current(), initialVolume: savedVolume })
 
 	// Ref to track current time without causing re-renders
 	const currentTimeRef = useRef(audio.currentTime)
@@ -228,14 +220,14 @@ function App() {
 		// Listen for queue songs removed event
 		const handleQueueSongsRemoved = (event: any) => {
 			const count = event.detail
-			handleShowNotification(t('queue.songsRemoved', { count }), 'info')
+			handleShowNotificationRef.current(t('queue.songsRemoved', { count }), 'info')
 		}
 		window.addEventListener('queue-songs-removed', handleQueueSongsRemoved)
 
 		return () => {
 			window.removeEventListener('queue-songs-removed', handleQueueSongsRemoved)
 		}
-	}, [loadQueueFromStorage, handleShowNotification])
+	}, [loadQueueFromStorage])
 
 	// Sync Store -> Audio Player
 	const { handlePlay, handleResume, handlePause, playingPath: audioPlayingPath } = audio
@@ -281,21 +273,32 @@ function App() {
 		}
 	}, [currentIndex, isPlaying, audio.isPlaying, audioPlayingPath, queue, handlePlay, handleResume, handlePause])
 
+	// Preload next track for gapless playback
+	const { preloadNext } = audio
+	useEffect(() => {
+		if (!isPlaying || currentIndex < 0) return
+		const nextSong = queue[currentIndex + 1]
+		if (nextSong) preloadNext(nextSong.path)
+	}, [currentIndex, isPlaying, queue, preloadNext])
+
 	const handleNext = useCallback(() => {
+		const { addToHistory } = usePlayerStore.getState()
 		if (currentIndex + 1 < queue.length) {
+			addToHistory([queue[currentIndex]])
 			setCurrentIndex(currentIndex + 1)
 			setIsPlaying(true)
-			cleanQueueHistory()
 		} else if (repeat && queue.length > 0) {
+			addToHistory([queue[currentIndex]])
 			setCurrentIndex(0)
 			setIsPlaying(true)
-			cleanQueueHistory()
 			return
 		} else {
+			addToHistory([queue[currentIndex]])
 			audio.handleStop()
 			setIsPlaying(false)
+			clearQueue()
 		}
-	}, [currentIndex, queue.length, repeat, audio.handleStop, cleanQueueHistory])
+	}, [currentIndex, queue, repeat, audio.handleStop, clearQueue])
 
 	const handlePrevious = useCallback(() => {
 		// If > 3 seconds in, restart song
@@ -312,25 +315,21 @@ function App() {
 		}
 	}, [audio.setCurrentTime, currentIndex])
 
-	const handleSongEnd = () => {
-		handleNext()
-	}
-
-	// Refs for MediaSession action handlers (stable references)
-	const handleNextRef = useRef(handleNext)
-	const handlePreviousRef = useRef(handlePrevious)
+	// Keep handleNextRef up to date on every render
 	handleNextRef.current = handleNext
+	// Refs for MediaSession action handlers (stable references)
+	const handlePreviousRef = useRef(handlePrevious)
 	handlePreviousRef.current = handlePrevious
 
 	// Media Session API - set up action handlers once
 	useEffect(() => {
 		if (!('mediaSession' in navigator)) return
 
-		navigator.mediaSession.setActionHandler('play', () => audio.handleResume())
-		navigator.mediaSession.setActionHandler('pause', () => audio.handlePause())
+		navigator.mediaSession.setActionHandler('play', () => usePlayerStore.getState().setIsPlaying(true))
+		navigator.mediaSession.setActionHandler('pause', () => usePlayerStore.getState().setIsPlaying(false))
 		navigator.mediaSession.setActionHandler('previoustrack', () => handlePreviousRef.current())
 		navigator.mediaSession.setActionHandler('nexttrack', () => handleNextRef.current())
-	}, [audio.handleResume, audio.handlePause])
+	}, [])
 
 	// Media Session API - update metadata only when song changes
 	const currentSong = queue[currentIndex]
@@ -374,7 +373,13 @@ function App() {
 		return activeTab === 'songs' ? filterSongs(songs, debouncedSearch) : songs
 	}, [activeTab, songs, debouncedSearch])
 
-	const allAlbums = useMemo(() => groupAlbums(songs), [songs])
+	const allAlbums = useMemo(() => {
+		const grouped = groupAlbums(songs)
+		return grouped.sort((a, b) => {
+			const artistCmp = a.artist.localeCompare(b.artist, undefined, { sensitivity: 'base' })
+			return artistCmp !== 0 ? artistCmp : a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+		})
+	}, [songs])
 
 	const albums = useMemo(() => {
 		return activeTab === 'albums' ? filterAlbums(allAlbums, debouncedSearch) : allAlbums
@@ -416,7 +421,10 @@ function App() {
 		console.log(`[App] Removing songs from album path: ${albumPath}`)
 
 		// First, identify which song paths belong to this album
-		const deletedPaths = songs.filter((song) => song.path.startsWith(albumPath)).map((song) => song.path)
+		const deletedPaths = songs.reduce<string[]>((acc, song) => {
+			if (song.path.startsWith(albumPath)) acc.push(song.path)
+			return acc
+		}, [])
 
 		// Remove songs that start with the album path from the songs state
 		setSongs((prevSongs) => {
@@ -546,25 +554,6 @@ function App() {
 				onSetLanguage={useSettingsStore.getState().setLanguage}
 				isScanning={isScanning}
 				scanProgress={scanProgress}
-			/>
-
-			{/* Audio player (hidden) */}
-			<audio
-				ref={audio.audioRef}
-				src={audio.audioUrl || undefined}
-				style={{ display: 'none' }}
-				onEnded={handleSongEnd}
-				onCanPlay={audio.handleCanPlay}
-				onPlay={() => {
-					audio.setIsPlaying(true)
-					setIsPlaying(true)
-				}}
-				onPause={() => {
-					audio.setIsPlaying(false)
-					setIsPlaying(false)
-				}}
-				onTimeUpdate={() => audio.setCurrentTimeOnly(audio.audioRef.current?.currentTime || 0)}
-				onLoadedMetadata={() => audio.setDuration(audio.audioRef.current?.duration || 0)}
 			/>
 
 			{/* Scan Progress Bar (only show when Settings is closed) */}

@@ -4,7 +4,7 @@
 		"songs": "Songs"
 	},
 	"search": {
-		"albumsPlaceholder": "Search albums or artists...",
+		"albumsPlaceholder": "Search albums, artists or genres...",
 		"songsPlaceholder": "Search songs, albums, artists, genre or year..."
 	},
 	"player": {
@@ -102,7 +102,8 @@
 		"emptyState": "No albums found in your library.",
 		"configureLibrary": "Configure Library",
 		"unknownAlbum": "Unknown Album",
-		"noCover": "No cover"
+		"noCover": "No cover",
+		"songs": "songs"
 	},
 	"notifications": {
 		"closeNotification": "Close notification",
