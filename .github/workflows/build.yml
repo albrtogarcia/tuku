@@ -9,7 +9,32 @@ on:
   pull_request:
 
 jobs:
+  parse-platforms:
+    runs-on: ubuntu-latest
+    outputs:
+      run-linux: ${{ steps.parse.outputs.run-linux }}
+      run-win: ${{ steps.parse.outputs.run-win }}
+      run-mac: ${{ steps.parse.outputs.run-mac }}
+    steps:
+      - name: Parse platform filter from commit message
+        id: parse
+        run: |
+          MESSAGE="${{ github.event.head_commit.message }}"
+          MATCH=$(echo "$MESSAGE" | grep -oP '\[[^\]]*\]' | head -1 | tr -d '[]' | tr ',' ' ')
+
+          if [ -z "$MATCH" ]; then
+            echo "run-linux=true" >> $GITHUB_OUTPUT
+            echo "run-win=true"   >> $GITHUB_OUTPUT
+            echo "run-mac=true"   >> $GITHUB_OUTPUT
+          else
+            echo "$MATCH" | grep -qw "linux" && echo "run-linux=true" >> $GITHUB_OUTPUT || echo "run-linux=false" >> $GITHUB_OUTPUT
+            echo "$MATCH" | grep -qw "win"   && echo "run-win=true"   >> $GITHUB_OUTPUT || echo "run-win=false"   >> $GITHUB_OUTPUT
+            echo "$MATCH" | grep -qw "mac"   && echo "run-mac=true"   >> $GITHUB_OUTPUT || echo "run-mac=false"   >> $GITHUB_OUTPUT
+          fi
+
   build-linux:
+    needs: parse-platforms
+    if: needs.parse-platforms.outputs.run-linux == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +63,9 @@ jobs:
             dist-electron/*.rpm
 
   build-win:
-    runs-on: windows-latest
+    needs: parse-platforms
+    if: needs.parse-platforms.outputs.run-win == 'true'
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
@@ -63,6 +90,8 @@ jobs:
           path: dist-electron/*.exe
 
   build-mac:
+    needs: parse-platforms
+    if: needs.parse-platforms.outputs.run-mac == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
