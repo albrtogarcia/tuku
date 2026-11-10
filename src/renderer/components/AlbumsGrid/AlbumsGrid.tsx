@@ -58,7 +58,8 @@ function AlbumExpansion({ album, isClosing, onClose, onClosed, onPlay, onAddToQu
 	const sortedSongs: Song[] = [...album.songs].sort((a, b) => (parseInt(a.track) || 0) - (parseInt(b.track) || 0))
 	const totalDuration = sortedSongs.reduce((acc, s) => acc + (s.duration || 0), 0)
 	const genre = album.songs[0]?.genre || ''
-	const meta = [album.year || null, genre || null, `${sortedSongs.length} ${t('albums.songs')}`, formatTime(totalDuration)].filter(Boolean).join(' · ')
+	const fileFormats = [...new Set(sortedSongs.map((song) => song.path.split('.').pop()?.toUpperCase()).filter(Boolean))].join('/')
+	const meta = [album.year || null, genre || null, `${sortedSongs.length} ${t('albums.songs')}`, formatTime(totalDuration), fileFormats || null].filter(Boolean).join(' · ')
 
 	useEffect(() => {
 		panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })

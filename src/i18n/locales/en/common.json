@@ -60,7 +60,10 @@
 		"maintenance": "Maintenance",
 		"maintenanceInfo": "Remove missing files from library",
 		"cleanUpMissingFiles": "Clean Up Missing Files",
-		"cleanUpTitle": "Remove songs that no longer exist"
+		"cleanUpTitle": "Remove songs that no longer exist",
+		"about": "About",
+		"version": "Version",
+		"buildDate": "Build Date"
 	},
 	"onboarding": {
 		"welcome": "Welcome to Tuku",

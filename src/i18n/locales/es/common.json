@@ -60,7 +60,10 @@
 		"maintenance": "Mantenimiento",
 		"maintenanceInfo": "Eliminar archivos faltantes de la biblioteca",
 		"cleanUpMissingFiles": "Limpiar Archivos Faltantes",
-		"cleanUpTitle": "Eliminar canciones que ya no existen"
+		"cleanUpTitle": "Eliminar canciones que ya no existen",
+		"about": "Acerca de",
+		"version": "Versión",
+		"buildDate": "Fecha de Compilación"
 	},
 	"onboarding": {
 		"welcome": "Bienvenido a Tuku",

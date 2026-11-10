@@ -132,7 +132,6 @@ describe('AlbumsGrid Component', () => {
 		handlePause: vi.fn(),
 		handleStop: vi.fn(),
 		handleResume: vi.fn(),
-		preloadNext: vi.fn(),
 	})
 
 	beforeEach(() => {
@@ -214,6 +213,27 @@ describe('AlbumsGrid Component', () => {
 			fireEvent.click(playButton)
 
 			expect(mockPlayerStore.playAlbumImmediately).toHaveBeenCalledWith(mockAlbums[0].songs)
+		})
+
+		it('should show the file format next to the album duration', () => {
+			const mockAudio = createMockAudio()
+			render(<AlbumsGrid albums={[mockAlbums[0]]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
+
+			const albumCard = screen.getAllByRole('button').find((card) => card.getAttribute('tabIndex') === '0')
+			fireEvent.click(albumCard!)
+
+			expect(screen.getByText(/· MP3$/)).toBeInTheDocument()
+		})
+
+		it('should show every file format when the album mixes formats', () => {
+			const mockAudio = createMockAudio()
+			const mixedAlbum = { ...mockAlbums[0], songs: [{ ...mockAlbums[0].songs[0], path: '/path/to/one.flac' }, { ...mockAlbums[0].songs[1], path: '/path/to/two.mp3' }] }
+			render(<AlbumsGrid albums={[mixedAlbum]} setQueue={mockSetQueue} audio={mockAudio} onUpdateCover={mockOnUpdateCover} onOpenSettings={mockOnOpenSettings} onAlbumDeleted={mockOnAlbumDeleted} />)
+
+			const albumCard = screen.getAllByRole('button').find((card) => card.getAttribute('tabIndex') === '0')
+			fireEvent.click(albumCard!)
+
+			expect(screen.getByText(/· FLAC\/MP3$/)).toBeInTheDocument()
 		})
 
 		it('should add album to queue using context menu', async () => {

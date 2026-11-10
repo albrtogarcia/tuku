@@ -62,7 +62,6 @@ describe('Queue Component', () => {
 		handleResume: vi.fn(),
 		handleStop: vi.fn(),
 		setVolume: vi.fn(),
-		preloadNext: vi.fn(),
 		...overrides,
 	})
 

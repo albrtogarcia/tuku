@@ -60,3 +60,6 @@ skills-lock.json
 
 # Optional eslint cache
 .eslintcache
+
+# Claude Code (datos locales del proyecto)
+.claude-data/

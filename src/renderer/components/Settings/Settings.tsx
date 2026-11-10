@@ -19,7 +19,7 @@ interface SettingsProps {
 	scanProgress?: { current: number; total: number }
 }
 
-type Section = 'appearance' | 'library'
+type Section = 'appearance' | 'library' | 'about'
 
 const Settings: React.FC<SettingsProps> = ({
 	isOpen,
@@ -57,11 +57,13 @@ const Settings: React.FC<SettingsProps> = ({
 	const sectionTitles: Record<Section, string> = {
 		appearance: t('settings.appearance'),
 		library: t('settings.musicLibrary'),
+		about: t('settings.about'),
 	}
 
 	const navItems: { key: Section; label: string }[] = [
 		{ key: 'appearance', label: t('settings.appearance') },
 		{ key: 'library', label: t('settings.musicLibrary') },
+		{ key: 'about', label: t('settings.about') },
 	]
 
 	return (
@@ -170,6 +172,19 @@ const Settings: React.FC<SettingsProps> = ({
 										{t('settings.cleanUpMissingFiles')}
 									</button>
 								</div>
+							</div>
+						</>
+					)}
+
+					{activeSection === 'about' && (
+						<>
+							<div className="settings__field">
+								<label className="settings__label">{t('settings.version')}</label>
+								<span className="settings__last-updated">{__APP_VERSION__}</span>
+							</div>
+							<div className="settings__field">
+								<label className="settings__label">{t('settings.buildDate')}</label>
+								<span className="settings__last-updated">{formatDate(__BUILD_DATE__)}</span>
 							</div>
 						</>
 					)}

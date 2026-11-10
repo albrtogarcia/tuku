@@ -273,14 +273,6 @@ function App() {
 		}
 	}, [currentIndex, isPlaying, audio.isPlaying, audioPlayingPath, queue, handlePlay, handleResume, handlePause])
 
-	// Preload next track for gapless playback
-	const { preloadNext } = audio
-	useEffect(() => {
-		if (!isPlaying || currentIndex < 0) return
-		const nextSong = queue[currentIndex + 1]
-		if (nextSong) preloadNext(nextSong.path)
-	}, [currentIndex, isPlaying, queue, preloadNext])
-
 	const handleNext = useCallback(() => {
 		const { addToHistory } = usePlayerStore.getState()
 		if (currentIndex + 1 < queue.length) {

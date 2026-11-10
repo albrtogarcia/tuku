@@ -5,7 +5,6 @@ interface ElectronAPI {
 	getAudioFiles: (path: string) => Promise<Song[]>
 	getAudioBuffer: (filePath: string) => Promise<ArrayBuffer | null>
 	getMimeType: (filePath: string) => Promise<string>
-	getMsData: (filePath: string) => Promise<{ data: ArrayBuffer; mimeType: string } | null>
 	saveLibrary: (songs: Song[]) => Promise<boolean>
 	loadLibrary: () => Promise<Song[]>
 	getLibraryMetadata: (key: string) => Promise<string | null>
@@ -26,6 +25,9 @@ interface ElectronAPI {
 }
 
 declare global {
+	const __APP_VERSION__: string
+	const __BUILD_DATE__: string
+
 	interface Window {
 		electronAPI: ElectronAPI
 	}

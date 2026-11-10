@@ -154,6 +154,17 @@ describe('Settings Component', () => {
 		})
 	})
 
+	describe('About Section', () => {
+		it('shows the app version and build date', () => {
+			render(<Settings {...mockProps} />)
+			fireEvent.click(screen.getByText('About'))
+			expect(screen.getByText('Version')).toBeInTheDocument()
+			expect(screen.getByText(__APP_VERSION__)).toBeInTheDocument()
+			expect(screen.getByText('Build Date')).toBeInTheDocument()
+			expect(screen.queryByText('Invalid Date')).not.toBeInTheDocument()
+		})
+	})
+
 	describe('Date Formatting', () => {
 		it('shows "Never" when lastUpdated is null', () => {
 			render(<Settings {...mockProps} lastUpdated={null} />)
